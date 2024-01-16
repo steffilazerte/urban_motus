@@ -1,0 +1,250 @@
+---
+title: Range Maps
+---
+
+In this step we decide **Which receivers do we keep?**
+
+- We keep receivers which are within ranges of the species in question
+- We'll keep runs which have acceptable receivers for a given species
+
+So first we need to get a list of recievers that are within different species 
+ranges.  We'll use this list to filter the motus runs in later steps.
+
+We'll acquire the range maps from eBird Status and Trends
+
+:::{.callout-note}
+eBird data requires attributions, citations, and disclaimers
+- See (2) https://science.ebird.org/en/status-and-trends/products-access-terms-of-use
+
+We also have limitations on how many species we can use for non-peer-reviewed publications (50),
+but can use any number for scientific publications or grant requests.
+
+Bear this in mind if sharing these range maps anywhere.
+
+In general, we'll keep it below 50 for now, and ask for permission as required.
+:::
+
+## Setup
+```{r}
+#| message: false
+library(motus)
+library(tidyverse)
+library(assertr)
+library(sf)
+library(rnaturalearth)
+library(ebirdst)
+library(units)
+library(gt)
+source("00_setup.R")
+```
+
+### Connect to databases
+```{r}
+dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
+```
+
+
+## Get the species list 
+
+:::{.panel-tabset}
+We'll take the species which are in the databases AND in list of approved species (see `00_setup.R`)
+
+> Notes
+>
+> - We rename the scientific name for the yellow-rumped warbler to match the
+eBird listing (no subspecies)
+
+### Code
+```{r}
+sp <- imap(dbs, \(x, y) {
+  tbl(x, "species") |>
+    collect()
+}) |>
+  list_rbind() |>
+  distinct() |>
+  filter(id %in% species$species_id) |>
+  arrange(id) |>
+  # Fix yellow-rumped warbler name for joining with eBird
+  mutate(scientific = str_replace(scientific, "coronata coronata", "coronata")) |>
+  left_join(select(ebirdst_runs, "species_code", "scientific_name"),
+            by = c("scientific" = "scientific_name"))
+```
+
+### Species list
+```{r}
+gt(sp)
+```
+:::
+
+## Get Ranges
+
+Now we'll download the species range maps from eBird at a resolution of 27 km (high resolution, raw data).
+
+> Note: If the data is already downloaded, it will be skipped.
+
+```{r}
+#| message: false
+walk(sp$species_code,
+     \(x) ebirdst_download_status(x, download_ranges = TRUE,
+                                  pattern = "range\\_raw\\_27km"))
+```
+
+
+Combine the ranges into a single spatial dataset, and create another set of 
+ranges with a **100km** buffer.
+
+The idea here is that we may want to include receivers that are near the edges of
+a species range, as observations at those stations may be legitimate.
+
+```{r}
+ranges <- map(sp$species_code, \(x) load_ranges(x, resolution = "27km", smoothed = FALSE)) |>
+  bind_rows() |>
+  group_by(species_code, scientific_name, common_name, prediction_year) |>
+  summarize(.groups = "drop") |>
+  st_make_valid() |>
+  st_transform(crs = 3347)
+
+# Use a 100km buffer around the range
+ranges_buffer <- st_buffer(ranges, dist = set_units(100, "km"))
+```
+
+Now we'll collect a list of receivers that exist in our data. 
+
+We'll start by doing some preliminary filtering:
+
+- omit receivers which don't overlap with any species' range
+- omit receivers labelled "test", etc.
+
+:::{.panel-tabset}
+
+### Code
+```{r}
+any_range <- summarize(ranges_buffer)
+
+# Get list of receivers in the databases
+recvs <- map(dbs, \(x) tbl(x, "recvDeps") |>
+               select(deployID, name, longitude, latitude) |>
+               collect()) |>
+  list_rbind() |>
+  distinct() |>
+  # Omit receivers labelled "test"
+  filter(!str_detect(tolower(name), "teststation|test_sg")) |>
+  assert(not_na, longitude, latitude) |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+  st_transform(crs = 3347) |>
+  # Filter to only receivers that overlap at least one species
+  st_filter(any_range)
+```
+
+Now we'll calculate overlaps with individual species ranges
+```{r}
+recvs <- bind_cols(
+  recvs, 
+  as_tibble(st_intersects(recvs, ranges_buffer, sparse = FALSE),
+            .name_repair = ~ranges$species_code)) |>
+  pivot_longer(cols = -c(deployID, name, geometry), 
+               names_to = "species_code", values_to = "in_range")
+```
+
+### Data Preview
+```{r}
+recvs |>
+  st_drop_geometry() |>
+  slice(1:50) |>
+  gt()
+```
+
+:::
+
+
+
+## Plots
+
+Next we'll plot each species range and the overlapping receivers for quality 
+control.
+
+First we'll get a map of the Americas as a base map to give context to the plots.
+```{r}
+americas <- ne_countries(continent = c("North America", "South America"), returnclass = "sf") |>
+  pull(name) |>
+  ne_states(returnclass = "sf") |>
+  # Omit Hawaii
+  filter(name != "Hawaii") |>
+  st_make_valid() |>
+  group_by(admin) |>
+  summarize() |>
+  st_transform(crs = 3347) |>
+  st_filter(recvs)
+
+# Get a data frame with both ranges and buffered ranges
+ranges <- bind_rows(
+  bind_cols(ranges, type = "Range"),
+  bind_cols(ranges_buffer, type = "Buffered Range"))
+```
+
+Now we're ready to plot!
+```{r}
+#| fig.height: 8
+#| fig.width: 10
+#| lightbox:
+#|   group: ranges
+for(i in unique(ranges$species_code)) {
+  r <- filter(ranges, species_code == i)
+  
+  g <- ggplot() +
+    theme_bw() +
+    theme(legend.position = "bottom") +
+    geom_sf(data = americas) +
+    geom_sf(data = r, aes(fill = type, alpha = type)) +
+    geom_sf(data = filter(recvs, species_code == r$species_code[1]), 
+            aes(colour = in_range), size = 1) +
+    scale_colour_viridis_d(end = 0.9) +
+    scale_fill_manual(values = c("blue", "blue")) +
+    scale_alpha_manual(values = c(0.25, 0.4)) +
+    labs(colour = "Reciever within\nbuffered species range", 
+         title = "Range map & Motus Receivers",
+         subtitle = r$common_name[1], 
+         fill = "", alpha = "") +
+    guides(alpha = guide_legend(override.aes = list(alpha = c(0.25, 0.65))),
+           colour = guide_legend(override.aes = list(size = 3)))
+  
+  print(g)
+}
+```
+
+## Save Outputs
+
+```{r}
+write_csv(st_drop_geometry(recvs), "Data/Datasets/receivers.csv")
+```
+
+## Reproducibility
+
+:::{.panel-tabset}
+### Packages
+
+You probably only need to cite **motus** and **ebirdst** and possibly the **tidyverse**, 
+but you should keep track of the packages used and their versions (under General Info).
+
+But remember we *also* have to cite the eBird data (not just the package used below).
+
+```{r}
+#| code-fold: true
+#| echo: false
+#| results: asis
+cat("#### motus\n")
+c <- citation("motus") 
+print(c, "text")
+
+cat("\n#### ebirdst (for access to range maps)\n")
+citation("ebirdst") |> print(style = "text")
+
+cat("\n#### tidyverse (for general data management and figures)\n")
+citation("tidyverse") |> print(style = "text")
+```
+
+### General info
+```{r}
+devtools::session_info()
+```
+:::

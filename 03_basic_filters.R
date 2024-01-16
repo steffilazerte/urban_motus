@@ -1,0 +1,200 @@
+# Setup ---------------------------------------------------------------
+library(motus)
+library(DBI)
+library(tidyverse)
+library(assertr)
+source("00_setup.R")
+
+# In this step we apply broad filters for species, dates, and receivers of 
+# interest. 
+# 
+# Note that these lists are defined in `00_setup.R`
+
+# Connect to databases ------------------------------------------------
+dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
+
+# Check existing filters ----------------------------------------------
+f <- map(dbs, listRunsFilters) |>
+  list_rbind()
+f
+
+# TODO: consider removing them all and starting fresh on each run?
+if(TRUE && nrow(f) > 0) walk(dbs, \(x) deleteRunsFilter(x, "all"))
+
+# Create a filter placeholder
+iwalk(dbs, \(x, y) createRunsFilter(x, filterName = "all", motusProjID = y, 
+                                    descr = "Full set of runs to omit"))
+
+filter_count(dbs)
+
+# Noise ---------------------------------------------------------------
+# TODO: use a custom noise filter?
+noise <- imap(dbs, \(x, y) tbl(x, "runs") |> 
+    select(runID, motusTagID, motusFilter) |>
+    filter(motusFilter == 0) |>
+    mutate(proj_id = y, probability = motusFilter) |>
+    collect())
+
+walk2(dbs, noise, 
+      \(x, y) writeRunsFilter(x, "all", motusProjID = y$proj_id[1], df = y))
+
+filter_count(dbs)
+
+# Timeframe ----------------------------------------------------
+# Which dates do we keep?
+# - Fall and Spring migration 
+# - August - December & February - July
+#
+# motus date/times are stored as ts in UTC these is a standard number that can
+# be converted to a date time:
+
+as_datetime(1646289838)
+
+# And back
+
+as.numeric(as_datetime("2022-03-03 06:43:58"))
+
+# Here we will create a list of time stamp ranges to use when filtering
+date_ranges <- expand_grid(year = 1990:2030, 
+                           data.frame(migration = c("spring", "fall"),
+                                      start = c("02-01", "08-01"),
+                                      end = c("07-01", "12-01"))) |>
+  mutate(across(c("start", "end"), \(x) as_datetime(paste0(year, "-", x))),
+         across(c("start", "end"), .names = "ts_{.col}", as.numeric))
+
+# Get all runs that are NOT within these dates
+non_mig_dates <- imap(
+  dbs, 
+  \(x, y) tbl(x, "runs") |>
+    anti_join(date_ranges, by = join_by(between(tsBegin, ts_start, ts_end, bounds = "[)")), 
+              copy = TRUE) |>
+    select(runID, motusTagID) |>
+    mutate(proj_id = y, probability = 0) |>
+    collect())
+
+walk2(dbs, non_mig_dates, 
+      \(x, y) writeRunsFilter(x, "all", motusProjID = y$proj_id[1], df = y))
+
+filter_count(dbs)
+
+# Check months in the 'anti' group - Doesn't remove much, ah well
+tbl(dbs[[1]], "runs") |>
+  anti_join(date_ranges, by = join_by(between(tsBegin, ts_start, ts_end, bounds = "[)")), 
+            copy = TRUE) |>
+  pull(tsBegin) |>
+  as_datetime() |> 
+  month() |> 
+  unique()
+
+
+
+
+# Ambiguous detections --------------------------------------------------
+# TODO: Needs to be done post-filtering (as much as possible)
+
+ambig <- map(dbs, \(x) tbl(x, "allruns") |>
+               select(ambigID, motusTagID) |>
+               filter(!is.na(ambigID)) |>
+                distinct() |>
+                collect()) |>
+  list_rbind(names_to = "proj_id")
+
+
+
+# Check tag details ------------------------
+tag_deps <- map(dbs, \(x) tbl(x, "tagDeps") |> collect()) |>
+  list_rbind() |>
+  mutate(tsStart = as_datetime(tsStart), tsEnd = as_datetime(tsEnd))
+
+tag_deps |>
+  select(projectID, tagID, deployID, tsStart, tsEnd, speciesID) |>
+  summary()
+
+# TODO: Questions
+# - Can the end be after the current date? e.g., 2026-12-16...
+# - Should there be missing start/end dates?
+
+select(tag_deps, projectID, tagID, deployID, tsStart, tsEnd, speciesID) |>
+  filter(is.na(tsStart))
+
+# Check for appropriate species ----------------------------------------
+sp <- map(dbs, \(x) tbl(x, "species") |> collect()) |>
+  list_rbind() |>
+  filter(id %in% tag_deps$speciesID)
+
+# TODO: Questions
+# - Do we expect Monarchs?
+
+m <- filter(tag_deps, speciesID == 252456) |> pull(tagID)
+  
+
+map(dbs, \(x) tbl(x, "runs") |>
+      filter(motusTagID %in% m)
+)
+
+# Check for multiple tag deployments ----------------------------------
+multi_tags <- map(dbs, \(x) tbl(x, "tagDeps") |> 
+                    select(tagID, deployID, projectID, tsStart, tsEnd) |>
+                    mutate(n = n(), .by = "tagID") |>
+                    filter(n > 1) |>
+                    collect()) |>
+  list_rbind() |>
+  mutate(tsStart = as_datetime(tsStart), tsEnd = as_datetime(tsEnd))
+
+# Multiple deployments shouldn't be able to overlap... right?
+multi_tags |>
+  group_by(tagID) |>
+  filter(tsEnd >= lead(tsStart) | tsStart <= lag(tsEnd))
+
+# Triple deploy ids all at the same time???
+tbl(dbs[["551"]], "allruns") |>
+  select(motusTagID, tagDeployID, tsBegin) |>
+  filter(motusTagID == 68470) |>
+  collect() |>
+  mutate(tsBegin = as_datetime(tsBegin))
+
+# Triple deploy ids all at the same time???
+tbl(dbs[["168"]], "allruns") |>
+  select(motusTagID, tagDeployID, tsBegin) |>
+  filter(motusTagID == 26448) |>
+  collect() |>
+  mutate(tsBegin = as_datetime(tsBegin)) |>
+  filter(tsBegin > "2017-08-01 20:00:00")
+
+
+
+
+
+
+
+
+
+# Species  -----------------------------------------------------
+
+# Species in the databases
+sp <- imap(dbs, \(x, y) {
+  tbl(x, "species") |>
+    collect() |>
+    mutate(proj_id = y)
+}) |>
+  list_rbind() |>
+  arrange(id)
+
+# Species to remove 
+anti_join(sp, species, by = c("id" = "species_id"))
+
+# Purge unwanted species from the data 
+rm_ids <- filter(sp, !id %in% species$species_id) |>
+  pull(id)
+rm_tags <- map(dbs, \(x) tbl(x, "tagDeps") |>
+              filter(speciesID %in% ids) |>
+              pull(tagID))
+
+
+# Ambiguous detections
+ambig <- map(dbs, \(x) tbl(x, "alltags") |>
+               select(ambigID, motusTagID) |>
+               filter(!is.na(ambigID)) |>
+               distinct() |>
+               collect())
+

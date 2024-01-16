@@ -1,0 +1,13 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+/.quarto/
+.Rdata
+.httr-oauth
+.DS_Store
+.quarto
+Data/
+02_range_maps.html
+02_range_maps_files/

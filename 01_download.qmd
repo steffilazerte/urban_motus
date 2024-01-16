@@ -1,0 +1,52 @@
+---
+title: Download/Update Data
+---
+
+## Setup
+```{r}
+#| message: false
+library(motus)
+library(purrr)
+library(dplyr)
+source("00_setup.R")
+```
+
+Get the status of each project (i.e. how much data left to download?)
+
+- This will create new project-XXX.motus SQLite data bases for us if it doesn't
+ already exist (but will not download the data)
+ 
+```{r}
+status <- map(
+  projects, 
+  \(x) tellme(x, dir = "Data/Raw",  new = file.exists(paste0("project-", x, ".motus")))) |>
+  list_rbind(names_to = "proj_id")
+gt(status)
+```
+
+## Download data
+
+
+**If this is the first time running, it will take time!**
+
+- `tagme()` without arguments will update all databases in the folder
+- we can run this intermittently to update the databases as new data arrives
+
+```{r}
+#| message: false
+tagme(dir = "Data/Raw")
+```
+
+## Remove deprecated batches
+
+Deprecated batches are removed from the Motus server, but are still present
+in data that was previously downloaded.
+This step cleans up the database.
+
+```{r}
+walk(projects, \(x) {
+  message("\nProject ", x)
+  t <- tagme(x, dir = "Data/Raw", update = FALSE)
+  deprecateBatches(t, ask = FALSE)
+  DBI::dbDisconnect(t)
+})
