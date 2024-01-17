@@ -155,6 +155,8 @@ recvs |>
 
 ## Plots
 
+### Prepare basemaps
+
 Next we'll plot each species range and the overlapping receivers for quality 
 control.
 
@@ -177,7 +179,17 @@ ranges <- bind_rows(
   bind_cols(ranges_buffer, type = "Buffered Range"))
 ```
 
+
+### Create range plots
+
 Now we're ready to plot!
+
+:::{.callout-important}
+## No plots online
+There are temporarily no plots in this version of the page online as we have
+not yet received permission from eBird to share these in a semi-open manner.
+:::
+
 ```{r}
 #| fig.height: 8
 #| fig.width: 10

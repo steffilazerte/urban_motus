@@ -1,7 +1,7 @@
 project:
   type: website
   output-dir: docs
-  title: "Urban migration stopovers"
+  title: "Motus tracking of urban migration stopovers"
   
 website: 
   sidebar: 
@@ -29,6 +29,7 @@ format:
     date: today
     toc: true
     toc-depth: 3
+    toc-expand: true
     lightbox: auto
     callout-icon: false
     callout-appearance: minimal

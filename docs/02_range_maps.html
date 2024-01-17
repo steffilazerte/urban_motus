@@ -9,7 +9,7 @@
 <meta name="author" content="Steffi LaZerte">
 <meta name="dcterms.date" content="2024-01-17">
 
-<title>Urban migration stopovers - Range Maps</title>
+<title>Motus tracking of urban migration stopovers - Range Maps</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -135,7 +135,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Urban migration stopovers</a> 
+      <a href="./">Motus tracking of urban migration stopovers</a> 
         <div class="sidebar-tools-main">
     <a href="https://github.com/steffilazerte/urban_motus" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
@@ -212,7 +212,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
@@ -222,7 +222,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#get-the-species-list" id="toc-get-the-species-list" class="nav-link" data-scroll-target="#get-the-species-list">Get the species list</a></li>
   <li><a href="#get-ranges" id="toc-get-ranges" class="nav-link" data-scroll-target="#get-ranges">Get Ranges</a></li>
-  <li><a href="#plots" id="toc-plots" class="nav-link" data-scroll-target="#plots">Plots</a></li>
+  <li><a href="#plots" id="toc-plots" class="nav-link" data-scroll-target="#plots">Plots</a>
+  <ul class="collapse">
+  <li><a href="#prepare-basemaps" id="toc-prepare-basemaps" class="nav-link" data-scroll-target="#prepare-basemaps">Prepare basemaps</a></li>
+  <li><a href="#create-range-plots" id="toc-create-range-plots" class="nav-link" data-scroll-target="#create-range-plots">Create range plots</a></li>
+  </ul></li>
   <li><a href="#save-outputs" id="toc-save-outputs" class="nav-link" data-scroll-target="#save-outputs">Save Outputs</a></li>
   <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
   </ul>
@@ -322,23 +326,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gt</span>(sp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="ddwlkjmoyg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ddwlkjmoyg table {
+<div id="taxsbambyq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#taxsbambyq table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ddwlkjmoyg thead, #ddwlkjmoyg tbody, #ddwlkjmoyg tfoot, #ddwlkjmoyg tr, #ddwlkjmoyg td, #ddwlkjmoyg th {
+#taxsbambyq thead, #taxsbambyq tbody, #taxsbambyq tfoot, #taxsbambyq tr, #taxsbambyq td, #taxsbambyq th {
   border-style: none;
 }
 
-#ddwlkjmoyg p {
+#taxsbambyq p {
   margin: 0;
   padding: 0;
 }
 
-#ddwlkjmoyg .gt_table {
+#taxsbambyq .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -364,12 +368,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_caption {
+#taxsbambyq .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ddwlkjmoyg .gt_title {
+#taxsbambyq .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -381,7 +385,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#ddwlkjmoyg .gt_subtitle {
+#taxsbambyq .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -393,7 +397,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#ddwlkjmoyg .gt_heading {
+#taxsbambyq .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -405,13 +409,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_bottom_border {
+#taxsbambyq .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_col_headings {
+#taxsbambyq .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -426,7 +430,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_col_heading {
+#taxsbambyq .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -446,7 +450,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#ddwlkjmoyg .gt_column_spanner_outer {
+#taxsbambyq .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -458,15 +462,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#ddwlkjmoyg .gt_column_spanner_outer:first-child {
+#taxsbambyq .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ddwlkjmoyg .gt_column_spanner_outer:last-child {
+#taxsbambyq .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ddwlkjmoyg .gt_column_spanner {
+#taxsbambyq .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -478,11 +482,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#ddwlkjmoyg .gt_spanner_row {
+#taxsbambyq .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ddwlkjmoyg .gt_group_heading {
+#taxsbambyq .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -508,7 +512,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#ddwlkjmoyg .gt_empty_group_heading {
+#taxsbambyq .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -523,15 +527,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#ddwlkjmoyg .gt_from_md > :first-child {
+#taxsbambyq .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ddwlkjmoyg .gt_from_md > :last-child {
+#taxsbambyq .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ddwlkjmoyg .gt_row {
+#taxsbambyq .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -550,7 +554,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#ddwlkjmoyg .gt_stub {
+#taxsbambyq .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -563,7 +567,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ddwlkjmoyg .gt_stub_row_group {
+#taxsbambyq .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -577,15 +581,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#ddwlkjmoyg .gt_row_group_first td {
+#taxsbambyq .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ddwlkjmoyg .gt_row_group_first th {
+#taxsbambyq .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ddwlkjmoyg .gt_summary_row {
+#taxsbambyq .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -595,16 +599,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ddwlkjmoyg .gt_first_summary_row {
+#taxsbambyq .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_first_summary_row.thick {
+#taxsbambyq .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ddwlkjmoyg .gt_last_summary_row {
+#taxsbambyq .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -614,7 +618,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_grand_summary_row {
+#taxsbambyq .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -624,7 +628,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ddwlkjmoyg .gt_first_grand_summary_row {
+#taxsbambyq .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -634,7 +638,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_last_grand_summary_row_top {
+#taxsbambyq .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -644,11 +648,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_striped {
+#taxsbambyq .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ddwlkjmoyg .gt_table_body {
+#taxsbambyq .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -657,7 +661,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_footnotes {
+#taxsbambyq .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -671,7 +675,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_footnote {
+#taxsbambyq .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -680,7 +684,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ddwlkjmoyg .gt_sourcenotes {
+#taxsbambyq .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -694,7 +698,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ddwlkjmoyg .gt_sourcenote {
+#taxsbambyq .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -702,63 +706,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ddwlkjmoyg .gt_left {
+#taxsbambyq .gt_left {
   text-align: left;
 }
 
-#ddwlkjmoyg .gt_center {
+#taxsbambyq .gt_center {
   text-align: center;
 }
 
-#ddwlkjmoyg .gt_right {
+#taxsbambyq .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ddwlkjmoyg .gt_font_normal {
+#taxsbambyq .gt_font_normal {
   font-weight: normal;
 }
 
-#ddwlkjmoyg .gt_font_bold {
+#taxsbambyq .gt_font_bold {
   font-weight: bold;
 }
 
-#ddwlkjmoyg .gt_font_italic {
+#taxsbambyq .gt_font_italic {
   font-style: italic;
 }
 
-#ddwlkjmoyg .gt_super {
+#taxsbambyq .gt_super {
   font-size: 65%;
 }
 
-#ddwlkjmoyg .gt_footnote_marks {
+#taxsbambyq .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ddwlkjmoyg .gt_asterisk {
+#taxsbambyq .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ddwlkjmoyg .gt_indent_1 {
+#taxsbambyq .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ddwlkjmoyg .gt_indent_2 {
+#taxsbambyq .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ddwlkjmoyg .gt_indent_3 {
+#taxsbambyq .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ddwlkjmoyg .gt_indent_4 {
+#taxsbambyq .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ddwlkjmoyg .gt_indent_5 {
+#taxsbambyq .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -971,23 +975,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>) <span class="sc">|&gt;</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="amianwtwpg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#amianwtwpg table {
+<div id="qqidciwfve" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qqidciwfve table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#amianwtwpg thead, #amianwtwpg tbody, #amianwtwpg tfoot, #amianwtwpg tr, #amianwtwpg td, #amianwtwpg th {
+#qqidciwfve thead, #qqidciwfve tbody, #qqidciwfve tfoot, #qqidciwfve tr, #qqidciwfve td, #qqidciwfve th {
   border-style: none;
 }
 
-#amianwtwpg p {
+#qqidciwfve p {
   margin: 0;
   padding: 0;
 }
 
-#amianwtwpg .gt_table {
+#qqidciwfve .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1013,12 +1017,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_caption {
+#qqidciwfve .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#amianwtwpg .gt_title {
+#qqidciwfve .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1030,7 +1034,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#amianwtwpg .gt_subtitle {
+#qqidciwfve .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1042,7 +1046,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#amianwtwpg .gt_heading {
+#qqidciwfve .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1054,13 +1058,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_bottom_border {
+#qqidciwfve .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_col_headings {
+#qqidciwfve .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1075,7 +1079,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_col_heading {
+#qqidciwfve .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1095,7 +1099,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#amianwtwpg .gt_column_spanner_outer {
+#qqidciwfve .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1107,15 +1111,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#amianwtwpg .gt_column_spanner_outer:first-child {
+#qqidciwfve .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#amianwtwpg .gt_column_spanner_outer:last-child {
+#qqidciwfve .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#amianwtwpg .gt_column_spanner {
+#qqidciwfve .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1127,11 +1131,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#amianwtwpg .gt_spanner_row {
+#qqidciwfve .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#amianwtwpg .gt_group_heading {
+#qqidciwfve .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1157,7 +1161,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#amianwtwpg .gt_empty_group_heading {
+#qqidciwfve .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1172,15 +1176,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#amianwtwpg .gt_from_md > :first-child {
+#qqidciwfve .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#amianwtwpg .gt_from_md > :last-child {
+#qqidciwfve .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#amianwtwpg .gt_row {
+#qqidciwfve .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1199,7 +1203,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#amianwtwpg .gt_stub {
+#qqidciwfve .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1212,7 +1216,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#amianwtwpg .gt_stub_row_group {
+#qqidciwfve .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1226,15 +1230,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#amianwtwpg .gt_row_group_first td {
+#qqidciwfve .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#amianwtwpg .gt_row_group_first th {
+#qqidciwfve .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#amianwtwpg .gt_summary_row {
+#qqidciwfve .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1244,16 +1248,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#amianwtwpg .gt_first_summary_row {
+#qqidciwfve .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_first_summary_row.thick {
+#qqidciwfve .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#amianwtwpg .gt_last_summary_row {
+#qqidciwfve .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1263,7 +1267,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_grand_summary_row {
+#qqidciwfve .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1273,7 +1277,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#amianwtwpg .gt_first_grand_summary_row {
+#qqidciwfve .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1283,7 +1287,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_last_grand_summary_row_top {
+#qqidciwfve .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1293,11 +1297,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_striped {
+#qqidciwfve .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#amianwtwpg .gt_table_body {
+#qqidciwfve .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1306,7 +1310,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_footnotes {
+#qqidciwfve .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1320,7 +1324,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_footnote {
+#qqidciwfve .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1329,7 +1333,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#amianwtwpg .gt_sourcenotes {
+#qqidciwfve .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1343,7 +1347,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#amianwtwpg .gt_sourcenote {
+#qqidciwfve .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1351,63 +1355,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#amianwtwpg .gt_left {
+#qqidciwfve .gt_left {
   text-align: left;
 }
 
-#amianwtwpg .gt_center {
+#qqidciwfve .gt_center {
   text-align: center;
 }
 
-#amianwtwpg .gt_right {
+#qqidciwfve .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#amianwtwpg .gt_font_normal {
+#qqidciwfve .gt_font_normal {
   font-weight: normal;
 }
 
-#amianwtwpg .gt_font_bold {
+#qqidciwfve .gt_font_bold {
   font-weight: bold;
 }
 
-#amianwtwpg .gt_font_italic {
+#qqidciwfve .gt_font_italic {
   font-style: italic;
 }
 
-#amianwtwpg .gt_super {
+#qqidciwfve .gt_super {
   font-size: 65%;
 }
 
-#amianwtwpg .gt_footnote_marks {
+#qqidciwfve .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#amianwtwpg .gt_asterisk {
+#qqidciwfve .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#amianwtwpg .gt_indent_1 {
+#qqidciwfve .gt_indent_1 {
   text-indent: 5px;
 }
 
-#amianwtwpg .gt_indent_2 {
+#qqidciwfve .gt_indent_2 {
   text-indent: 10px;
 }
 
-#amianwtwpg .gt_indent_3 {
+#qqidciwfve .gt_indent_3 {
   text-indent: 15px;
 }
 
-#amianwtwpg .gt_indent_4 {
+#qqidciwfve .gt_indent_4 {
   text-indent: 20px;
 }
 
-#amianwtwpg .gt_indent_5 {
+#qqidciwfve .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1734,6 +1738,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="plots" class="level2">
 <h2 class="anchored" data-anchor-id="plots">Plots</h2>
+<section id="prepare-basemaps" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-basemaps">Prepare basemaps</h3>
 <p>Next we’ll plot each species range and the overlapping receivers for quality control.</p>
 <p>First we’ll get a map of the Americas as a base map to give context to the plots.</p>
 <div class="cell">
@@ -1753,7 +1759,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(ranges, <span class="at">type =</span> <span class="st">"Range"</span>),</span>
 <span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(ranges_buffer, <span class="at">type =</span> <span class="st">"Buffered Range"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="create-range-plots" class="level3">
+<h3 class="anchored" data-anchor-id="create-range-plots">Create range plots</h3>
 <p>Now we’re ready to plot!</p>
+<div class="callout callout-style-simple callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+No plots online
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There are temporarily no plots in this version of the page online as we have not yet received permission from eBird to share these in a semi-open manner.</p>
+</div>
+</div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">unique</span>(ranges<span class="sc">$</span>species_code)) {</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">filter</span>(ranges, species_code <span class="sc">==</span> i)</span>
@@ -1870,6 +1892,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
+</section>
 <section id="save-outputs" class="level2">
 <h2 class="anchored" data-anchor-id="save-outputs">Save Outputs</h2>
 <div class="cell">
@@ -1879,7 +1902,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="reproducibility" class="level2">
 <h2 class="anchored" data-anchor-id="reproducibility">Reproducibility</h2>
 <div class="callout callout-style-simple callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1888,7 +1911,7 @@ Session Info
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1907,94 +1930,102 @@ Session Info
  pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────
- package       * version    date (UTC) lib source
- assertr       * 3.0.0      2022-11-05 [1] CRAN (R 4.3.0)
- bit             4.0.5      2022-11-15 [1] CRAN (R 4.3.0)
- bit64           4.0.5      2020-08-30 [1] CRAN (R 4.3.0)
- cachem          1.0.8      2023-05-01 [1] CRAN (R 4.3.0)
- callr           3.7.3      2022-11-02 [1] CRAN (R 4.3.0)
- class           7.3-22     2023-05-03 [4] CRAN (R 4.3.1)
- classInt        0.4-10     2023-09-05 [1] CRAN (R 4.3.1)
- cli             3.6.1      2023-03-23 [1] CRAN (R 4.3.0)
- codetools       0.2-19     2023-02-01 [4] CRAN (R 4.2.2)
- colorspace      2.1-0      2023-01-23 [1] CRAN (R 4.3.0)
- crayon          1.5.2      2022-09-29 [1] CRAN (R 4.3.0)
- DBI           * 1.1.3      2022-06-18 [1] CRAN (R 4.3.0)
- dbplyr          2.4.0      2023-10-26 [1] CRAN (R 4.3.1)
- devtools        2.4.5      2022-10-11 [1] CRAN (R 4.3.0)
- digest          0.6.33     2023-07-07 [1] CRAN (R 4.3.1)
- dplyr         * 1.1.3      2023-09-03 [1] CRAN (R 4.3.1)
- e1071           1.7-13     2023-02-01 [1] CRAN (R 4.3.0)
- ebirdst       * 3.2022.2   2024-01-15 [1] Github (ebird/ebirdst@bd409c7)
- ellipsis        0.3.2      2021-04-29 [1] CRAN (R 4.3.0)
- evaluate        0.23       2023-11-01 [1] CRAN (R 4.3.1)
- fansi           1.0.5      2023-10-08 [1] CRAN (R 4.3.1)
- fastmap         1.1.1      2023-02-24 [1] CRAN (R 4.3.0)
- fs              1.6.3      2023-07-20 [1] CRAN (R 4.3.1)
- generics        0.1.3      2022-07-05 [1] CRAN (R 4.3.0)
- ggplot2       * 3.4.4      2023-10-12 [1] CRAN (R 4.3.1)
- glue            1.6.2      2022-02-24 [1] CRAN (R 4.3.0)
- gt            * 0.10.0     2023-10-07 [1] CRAN (R 4.3.1)
- gtable          0.3.4      2023-08-21 [1] CRAN (R 4.3.1)
- hms             1.1.3      2023-03-21 [1] CRAN (R 4.3.0)
- htmltools       0.5.7      2023-11-03 [1] CRAN (R 4.3.1)
- htmlwidgets     1.6.2      2023-03-17 [1] CRAN (R 4.3.0)
- httpuv          1.6.12     2023-10-23 [1] CRAN (R 4.3.1)
- httr            1.4.7      2023-08-15 [1] CRAN (R 4.3.1)
- jsonlite        1.8.7      2023-06-29 [1] CRAN (R 4.3.1)
- KernSmooth      2.23-22    2023-07-10 [1] CRAN (R 4.3.1)
- knitr           1.45       2023-10-30 [1] CRAN (R 4.3.1)
- later           1.3.1      2023-05-02 [1] CRAN (R 4.3.1)
- lattice         0.22-5     2023-10-24 [4] CRAN (R 4.3.1)
- lifecycle       1.0.3      2022-10-07 [1] CRAN (R 4.3.0)
- magrittr        2.0.3      2022-03-30 [1] CRAN (R 4.3.0)
- memoise         2.0.1      2021-11-26 [1] CRAN (R 4.3.0)
- mime            0.12       2021-09-28 [1] CRAN (R 4.3.0)
- miniUI          0.1.1.1    2018-05-18 [1] CRAN (R 4.3.0)
- motus         * 6.0.1.9000 2024-01-09 [1] local
- munsell         0.5.0      2018-06-12 [1] CRAN (R 4.3.0)
- naturecounts    0.4.0      2023-06-20 [1] local
- pillar          1.9.0      2023-03-22 [1] CRAN (R 4.3.0)
- pkgbuild        1.4.2      2023-06-26 [1] CRAN (R 4.3.1)
- pkgconfig       2.0.3      2019-09-22 [1] CRAN (R 4.3.0)
- pkgload         1.3.3      2023-09-22 [1] CRAN (R 4.3.1)
- prettyunits     1.2.0      2023-09-24 [1] CRAN (R 4.3.1)
- processx        3.8.2      2023-06-30 [1] CRAN (R 4.3.1)
- profvis         0.3.8      2023-05-02 [1] CRAN (R 4.3.1)
- promises        1.2.1      2023-08-10 [1] CRAN (R 4.3.1)
- proxy           0.4-27     2022-06-09 [1] CRAN (R 4.3.0)
- ps              1.7.5      2023-04-18 [1] CRAN (R 4.3.0)
- purrr         * 1.0.2      2023-08-10 [1] CRAN (R 4.3.1)
- R6              2.5.1      2021-08-19 [1] CRAN (R 4.3.0)
- Rcpp            1.0.11     2023-07-06 [1] CRAN (R 4.3.1)
- readr         * 2.1.4      2023-02-10 [1] CRAN (R 4.3.0)
- remotes         2.4.2.1    2023-07-18 [1] CRAN (R 4.3.1)
- rlang           1.1.2      2023-11-04 [1] CRAN (R 4.3.1)
- rmarkdown       2.25       2023-09-18 [1] CRAN (R 4.3.1)
- rnaturalearth * 0.3.4      2023-08-21 [1] CRAN (R 4.3.1)
- rstudioapi      0.15.0     2023-07-07 [1] CRAN (R 4.3.1)
- scales          1.2.1      2022-08-20 [1] CRAN (R 4.3.0)
- sessioninfo     1.2.2      2021-12-06 [1] CRAN (R 4.3.0)
- sf            * 1.0-14     2023-07-11 [1] CRAN (R 4.3.1)
- shiny           1.7.5.1    2023-10-14 [1] CRAN (R 4.3.1)
- sp              2.1-1      2023-10-16 [1] CRAN (R 4.3.1)
- stringi         1.7.12     2023-01-11 [1] CRAN (R 4.3.0)
- stringr       * 1.5.0      2022-12-02 [1] CRAN (R 4.3.0)
- tibble        * 3.2.1      2023-03-20 [1] CRAN (R 4.3.0)
- tidyr         * 1.3.0      2023-01-24 [1] CRAN (R 4.3.0)
- tidyselect      1.2.0      2022-10-10 [1] CRAN (R 4.3.0)
- tzdb            0.4.0      2023-05-12 [1] CRAN (R 4.3.1)
- units         * 0.8-4      2023-09-13 [1] CRAN (R 4.3.1)
- urlchecker      1.0.1      2021-11-30 [1] CRAN (R 4.3.0)
- usethis         2.2.2      2023-07-06 [1] CRAN (R 4.3.1)
- utf8            1.2.4      2023-10-22 [1] CRAN (R 4.3.1)
- vctrs           0.6.4      2023-10-12 [1] CRAN (R 4.3.1)
- vroom           1.6.4      2023-10-02 [1] CRAN (R 4.3.1)
- withr           2.5.2      2023-10-30 [1] CRAN (R 4.3.1)
- xfun            0.41       2023-11-01 [1] CRAN (R 4.3.1)
- xml2            1.3.5      2023-07-06 [1] CRAN (R 4.3.1)
- xtable          1.8-4      2019-04-21 [1] CRAN (R 4.3.0)
- yaml            2.3.7      2023-01-23 [1] CRAN (R 4.3.0)
+ package            * version    date (UTC) lib source
+ assertr            * 3.0.0      2022-11-05 [1] CRAN (R 4.3.0)
+ bit                  4.0.5      2022-11-15 [1] CRAN (R 4.3.0)
+ bit64                4.0.5      2020-08-30 [1] CRAN (R 4.3.0)
+ blob                 1.2.4      2023-03-17 [1] CRAN (R 4.3.0)
+ cachem               1.0.8      2023-05-01 [1] CRAN (R 4.3.0)
+ callr                3.7.3      2022-11-02 [1] CRAN (R 4.3.0)
+ class                7.3-22     2023-05-03 [4] CRAN (R 4.3.1)
+ classInt             0.4-10     2023-09-05 [1] CRAN (R 4.3.1)
+ cli                  3.6.1      2023-03-23 [1] CRAN (R 4.3.0)
+ codetools            0.2-19     2023-02-01 [4] CRAN (R 4.2.2)
+ colorspace           2.1-0      2023-01-23 [1] CRAN (R 4.3.0)
+ crayon               1.5.2      2022-09-29 [1] CRAN (R 4.3.0)
+ DBI                * 1.1.3      2022-06-18 [1] CRAN (R 4.3.0)
+ dbplyr               2.4.0      2023-10-26 [1] CRAN (R 4.3.1)
+ devtools             2.4.5      2022-10-11 [1] CRAN (R 4.3.0)
+ digest               0.6.33     2023-07-07 [1] CRAN (R 4.3.1)
+ dplyr              * 1.1.3      2023-09-03 [1] CRAN (R 4.3.1)
+ e1071                1.7-13     2023-02-01 [1] CRAN (R 4.3.0)
+ ebirdst            * 3.2022.2   2024-01-15 [1] Github (ebird/ebirdst@bd409c7)
+ ellipsis             0.3.2      2021-04-29 [1] CRAN (R 4.3.0)
+ evaluate             0.23       2023-11-01 [1] CRAN (R 4.3.1)
+ fansi                1.0.5      2023-10-08 [1] CRAN (R 4.3.1)
+ farver               2.1.1      2022-07-06 [1] CRAN (R 4.3.0)
+ fastmap              1.1.1      2023-02-24 [1] CRAN (R 4.3.0)
+ fs                   1.6.3      2023-07-20 [1] CRAN (R 4.3.1)
+ generics             0.1.3      2022-07-05 [1] CRAN (R 4.3.0)
+ ggplot2            * 3.4.4      2023-10-12 [1] CRAN (R 4.3.1)
+ glue                 1.6.2      2022-02-24 [1] CRAN (R 4.3.0)
+ gt                 * 0.10.0     2023-10-07 [1] CRAN (R 4.3.1)
+ gtable               0.3.4      2023-08-21 [1] CRAN (R 4.3.1)
+ hms                  1.1.3      2023-03-21 [1] CRAN (R 4.3.0)
+ htmltools            0.5.7      2023-11-03 [1] CRAN (R 4.3.1)
+ htmlwidgets          1.6.2      2023-03-17 [1] CRAN (R 4.3.0)
+ httpuv               1.6.12     2023-10-23 [1] CRAN (R 4.3.1)
+ httr                 1.4.7      2023-08-15 [1] CRAN (R 4.3.1)
+ jsonlite             1.8.7      2023-06-29 [1] CRAN (R 4.3.1)
+ KernSmooth           2.23-22    2023-07-10 [1] CRAN (R 4.3.1)
+ knitr                1.45       2023-10-30 [1] CRAN (R 4.3.1)
+ later                1.3.1      2023-05-02 [1] CRAN (R 4.3.1)
+ lattice              0.22-5     2023-10-24 [4] CRAN (R 4.3.1)
+ lifecycle            1.0.3      2022-10-07 [1] CRAN (R 4.3.0)
+ magrittr             2.0.3      2022-03-30 [1] CRAN (R 4.3.0)
+ memoise              2.0.1      2021-11-26 [1] CRAN (R 4.3.0)
+ mime                 0.12       2021-09-28 [1] CRAN (R 4.3.0)
+ miniUI               0.1.1.1    2018-05-18 [1] CRAN (R 4.3.0)
+ motus              * 6.0.1.9000 2024-01-09 [1] local
+ munsell              0.5.0      2018-06-12 [1] CRAN (R 4.3.0)
+ naturecounts         0.4.0      2023-06-20 [1] local
+ pillar               1.9.0      2023-03-22 [1] CRAN (R 4.3.0)
+ pkgbuild             1.4.2      2023-06-26 [1] CRAN (R 4.3.1)
+ pkgconfig            2.0.3      2019-09-22 [1] CRAN (R 4.3.0)
+ pkgload              1.3.3      2023-09-22 [1] CRAN (R 4.3.1)
+ prettyunits          1.2.0      2023-09-24 [1] CRAN (R 4.3.1)
+ processx             3.8.2      2023-06-30 [1] CRAN (R 4.3.1)
+ profvis              0.3.8      2023-05-02 [1] CRAN (R 4.3.1)
+ promises             1.2.1      2023-08-10 [1] CRAN (R 4.3.1)
+ proxy                0.4-27     2022-06-09 [1] CRAN (R 4.3.0)
+ ps                   1.7.5      2023-04-18 [1] CRAN (R 4.3.0)
+ purrr              * 1.0.2      2023-08-10 [1] CRAN (R 4.3.1)
+ R6                   2.5.1      2021-08-19 [1] CRAN (R 4.3.0)
+ Rcpp                 1.0.11     2023-07-06 [1] CRAN (R 4.3.1)
+ readr              * 2.1.4      2023-02-10 [1] CRAN (R 4.3.0)
+ remotes              2.4.2.1    2023-07-18 [1] CRAN (R 4.3.1)
+ rlang                1.1.2      2023-11-04 [1] CRAN (R 4.3.1)
+ rmarkdown            2.25       2023-09-18 [1] CRAN (R 4.3.1)
+ rnaturalearth      * 0.3.4      2023-08-21 [1] CRAN (R 4.3.1)
+ rnaturalearthhires   0.2.1      2023-05-31 [1] Github (ropensci/rnaturalearthhires@c3785a8)
+ RSQLite              2.3.3      2023-11-04 [1] CRAN (R 4.3.1)
+ rstudioapi           0.15.0     2023-07-07 [1] CRAN (R 4.3.1)
+ s2                   1.1.4      2023-05-17 [1] CRAN (R 4.3.1)
+ sass                 0.4.7      2023-07-15 [1] CRAN (R 4.3.1)
+ scales               1.2.1      2022-08-20 [1] CRAN (R 4.3.0)
+ sessioninfo          1.2.2      2021-12-06 [1] CRAN (R 4.3.0)
+ sf                 * 1.0-14     2023-07-11 [1] CRAN (R 4.3.1)
+ shiny                1.7.5.1    2023-10-14 [1] CRAN (R 4.3.1)
+ sp                   2.1-1      2023-10-16 [1] CRAN (R 4.3.1)
+ stringi              1.7.12     2023-01-11 [1] CRAN (R 4.3.0)
+ stringr            * 1.5.0      2022-12-02 [1] CRAN (R 4.3.0)
+ tibble             * 3.2.1      2023-03-20 [1] CRAN (R 4.3.0)
+ tidyr              * 1.3.0      2023-01-24 [1] CRAN (R 4.3.0)
+ tidyselect           1.2.0      2022-10-10 [1] CRAN (R 4.3.0)
+ tzdb                 0.4.0      2023-05-12 [1] CRAN (R 4.3.1)
+ units              * 0.8-4      2023-09-13 [1] CRAN (R 4.3.1)
+ urlchecker           1.0.1      2021-11-30 [1] CRAN (R 4.3.0)
+ usethis              2.2.2      2023-07-06 [1] CRAN (R 4.3.1)
+ utf8                 1.2.4      2023-10-22 [1] CRAN (R 4.3.1)
+ vctrs                0.6.4      2023-10-12 [1] CRAN (R 4.3.1)
+ viridisLite          0.4.2      2023-05-02 [1] CRAN (R 4.3.1)
+ vroom                1.6.4      2023-10-02 [1] CRAN (R 4.3.1)
+ withr                2.5.2      2023-10-30 [1] CRAN (R 4.3.1)
+ wk                   0.9.0      2023-10-22 [1] CRAN (R 4.3.1)
+ xfun                 0.41       2023-11-01 [1] CRAN (R 4.3.1)
+ xml2                 1.3.5      2023-07-06 [1] CRAN (R 4.3.1)
+ xtable               1.8-4      2019-04-21 [1] CRAN (R 4.3.0)
+ yaml                 2.3.7      2023-01-23 [1] CRAN (R 4.3.0)
 
  [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3
  [2] /usr/local/lib/R/site-library
@@ -2412,7 +2443,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   </div>
 </nav>
 </div> <!-- /content -->
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/02_range_maps.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"selector":".lightbox","openEffect":"zoom"});
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/02_range_maps.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script>var lightboxQuarto = GLightbox({"selector":".lightbox","loop":false,"openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;
