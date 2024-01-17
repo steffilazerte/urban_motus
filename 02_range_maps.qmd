@@ -1,5 +1,6 @@
 ---
 title: Range Maps
+cache: true
 ---
 
 In this step we decide **Which receivers do we keep?**
@@ -14,7 +15,8 @@ We'll acquire the range maps from eBird Status and Trends
 
 :::{.callout-note}
 eBird data requires attributions, citations, and disclaimers
-- See (2) https://science.ebird.org/en/status-and-trends/products-access-terms-of-use
+
+- See (2) <https://science.ebird.org/en/status-and-trends/products-access-terms-of-use>
 
 We also have limitations on how many species we can use for non-peer-reviewed publications (50),
 but can use any number for scientific publications or grant requests.
@@ -27,15 +29,8 @@ In general, we'll keep it below 50 for now, and ask for permission as required.
 ## Setup
 ```{r}
 #| message: false
-library(motus)
-library(tidyverse)
-library(assertr)
-library(sf)
-library(rnaturalearth)
-library(ebirdst)
-library(units)
-library(gt)
-source("00_setup.R")
+#| cache: false
+source("XX_setup.R")
 ```
 
 ### Connect to databases
@@ -47,7 +42,7 @@ dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
 ## Get the species list 
 
 :::{.panel-tabset}
-We'll take the species which are in the databases AND in list of approved species (see `00_setup.R`)
+We'll take the species which are in the databases AND in list of approved species (see `XX_setup.R`)
 
 > Notes
 >
@@ -218,33 +213,7 @@ for(i in unique(ranges$species_code)) {
 write_csv(st_drop_geometry(recvs), "Data/Datasets/receivers.csv")
 ```
 
-## Reproducibility
 
-:::{.panel-tabset}
-### Packages
 
-You probably only need to cite **motus** and **ebirdst** and possibly the **tidyverse**, 
-but you should keep track of the packages used and their versions (under General Info).
+{{< include _reproducibility.qmd >}}
 
-But remember we *also* have to cite the eBird data (not just the package used below).
-
-```{r}
-#| code-fold: true
-#| echo: false
-#| results: asis
-cat("#### motus\n")
-c <- citation("motus") 
-print(c, "text")
-
-cat("\n#### ebirdst (for access to range maps)\n")
-citation("ebirdst") |> print(style = "text")
-
-cat("\n#### tidyverse (for general data management and figures)\n")
-citation("tidyverse") |> print(style = "text")
-```
-
-### General info
-```{r}
-devtools::session_info()
-```
-:::

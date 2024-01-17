@@ -1,0 +1,43 @@
+---
+title: "Citations"
+---
+
+This section contains citations that we should remember to include.
+
+### eBird Status and Trends
+
+In addition to citing the `ebirdst` package (below). 
+We *also* have to cite the eBird data itself.
+
+eBird data requires attributions, citations, and disclaimers
+
+For the most up-to-date instructions see Part 2:  <https://science.ebird.org/en/status-and-trends/products-access-terms-of-use>
+
+
+
+### Packages
+
+You probably only need to cite **motus**, **ebirdst**, and possibly the **tidyverse**, 
+but you should keep track of the packages used and their versions 
+(see General Info, note that if an workflow step was updated separately, see
+the most up-to-date package versions under that pages "General Info").
+
+```{r}
+#| code-fold: true
+#| echo: false
+#| results: asis
+cat("#### motus\n")
+c <- citation("motus") 
+print(c, "text")
+
+cat("\n#### ebirdst (for access to range maps)\n")
+library(ebirdst)
+
+cat("\n#### tidyverse (for general data management and figures)\n")
+citation("tidyverse") |> print(style = "text")
+```
+
+### General Info
+```{r}
+devtools::session_info()
+```

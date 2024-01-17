@@ -9,5 +9,5 @@
 .DS_Store
 .quarto
 Data/
-02_range_maps.html
-02_range_maps_files/
+*/02_range_maps_files/figure-html/*
+*cache/

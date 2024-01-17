@@ -1,7 +1,36 @@
 project:
-  title: "Urban-rural migration patterns in Motus data"
-toc: true
-toc-depth: 3
-lightbox: auto
+  type: website
+  output-dir: docs
+  title: "Urban migration stopovers"
+  
+website: 
+  sidebar: 
+    style: "floating"
+    search: true
+    contents: 
+      - section: Workflow
+        contents: 
+          - auto: "[!X]*.qmd"
+      - section: Appendicies
+        contents: 
+          - "XX_setup.qmd"
+          - "XX_citations.qmd"
+    tools:
+      - icon: github
+        href: https://github.com/steffilazerte/urban_motus
+  back-to-top-navigation: true
+  page-navigation: true
+  repo-url: https://github.com/steffilazerte/urban_motus
+  repo-actions: [edit, issue]
+
+format:
+  html:
+    author: "Steffi LaZerte"
+    date: today
+    toc: true
+    toc-depth: 3
+    lightbox: auto
+    callout-icon: false
+    callout-appearance: minimal
 
 

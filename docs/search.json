@@ -1,0 +1,276 @@
+[
+  {
+    "objectID": "03_basic_filters.html#reproducibility",
+    "href": "03_basic_filters.html#reproducibility",
+    "title": "Basic Filtering",
+    "section": "Reproducibility",
+    "text": "Reproducibility\n\n\n\n\n\n\nSession Info\n\n\n\n\n\n\ndevtools::session_info()",
+    "crumbs": [
+      "Workflow",
+      "Basic Filtering"
+    ]
+  },
+  {
+    "objectID": "02_range_maps.html",
+    "href": "02_range_maps.html",
+    "title": "Range Maps",
+    "section": "",
+    "text": "In this step we decide Which receivers do we keep?\nSo first we need to get a list of recievers that are within different species ranges. We’ll use this list to filter the motus runs in later steps.\nWe’ll acquire the range maps from eBird Status and Trends",
+    "crumbs": [
+      "Workflow",
+      "Range Maps"
+    ]
+  },
+  {
+    "objectID": "02_range_maps.html#setup",
+    "href": "02_range_maps.html#setup",
+    "title": "Range Maps",
+    "section": "Setup",
+    "text": "Setup\n\nsource(\"XX_setup.R\")\n\n\nConnect to databases\n\ndbs &lt;- map(projects, \\(x) tagme(x, dir = \"Data/Raw\", update = FALSE))",
+    "crumbs": [
+      "Workflow",
+      "Range Maps"
+    ]
+  },
+  {
+    "objectID": "02_range_maps.html#get-the-species-list",
+    "href": "02_range_maps.html#get-the-species-list",
+    "title": "Range Maps",
+    "section": "Get the species list",
+    "text": "Get the species list\n\nCodeSpecies list\n\n\n\nsp &lt;- imap(dbs, \\(x, y) {\n  tbl(x, \"species\") |&gt;\n    collect()\n}) |&gt;\n  list_rbind() |&gt;\n  distinct() |&gt;\n  filter(id %in% species$species_id) |&gt;\n  arrange(id) |&gt;\n  # Fix yellow-rumped warbler name for joining with eBird\n  mutate(scientific = str_replace(scientific, \"coronata coronata\", \"coronata\")) |&gt;\n  left_join(select(ebirdst_runs, \"species_code\", \"scientific_name\"),\n            by = c(\"scientific\" = \"scientific_name\"))\n\n\n\n\ngt(sp)\n\n\n\n\n\n\n\nid\nenglish\nfrench\nscientific\ngroup\nsort\nspecies_code\n\n\n\n\n13420\nBlue-headed Vireo\nViréo à tête bleue\nVireo solitarius\nBIRDS\nNA\nbuhvir\n\n\n14120\nTree Swallow\nHirondelle bicolore\nTachycineta bicolor\nBIRDS\nNA\ntreswa\n\n\n15580\nSwainson's Thrush\nGrive à dos olive\nCatharus ustulatus\nBIRDS\nNA\nswathr\n\n\n15590\nHermit Thrush\nGrive solitaire\nCatharus guttatus\nBIRDS\nNA\nherthr\n\n\n15830\nVaried Thrush\nGrive à collier\nIxoreus naevius\nBIRDS\nNA\nvarthr\n\n\n16460\nTennessee Warbler\nParuline obscure\nLeiothlypis peregrina\nBIRDS\nNA\ntenwar\n\n\n16580\nMagnolia Warbler\nParuline à tête cendrée\nSetophaga magnolia\nBIRDS\nNA\nmagwar\n\n\n16620\nYellow-rumped Warbler (Myrtle)\nParuline à croupion jaune (coronata)\nSetophaga coronata\nBIRDS\nNA\nyerwar\n\n\n18550\nSpotted Towhee\nTohi tacheté\nPipilo maculatus\nBIRDS\nNA\nspotow\n\n\n18990\nSong Sparrow\nBruant chanteur\nMelospiza melodia\nBIRDS\nNA\nsonspa\n\n\n19050\nWhite-crowned Sparrow\nBruant à couronne blanche\nZonotrichia leucophrys\nBIRDS\nNA\nwhcspa\n\n\n19060\nGolden-crowned Sparrow\nBruant à couronne dorée\nZonotrichia atricapilla\nBIRDS\nNA\ngocspa\n\n\n19360\nNorthern Cardinal\nCardinal rouge\nCardinalis cardinalis\nBIRDS\nNA\nnorcar",
+    "crumbs": [
+      "Workflow",
+      "Range Maps"
+    ]
+  },
+  {
+    "objectID": "02_range_maps.html#get-ranges",
+    "href": "02_range_maps.html#get-ranges",
+    "title": "Range Maps",
+    "section": "Get Ranges",
+    "text": "Get Ranges\nNow we’ll download the species range maps from eBird at a resolution of 27 km (high resolution, raw data).\n\nNote: If the data is already downloaded, it will be skipped.\n\n\nwalk(sp$species_code,\n     \\(x) ebirdst_download_status(x, download_ranges = TRUE,\n                                  pattern = \"range\\\\_raw\\\\_27km\"))\n\nCombine the ranges into a single spatial dataset, and create another set of ranges with a 100km buffer.\nThe idea here is that we may want to include receivers that are near the edges of a species range, as observations at those stations may be legitimate.\n\nranges &lt;- map(sp$species_code, \\(x) load_ranges(x, resolution = \"27km\", smoothed = FALSE)) |&gt;\n  bind_rows() |&gt;\n  group_by(species_code, scientific_name, common_name, prediction_year) |&gt;\n  summarize(.groups = \"drop\") |&gt;\n  st_make_valid() |&gt;\n  st_transform(crs = 3347)\n\n# Use a 100km buffer around the range\nranges_buffer &lt;- st_buffer(ranges, dist = set_units(100, \"km\"))\n\nNow we’ll collect a list of receivers that exist in our data.\nWe’ll start by doing some preliminary filtering:\n\nomit receivers which don’t overlap with any species’ range\nomit receivers labelled “test”, etc.\n\n\nCodeData Preview\n\n\n\nany_range &lt;- summarize(ranges_buffer)\n\n# Get list of receivers in the databases\nrecvs &lt;- map(dbs, \\(x) tbl(x, \"recvDeps\") |&gt;\n               select(deployID, name, longitude, latitude) |&gt;\n               collect()) |&gt;\n  list_rbind() |&gt;\n  distinct() |&gt;\n  # Omit receivers labelled \"test\"\n  filter(!str_detect(tolower(name), \"teststation|test_sg\")) |&gt;\n  assert(not_na, longitude, latitude) |&gt;\n  st_as_sf(coords = c(\"longitude\", \"latitude\"), crs = 4326) |&gt;\n  st_transform(crs = 3347) |&gt;\n  # Filter to only receivers that overlap at least one species\n  st_filter(any_range)\n\nNow we’ll calculate overlaps with individual species ranges\n\nrecvs &lt;- bind_cols(\n  recvs, \n  as_tibble(st_intersects(recvs, ranges_buffer, sparse = FALSE),\n            .name_repair = ~ranges$species_code)) |&gt;\n  pivot_longer(cols = -c(deployID, name, geometry), \n               names_to = \"species_code\", values_to = \"in_range\")\n\n\n\n\nrecvs |&gt;\n  st_drop_geometry() |&gt;\n  slice(1:50) |&gt;\n  gt()\n\n\n\n\n\n\n\ndeployID\nname\nspecies_code\nin_range\n\n\n\n\n630\nLong Point Eco-Adventures\nbuhvir\nTRUE\n\n\n630\nLong Point Eco-Adventures\ngocspa\nFALSE\n\n\n630\nLong Point Eco-Adventures\nherthr\nTRUE\n\n\n630\nLong Point Eco-Adventures\nmagwar\nTRUE\n\n\n630\nLong Point Eco-Adventures\nnorcar\nTRUE\n\n\n630\nLong Point Eco-Adventures\nsonspa\nTRUE\n\n\n630\nLong Point Eco-Adventures\nspotow\nFALSE\n\n\n630\nLong Point Eco-Adventures\nswathr\nTRUE\n\n\n630\nLong Point Eco-Adventures\ntenwar\nTRUE\n\n\n630\nLong Point Eco-Adventures\ntreswa\nTRUE\n\n\n630\nLong Point Eco-Adventures\nvarthr\nFALSE\n\n\n630\nLong Point Eco-Adventures\nwhcspa\nTRUE\n\n\n630\nLong Point Eco-Adventures\nyerwar\nTRUE\n\n\n638\nFalconer_Farm\nbuhvir\nTRUE\n\n\n638\nFalconer_Farm\ngocspa\nFALSE\n\n\n638\nFalconer_Farm\nherthr\nTRUE\n\n\n638\nFalconer_Farm\nmagwar\nTRUE\n\n\n638\nFalconer_Farm\nnorcar\nTRUE\n\n\n638\nFalconer_Farm\nsonspa\nTRUE\n\n\n638\nFalconer_Farm\nspotow\nFALSE\n\n\n638\nFalconer_Farm\nswathr\nTRUE\n\n\n638\nFalconer_Farm\ntenwar\nTRUE\n\n\n638\nFalconer_Farm\ntreswa\nTRUE\n\n\n638\nFalconer_Farm\nvarthr\nFALSE\n\n\n638\nFalconer_Farm\nwhcspa\nTRUE\n\n\n638\nFalconer_Farm\nyerwar\nTRUE\n\n\n645\nConestogo\nbuhvir\nTRUE\n\n\n645\nConestogo\ngocspa\nFALSE\n\n\n645\nConestogo\nherthr\nTRUE\n\n\n645\nConestogo\nmagwar\nTRUE\n\n\n645\nConestogo\nnorcar\nTRUE\n\n\n645\nConestogo\nsonspa\nTRUE\n\n\n645\nConestogo\nspotow\nFALSE\n\n\n645\nConestogo\nswathr\nTRUE\n\n\n645\nConestogo\ntenwar\nTRUE\n\n\n645\nConestogo\ntreswa\nTRUE\n\n\n645\nConestogo\nvarthr\nFALSE\n\n\n645\nConestogo\nwhcspa\nTRUE\n\n\n645\nConestogo\nyerwar\nTRUE\n\n\n654\nRock_Point_Provincia\nbuhvir\nTRUE\n\n\n654\nRock_Point_Provincia\ngocspa\nFALSE\n\n\n654\nRock_Point_Provincia\nherthr\nTRUE\n\n\n654\nRock_Point_Provincia\nmagwar\nTRUE\n\n\n654\nRock_Point_Provincia\nnorcar\nTRUE\n\n\n654\nRock_Point_Provincia\nsonspa\nTRUE\n\n\n654\nRock_Point_Provincia\nspotow\nFALSE\n\n\n654\nRock_Point_Provincia\nswathr\nTRUE\n\n\n654\nRock_Point_Provincia\ntenwar\nTRUE\n\n\n654\nRock_Point_Provincia\ntreswa\nTRUE\n\n\n654\nRock_Point_Provincia\nvarthr\nFALSE",
+    "crumbs": [
+      "Workflow",
+      "Range Maps"
+    ]
+  },
+  {
+    "objectID": "02_range_maps.html#plots",
+    "href": "02_range_maps.html#plots",
+    "title": "Range Maps",
+    "section": "Plots",
+    "text": "Plots\nNext we’ll plot each species range and the overlapping receivers for quality control.\nFirst we’ll get a map of the Americas as a base map to give context to the plots.\n\namericas &lt;- ne_countries(continent = c(\"North America\", \"South America\"), returnclass = \"sf\") |&gt;\n  pull(name) |&gt;\n  ne_states(returnclass = \"sf\") |&gt;\n  # Omit Hawaii\n  filter(name != \"Hawaii\") |&gt;\n  st_make_valid() |&gt;\n  group_by(admin) |&gt;\n  summarize() |&gt;\n  st_transform(crs = 3347) |&gt;\n  st_filter(recvs)\n\n# Get a data frame with both ranges and buffered ranges\nranges &lt;- bind_rows(\n  bind_cols(ranges, type = \"Range\"),\n  bind_cols(ranges_buffer, type = \"Buffered Range\"))\n\nNow we’re ready to plot!\n\nfor(i in unique(ranges$species_code)) {\n  r &lt;- filter(ranges, species_code == i)\n  \n  g &lt;- ggplot() +\n    theme_bw() +\n    theme(legend.position = \"bottom\") +\n    geom_sf(data = americas) +\n    geom_sf(data = r, aes(fill = type, alpha = type)) +\n    geom_sf(data = filter(recvs, species_code == r$species_code[1]), \n            aes(colour = in_range), size = 1) +\n    scale_colour_viridis_d(end = 0.9) +\n    scale_fill_manual(values = c(\"blue\", \"blue\")) +\n    scale_alpha_manual(values = c(0.25, 0.4)) +\n    labs(colour = \"Reciever within\\nbuffered species range\", \n         title = \"Range map & Motus Receivers\",\n         subtitle = r$common_name[1], \n         fill = \"\", alpha = \"\") +\n    guides(alpha = guide_legend(override.aes = list(alpha = c(0.25, 0.65))),\n           colour = guide_legend(override.aes = list(size = 3)))\n  \n  print(g)\n}",
+    "crumbs": [
+      "Workflow",
+      "Range Maps"
+    ]
+  },
+  {
+    "objectID": "02_range_maps.html#save-outputs",
+    "href": "02_range_maps.html#save-outputs",
+    "title": "Range Maps",
+    "section": "Save Outputs",
+    "text": "Save Outputs\n\nwrite_csv(st_drop_geometry(recvs), \"Data/Datasets/receivers.csv\")",
+    "crumbs": [
+      "Workflow",
+      "Range Maps"
+    ]
+  },
+  {
+    "objectID": "02_range_maps.html#reproducibility",
+    "href": "02_range_maps.html#reproducibility",
+    "title": "Range Maps",
+    "section": "Reproducibility",
+    "text": "Reproducibility\n\n\n\n\n\n\nSession Info\n\n\n\n\n\n\ndevtools::session_info()\n\n─ Session info ───────────────────────────────────────────────────────────────\n setting  value\n version  R version 4.3.2 (2023-10-31)\n os       Ubuntu 22.04.3 LTS\n system   x86_64, linux-gnu\n ui       X11\n language en_CA:en\n collate  en_CA.UTF-8\n ctype    en_CA.UTF-8\n tz       America/Toronto\n date     2024-01-17\n pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)\n\n─ Packages ───────────────────────────────────────────────────────────────────\n package       * version    date (UTC) lib source\n assertr       * 3.0.0      2022-11-05 [1] CRAN (R 4.3.0)\n bit             4.0.5      2022-11-15 [1] CRAN (R 4.3.0)\n bit64           4.0.5      2020-08-30 [1] CRAN (R 4.3.0)\n cachem          1.0.8      2023-05-01 [1] CRAN (R 4.3.0)\n callr           3.7.3      2022-11-02 [1] CRAN (R 4.3.0)\n class           7.3-22     2023-05-03 [4] CRAN (R 4.3.1)\n classInt        0.4-10     2023-09-05 [1] CRAN (R 4.3.1)\n cli             3.6.1      2023-03-23 [1] CRAN (R 4.3.0)\n codetools       0.2-19     2023-02-01 [4] CRAN (R 4.2.2)\n colorspace      2.1-0      2023-01-23 [1] CRAN (R 4.3.0)\n crayon          1.5.2      2022-09-29 [1] CRAN (R 4.3.0)\n DBI           * 1.1.3      2022-06-18 [1] CRAN (R 4.3.0)\n dbplyr          2.4.0      2023-10-26 [1] CRAN (R 4.3.1)\n devtools        2.4.5      2022-10-11 [1] CRAN (R 4.3.0)\n digest          0.6.33     2023-07-07 [1] CRAN (R 4.3.1)\n dplyr         * 1.1.3      2023-09-03 [1] CRAN (R 4.3.1)\n e1071           1.7-13     2023-02-01 [1] CRAN (R 4.3.0)\n ebirdst       * 3.2022.2   2024-01-15 [1] Github (ebird/ebirdst@bd409c7)\n ellipsis        0.3.2      2021-04-29 [1] CRAN (R 4.3.0)\n evaluate        0.23       2023-11-01 [1] CRAN (R 4.3.1)\n fansi           1.0.5      2023-10-08 [1] CRAN (R 4.3.1)\n fastmap         1.1.1      2023-02-24 [1] CRAN (R 4.3.0)\n fs              1.6.3      2023-07-20 [1] CRAN (R 4.3.1)\n generics        0.1.3      2022-07-05 [1] CRAN (R 4.3.0)\n ggplot2       * 3.4.4      2023-10-12 [1] CRAN (R 4.3.1)\n glue            1.6.2      2022-02-24 [1] CRAN (R 4.3.0)\n gt            * 0.10.0     2023-10-07 [1] CRAN (R 4.3.1)\n gtable          0.3.4      2023-08-21 [1] CRAN (R 4.3.1)\n hms             1.1.3      2023-03-21 [1] CRAN (R 4.3.0)\n htmltools       0.5.7      2023-11-03 [1] CRAN (R 4.3.1)\n htmlwidgets     1.6.2      2023-03-17 [1] CRAN (R 4.3.0)\n httpuv          1.6.12     2023-10-23 [1] CRAN (R 4.3.1)\n httr            1.4.7      2023-08-15 [1] CRAN (R 4.3.1)\n jsonlite        1.8.7      2023-06-29 [1] CRAN (R 4.3.1)\n KernSmooth      2.23-22    2023-07-10 [1] CRAN (R 4.3.1)\n knitr           1.45       2023-10-30 [1] CRAN (R 4.3.1)\n later           1.3.1      2023-05-02 [1] CRAN (R 4.3.1)\n lattice         0.22-5     2023-10-24 [4] CRAN (R 4.3.1)\n lifecycle       1.0.3      2022-10-07 [1] CRAN (R 4.3.0)\n magrittr        2.0.3      2022-03-30 [1] CRAN (R 4.3.0)\n memoise         2.0.1      2021-11-26 [1] CRAN (R 4.3.0)\n mime            0.12       2021-09-28 [1] CRAN (R 4.3.0)\n miniUI          0.1.1.1    2018-05-18 [1] CRAN (R 4.3.0)\n motus         * 6.0.1.9000 2024-01-09 [1] local\n munsell         0.5.0      2018-06-12 [1] CRAN (R 4.3.0)\n naturecounts    0.4.0      2023-06-20 [1] local\n pillar          1.9.0      2023-03-22 [1] CRAN (R 4.3.0)\n pkgbuild        1.4.2      2023-06-26 [1] CRAN (R 4.3.1)\n pkgconfig       2.0.3      2019-09-22 [1] CRAN (R 4.3.0)\n pkgload         1.3.3      2023-09-22 [1] CRAN (R 4.3.1)\n prettyunits     1.2.0      2023-09-24 [1] CRAN (R 4.3.1)\n processx        3.8.2      2023-06-30 [1] CRAN (R 4.3.1)\n profvis         0.3.8      2023-05-02 [1] CRAN (R 4.3.1)\n promises        1.2.1      2023-08-10 [1] CRAN (R 4.3.1)\n proxy           0.4-27     2022-06-09 [1] CRAN (R 4.3.0)\n ps              1.7.5      2023-04-18 [1] CRAN (R 4.3.0)\n purrr         * 1.0.2      2023-08-10 [1] CRAN (R 4.3.1)\n R6              2.5.1      2021-08-19 [1] CRAN (R 4.3.0)\n Rcpp            1.0.11     2023-07-06 [1] CRAN (R 4.3.1)\n readr         * 2.1.4      2023-02-10 [1] CRAN (R 4.3.0)\n remotes         2.4.2.1    2023-07-18 [1] CRAN (R 4.3.1)\n rlang           1.1.2      2023-11-04 [1] CRAN (R 4.3.1)\n rmarkdown       2.25       2023-09-18 [1] CRAN (R 4.3.1)\n rnaturalearth * 0.3.4      2023-08-21 [1] CRAN (R 4.3.1)\n rstudioapi      0.15.0     2023-07-07 [1] CRAN (R 4.3.1)\n scales          1.2.1      2022-08-20 [1] CRAN (R 4.3.0)\n sessioninfo     1.2.2      2021-12-06 [1] CRAN (R 4.3.0)\n sf            * 1.0-14     2023-07-11 [1] CRAN (R 4.3.1)\n shiny           1.7.5.1    2023-10-14 [1] CRAN (R 4.3.1)\n sp              2.1-1      2023-10-16 [1] CRAN (R 4.3.1)\n stringi         1.7.12     2023-01-11 [1] CRAN (R 4.3.0)\n stringr       * 1.5.0      2022-12-02 [1] CRAN (R 4.3.0)\n tibble        * 3.2.1      2023-03-20 [1] CRAN (R 4.3.0)\n tidyr         * 1.3.0      2023-01-24 [1] CRAN (R 4.3.0)\n tidyselect      1.2.0      2022-10-10 [1] CRAN (R 4.3.0)\n tzdb            0.4.0      2023-05-12 [1] CRAN (R 4.3.1)\n units         * 0.8-4      2023-09-13 [1] CRAN (R 4.3.1)\n urlchecker      1.0.1      2021-11-30 [1] CRAN (R 4.3.0)\n usethis         2.2.2      2023-07-06 [1] CRAN (R 4.3.1)\n utf8            1.2.4      2023-10-22 [1] CRAN (R 4.3.1)\n vctrs           0.6.4      2023-10-12 [1] CRAN (R 4.3.1)\n vroom           1.6.4      2023-10-02 [1] CRAN (R 4.3.1)\n withr           2.5.2      2023-10-30 [1] CRAN (R 4.3.1)\n xfun            0.41       2023-11-01 [1] CRAN (R 4.3.1)\n xml2            1.3.5      2023-07-06 [1] CRAN (R 4.3.1)\n xtable          1.8-4      2019-04-21 [1] CRAN (R 4.3.0)\n yaml            2.3.7      2023-01-23 [1] CRAN (R 4.3.0)\n\n [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3\n [2] /usr/local/lib/R/site-library\n [3] /usr/lib/R/site-library\n [4] /usr/lib/R/library\n\n──────────────────────────────────────────────────────────────────────────────",
+    "crumbs": [
+      "Workflow",
+      "Range Maps"
+    ]
+  },
+  {
+    "objectID": "XX_citations.html",
+    "href": "XX_citations.html",
+    "title": "Citations",
+    "section": "",
+    "text": "This section contains citations that we should remember to include.\n\neBird Status and Trends\nIn addition to citing the ebirdst package (below). We also have to cite the eBird data itself.\neBird data requires attributions, citations, and disclaimers\nFor the most up-to-date instructions see Part 2: https://science.ebird.org/en/status-and-trends/products-access-terms-of-use\n\n\nPackages\nYou probably only need to cite motus, ebirdst, and possibly the tidyverse, but you should keep track of the packages used and their versions (see General Info, note that if an workflow step was updated separately, see the most up-to-date package versions under that pages “General Info”).\n\nmotus\nBirds Canada (2024). motus: Fetch and use data from the Motus Wildlife Tracking System. https://motusWTS.github.io/motus.\n\n\nebirdst (for access to range maps)\nPlease cite the eBird Status and Trends data using: \n  Fink, D., T. Auer, A. Johnston, M. Strimas-Mackey, S. Ligocki, O. Robinson, \n  W. Hochachka, L. Jaromczyk, C. Crowley, K. Dunham, A. Stillman, I. Davies, \n  A. Rodewald, V. Ruiz-Gutierrez, C. Wood. 2023.\n  eBird Status and Trends, Data Version: 2022; Released: 2023. Cornell Lab of\n  Ornithology, Ithaca, New York. https://doi.org/10.2173/ebirdst.2022\n\nThis version of the package provides access to the 2022 version of the eBird\nStatus and Trends Data Products. Access to the 2022 data will be provided \nuntil November 2024 when it will be replaced by the 2023 data. At that \npoint, you will be required to update this R package and transition to using \nthe new data.\n\n\ntidyverse (for general data management and figures)\nWickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” Journal of Open Source Software, 4(43), 1686. doi:10.21105/joss.01686 https://doi.org/10.21105/joss.01686.\n\n\n\nGeneral Info\n\ndevtools::session_info()\n\n─ Session info ───────────────────────────────────────────────────────────────\n setting  value\n version  R version 4.3.2 (2023-10-31)\n os       Ubuntu 22.04.3 LTS\n system   x86_64, linux-gnu\n ui       X11\n language en_CA:en\n collate  en_CA.UTF-8\n ctype    en_CA.UTF-8\n tz       America/Toronto\n date     2024-01-17\n pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)\n\n─ Packages ───────────────────────────────────────────────────────────────────\n package     * version  date (UTC) lib source\n cachem        1.0.8    2023-05-01 [1] CRAN (R 4.3.0)\n callr         3.7.3    2022-11-02 [1] CRAN (R 4.3.0)\n cli           3.6.1    2023-03-23 [1] CRAN (R 4.3.0)\n crayon        1.5.2    2022-09-29 [1] CRAN (R 4.3.0)\n devtools      2.4.5    2022-10-11 [1] CRAN (R 4.3.0)\n digest        0.6.33   2023-07-07 [1] CRAN (R 4.3.1)\n ebirdst     * 3.2022.2 2024-01-15 [1] Github (ebird/ebirdst@bd409c7)\n ellipsis      0.3.2    2021-04-29 [1] CRAN (R 4.3.0)\n evaluate      0.23     2023-11-01 [1] CRAN (R 4.3.1)\n fastmap       1.1.1    2023-02-24 [1] CRAN (R 4.3.0)\n fs            1.6.3    2023-07-20 [1] CRAN (R 4.3.1)\n glue          1.6.2    2022-02-24 [1] CRAN (R 4.3.0)\n htmltools     0.5.7    2023-11-03 [1] CRAN (R 4.3.1)\n htmlwidgets   1.6.2    2023-03-17 [1] CRAN (R 4.3.0)\n httpuv        1.6.12   2023-10-23 [1] CRAN (R 4.3.1)\n jsonlite      1.8.7    2023-06-29 [1] CRAN (R 4.3.1)\n knitr         1.45     2023-10-30 [1] CRAN (R 4.3.1)\n later         1.3.1    2023-05-02 [1] CRAN (R 4.3.1)\n lifecycle     1.0.3    2022-10-07 [1] CRAN (R 4.3.0)\n magrittr      2.0.3    2022-03-30 [1] CRAN (R 4.3.0)\n memoise       2.0.1    2021-11-26 [1] CRAN (R 4.3.0)\n mime          0.12     2021-09-28 [1] CRAN (R 4.3.0)\n miniUI        0.1.1.1  2018-05-18 [1] CRAN (R 4.3.0)\n pkgbuild      1.4.2    2023-06-26 [1] CRAN (R 4.3.1)\n pkgload       1.3.3    2023-09-22 [1] CRAN (R 4.3.1)\n prettyunits   1.2.0    2023-09-24 [1] CRAN (R 4.3.1)\n processx      3.8.2    2023-06-30 [1] CRAN (R 4.3.1)\n profvis       0.3.8    2023-05-02 [1] CRAN (R 4.3.1)\n promises      1.2.1    2023-08-10 [1] CRAN (R 4.3.1)\n ps            1.7.5    2023-04-18 [1] CRAN (R 4.3.0)\n purrr         1.0.2    2023-08-10 [1] CRAN (R 4.3.1)\n R6            2.5.1    2021-08-19 [1] CRAN (R 4.3.0)\n Rcpp          1.0.11   2023-07-06 [1] CRAN (R 4.3.1)\n remotes       2.4.2.1  2023-07-18 [1] CRAN (R 4.3.1)\n rlang         1.1.2    2023-11-04 [1] CRAN (R 4.3.1)\n rmarkdown     2.25     2023-09-18 [1] CRAN (R 4.3.1)\n rstudioapi    0.15.0   2023-07-07 [1] CRAN (R 4.3.1)\n sessioninfo   1.2.2    2021-12-06 [1] CRAN (R 4.3.0)\n shiny         1.7.5.1  2023-10-14 [1] CRAN (R 4.3.1)\n stringi       1.7.12   2023-01-11 [1] CRAN (R 4.3.0)\n stringr       1.5.0    2022-12-02 [1] CRAN (R 4.3.0)\n urlchecker    1.0.1    2021-11-30 [1] CRAN (R 4.3.0)\n usethis       2.2.2    2023-07-06 [1] CRAN (R 4.3.1)\n vctrs         0.6.4    2023-10-12 [1] CRAN (R 4.3.1)\n xfun          0.41     2023-11-01 [1] CRAN (R 4.3.1)\n xtable        1.8-4    2019-04-21 [1] CRAN (R 4.3.0)\n yaml          2.3.7    2023-01-23 [1] CRAN (R 4.3.0)\n\n [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3\n [2] /usr/local/lib/R/site-library\n [3] /usr/lib/R/site-library\n [4] /usr/lib/R/library\n\n──────────────────────────────────────────────────────────────────────────────\n\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Appendicies",
+      "Citations"
+    ]
+  },
+  {
+    "objectID": "00_workflow.html",
+    "href": "00_workflow.html",
+    "title": "Workflow",
+    "section": "",
+    "text": "Ideally we filter as much as we can as early as we can. However some filters require particular types of data which we can’t omit if we want to use them. For example, we need to resolve ambiguous detections before we omit non-relevant species, so we have the information we need.\n\nFilter noisy data\nDates with migration (timestamps)\nSpecies ranges overlapping receivers\nAmbiguous tags\nSpecies of interest\n\nDo we check for complete and accurate metadata (or just filter out problems)? - If using projects of people involved who would like to know about problems, then yes? - If we plan to use many different projects and can’t / don’t want to chase everyone down, then no?",
+    "crumbs": [
+      "Workflow",
+      "Workflow"
+    ]
+  },
+  {
+    "objectID": "00_workflow.html#order-of-operations",
+    "href": "00_workflow.html#order-of-operations",
+    "title": "Workflow",
+    "section": "",
+    "text": "Ideally we filter as much as we can as early as we can. However some filters require particular types of data which we can’t omit if we want to use them. For example, we need to resolve ambiguous detections before we omit non-relevant species, so we have the information we need.\n\nFilter noisy data\nDates with migration (timestamps)\nSpecies ranges overlapping receivers\nAmbiguous tags\nSpecies of interest\n\nDo we check for complete and accurate metadata (or just filter out problems)? - If using projects of people involved who would like to know about problems, then yes? - If we plan to use many different projects and can’t / don’t want to chase everyone down, then no?",
+    "crumbs": [
+      "Workflow",
+      "Workflow"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Quantifying bird migration and stopover within an urbanized landscapes using Motus data",
+    "section": "",
+    "text": "Pilot Phase"
+  },
+  {
+    "objectID": "index.html#getting-started",
+    "href": "index.html#getting-started",
+    "title": "Quantifying bird migration and stopover within an urbanized landscapes using Motus data",
+    "section": "Getting Started",
+    "text": "Getting Started\nThis site contains the workflow for obtaining and filtering Motus track data for the analysis of Urban/Rural stopovers during avian migration."
+  },
+  {
+    "objectID": "index.html#to-do",
+    "href": "index.html#to-do",
+    "title": "Quantifying bird migration and stopover within an urbanized landscapes using Motus data",
+    "section": "To Do",
+    "text": "To Do\n\nSetup instructions (installing packages, renv?)\nHow to use this repository\nHow to update this workflow\nHow to interpret these outputs"
+  },
+  {
+    "objectID": "01_download.html",
+    "href": "01_download.html",
+    "title": "Download/Update Data",
+    "section": "",
+    "text": "In this step we download, or update, our Motus SQLite databases.",
+    "crumbs": [
+      "Workflow",
+      "Download/Update Data"
+    ]
+  },
+  {
+    "objectID": "01_download.html#setup",
+    "href": "01_download.html#setup",
+    "title": "Download/Update Data",
+    "section": "Setup",
+    "text": "Setup\n\nsource(\"XX_setup.R\")\n\nThis step can take a lot of time and it may not be necessary to be constantly updating the data bases. Set update &lt;- TRUE to update, update &lt;- FALSE to just check the number of new observations.\n\nupdate &lt;- FALSE",
+    "crumbs": [
+      "Workflow",
+      "Download/Update Data"
+    ]
+  },
+  {
+    "objectID": "01_download.html#status",
+    "href": "01_download.html#status",
+    "title": "Download/Update Data",
+    "section": "Status",
+    "text": "Status\nGet the status of each project (i.e. how much data left to download?)\n\nThis will create new project-XXX.motus SQLite data bases for us if it doesn’t already exist (but will not download the data)\n\n\nstatus &lt;- map(\n  projects, \n  \\(x) tellme(x, dir = \"Data/Raw\",  new = file.exists(paste0(\"project-\", x, \".motus\")))) |&gt;\n  list_rbind(names_to = \"proj_id\")\ngt(status)\n\n\n\n\n\n\n\nproj_id\nnumHits\nnumBytes\nnumRuns\nnumBatches\nnumGPS\n\n\n\n\n484\n0\n0\n0\n0\n0\n\n\n551\n1317609\n123845723\n14857\n119\n9755\n\n\n373\n0\n0\n0\n0\n0\n\n\n168\n0\n0\n0\n0\n0",
+    "crumbs": [
+      "Workflow",
+      "Download/Update Data"
+    ]
+  },
+  {
+    "objectID": "01_download.html#download-data",
+    "href": "01_download.html#download-data",
+    "title": "Download/Update Data",
+    "section": "Download data",
+    "text": "Download data\nIf this is the first time running, it will take time!\n\ntagme() without arguments will update all databases in the folder\nwe can run this intermittently to update the databases as new data arrives\n\n\nif(update) tagme(dir = \"Data/Raw\")",
+    "crumbs": [
+      "Workflow",
+      "Download/Update Data"
+    ]
+  },
+  {
+    "objectID": "01_download.html#remove-deprecated-batches",
+    "href": "01_download.html#remove-deprecated-batches",
+    "title": "Download/Update Data",
+    "section": "Remove deprecated batches",
+    "text": "Remove deprecated batches\nDeprecated batches are removed from the Motus server, but are still present in data that was previously downloaded. This step cleans up the database.\n\nif(update) {\n  walk(projects, \\(x) {\n    message(\"\\nProject \", x)\n    t &lt;- tagme(x, dir = \"Data/Raw\", update = FALSE)\n    deprecateBatches(t, ask = FALSE)\n    DBI::dbDisconnect(t)\n  })\n}",
+    "crumbs": [
+      "Workflow",
+      "Download/Update Data"
+    ]
+  },
+  {
+    "objectID": "01_download.html#reproducibility",
+    "href": "01_download.html#reproducibility",
+    "title": "Download/Update Data",
+    "section": "Reproducibility",
+    "text": "Reproducibility\n\n\n\n\n\n\nSession Info\n\n\n\n\n\n\ndevtools::session_info()\n\n─ Session info ───────────────────────────────────────────────────────────────\n setting  value\n version  R version 4.3.2 (2023-10-31)\n os       Ubuntu 22.04.3 LTS\n system   x86_64, linux-gnu\n ui       X11\n language en_CA:en\n collate  en_CA.UTF-8\n ctype    en_CA.UTF-8\n tz       America/Toronto\n date     2024-01-17\n pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)\n\n─ Packages ───────────────────────────────────────────────────────────────────\n package       * version    date (UTC) lib source\n assertr       * 3.0.0      2022-11-05 [1] CRAN (R 4.3.0)\n bit             4.0.5      2022-11-15 [1] CRAN (R 4.3.0)\n bit64           4.0.5      2020-08-30 [1] CRAN (R 4.3.0)\n blob            1.2.4      2023-03-17 [1] CRAN (R 4.3.0)\n cachem          1.0.8      2023-05-01 [1] CRAN (R 4.3.0)\n callr           3.7.3      2022-11-02 [1] CRAN (R 4.3.0)\n class           7.3-22     2023-05-03 [4] CRAN (R 4.3.1)\n classInt        0.4-10     2023-09-05 [1] CRAN (R 4.3.1)\n cli             3.6.1      2023-03-23 [1] CRAN (R 4.3.0)\n colorspace      2.1-0      2023-01-23 [1] CRAN (R 4.3.0)\n crayon          1.5.2      2022-09-29 [1] CRAN (R 4.3.0)\n curl            5.1.0      2023-10-02 [1] CRAN (R 4.3.1)\n DBI           * 1.1.3      2022-06-18 [1] CRAN (R 4.3.0)\n dbplyr          2.4.0      2023-10-26 [1] CRAN (R 4.3.1)\n devtools        2.4.5      2022-10-11 [1] CRAN (R 4.3.0)\n digest          0.6.33     2023-07-07 [1] CRAN (R 4.3.1)\n dplyr         * 1.1.3      2023-09-03 [1] CRAN (R 4.3.1)\n e1071           1.7-13     2023-02-01 [1] CRAN (R 4.3.0)\n ebirdst       * 3.2022.2   2024-01-15 [1] Github (ebird/ebirdst@bd409c7)\n ellipsis        0.3.2      2021-04-29 [1] CRAN (R 4.3.0)\n evaluate        0.23       2023-11-01 [1] CRAN (R 4.3.1)\n fansi           1.0.5      2023-10-08 [1] CRAN (R 4.3.1)\n fastmap         1.1.1      2023-02-24 [1] CRAN (R 4.3.0)\n fs              1.6.3      2023-07-20 [1] CRAN (R 4.3.1)\n generics        0.1.3      2022-07-05 [1] CRAN (R 4.3.0)\n ggplot2       * 3.4.4      2023-10-12 [1] CRAN (R 4.3.1)\n glue            1.6.2      2022-02-24 [1] CRAN (R 4.3.0)\n gt            * 0.10.0     2023-10-07 [1] CRAN (R 4.3.1)\n gtable          0.3.4      2023-08-21 [1] CRAN (R 4.3.1)\n hms             1.1.3      2023-03-21 [1] CRAN (R 4.3.0)\n htmltools       0.5.7      2023-11-03 [1] CRAN (R 4.3.1)\n htmlwidgets     1.6.2      2023-03-17 [1] CRAN (R 4.3.0)\n httpuv          1.6.12     2023-10-23 [1] CRAN (R 4.3.1)\n httr            1.4.7      2023-08-15 [1] CRAN (R 4.3.1)\n jsonlite        1.8.7      2023-06-29 [1] CRAN (R 4.3.1)\n KernSmooth      2.23-22    2023-07-10 [1] CRAN (R 4.3.1)\n knitr           1.45       2023-10-30 [1] CRAN (R 4.3.1)\n later           1.3.1      2023-05-02 [1] CRAN (R 4.3.1)\n lattice         0.22-5     2023-10-24 [4] CRAN (R 4.3.1)\n lifecycle       1.0.3      2022-10-07 [1] CRAN (R 4.3.0)\n magrittr        2.0.3      2022-03-30 [1] CRAN (R 4.3.0)\n memoise         2.0.1      2021-11-26 [1] CRAN (R 4.3.0)\n mime            0.12       2021-09-28 [1] CRAN (R 4.3.0)\n miniUI          0.1.1.1    2018-05-18 [1] CRAN (R 4.3.0)\n motus         * 6.0.1.9000 2024-01-09 [1] local\n munsell         0.5.0      2018-06-12 [1] CRAN (R 4.3.0)\n naturecounts    0.4.0      2023-06-20 [1] local\n pillar          1.9.0      2023-03-22 [1] CRAN (R 4.3.0)\n pkgbuild        1.4.2      2023-06-26 [1] CRAN (R 4.3.1)\n pkgconfig       2.0.3      2019-09-22 [1] CRAN (R 4.3.0)\n pkgload         1.3.3      2023-09-22 [1] CRAN (R 4.3.1)\n prettyunits     1.2.0      2023-09-24 [1] CRAN (R 4.3.1)\n processx        3.8.2      2023-06-30 [1] CRAN (R 4.3.1)\n profvis         0.3.8      2023-05-02 [1] CRAN (R 4.3.1)\n promises        1.2.1      2023-08-10 [1] CRAN (R 4.3.1)\n proxy           0.4-27     2022-06-09 [1] CRAN (R 4.3.0)\n ps              1.7.5      2023-04-18 [1] CRAN (R 4.3.0)\n purrr         * 1.0.2      2023-08-10 [1] CRAN (R 4.3.1)\n R6              2.5.1      2021-08-19 [1] CRAN (R 4.3.0)\n Rcpp            1.0.11     2023-07-06 [1] CRAN (R 4.3.1)\n readr         * 2.1.4      2023-02-10 [1] CRAN (R 4.3.0)\n remotes         2.4.2.1    2023-07-18 [1] CRAN (R 4.3.1)\n rlang           1.1.2      2023-11-04 [1] CRAN (R 4.3.1)\n rmarkdown       2.25       2023-09-18 [1] CRAN (R 4.3.1)\n rnaturalearth * 0.3.4      2023-08-21 [1] CRAN (R 4.3.1)\n RSQLite         2.3.3      2023-11-04 [1] CRAN (R 4.3.1)\n rstudioapi      0.15.0     2023-07-07 [1] CRAN (R 4.3.1)\n sass            0.4.7      2023-07-15 [1] CRAN (R 4.3.1)\n scales          1.2.1      2022-08-20 [1] CRAN (R 4.3.0)\n sessioninfo     1.2.2      2021-12-06 [1] CRAN (R 4.3.0)\n sf            * 1.0-14     2023-07-11 [1] CRAN (R 4.3.1)\n shiny           1.7.5.1    2023-10-14 [1] CRAN (R 4.3.1)\n sp              2.1-1      2023-10-16 [1] CRAN (R 4.3.1)\n stringi         1.7.12     2023-01-11 [1] CRAN (R 4.3.0)\n stringr       * 1.5.0      2022-12-02 [1] CRAN (R 4.3.0)\n tibble        * 3.2.1      2023-03-20 [1] CRAN (R 4.3.0)\n tidyr         * 1.3.0      2023-01-24 [1] CRAN (R 4.3.0)\n tidyselect      1.2.0      2022-10-10 [1] CRAN (R 4.3.0)\n tzdb            0.4.0      2023-05-12 [1] CRAN (R 4.3.1)\n units         * 0.8-4      2023-09-13 [1] CRAN (R 4.3.1)\n urlchecker      1.0.1      2021-11-30 [1] CRAN (R 4.3.0)\n usethis         2.2.2      2023-07-06 [1] CRAN (R 4.3.1)\n utf8            1.2.4      2023-10-22 [1] CRAN (R 4.3.1)\n vctrs           0.6.4      2023-10-12 [1] CRAN (R 4.3.1)\n withr           2.5.2      2023-10-30 [1] CRAN (R 4.3.1)\n xfun            0.41       2023-11-01 [1] CRAN (R 4.3.1)\n xml2            1.3.5      2023-07-06 [1] CRAN (R 4.3.1)\n xtable          1.8-4      2019-04-21 [1] CRAN (R 4.3.0)\n yaml            2.3.7      2023-01-23 [1] CRAN (R 4.3.0)\n\n [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3\n [2] /usr/local/lib/R/site-library\n [3] /usr/lib/R/site-library\n [4] /usr/lib/R/library\n\n──────────────────────────────────────────────────────────────────────────────",
+    "crumbs": [
+      "Workflow",
+      "Download/Update Data"
+    ]
+  },
+  {
+    "objectID": "XX_setup.html",
+    "href": "XX_setup.html",
+    "title": "Setup",
+    "section": "",
+    "text": "This page explains the setup code defined in XX_setup.R which is sourced at the start of each workflow step.",
+    "crumbs": [
+      "Appendicies",
+      "Setup"
+    ]
+  },
+  {
+    "objectID": "XX_setup.html#packages",
+    "href": "XX_setup.html#packages",
+    "title": "Setup",
+    "section": "Packages",
+    "text": "Packages\n\n# Motus data and data bases\nlibrary(motus)\nlibrary(DBI)  # Data bases\n\n# Tidy data manipulation\nlibrary(purrr)\nlibrary(dplyr)\nlibrary(tidyr)\nlibrary(tibble)\nlibrary(stringr)\nlibrary(ggplot2)\nlibrary(readr)\nlibrary(assertr) # Check data quality\n\n# Data display\nlibrary(gt)\n\n# Spatial data\nlibrary(sf)\nlibrary(rnaturalearth)\nlibrary(ebirdst) # Species ranges\nlibrary(units)",
+    "crumbs": [
+      "Appendicies",
+      "Setup"
+    ]
+  },
+  {
+    "objectID": "XX_setup.html#motus-credentials",
+    "href": "XX_setup.html#motus-credentials",
+    "title": "Setup",
+    "section": "Motus credentials",
+    "text": "Motus credentials\nHere we set the credentials for this session (so you don’t have to manually type it in every time)\nThis code expects that you store your Motus login and password as URBAN_USER and URBAN_PASSWORD in an .Renviron file\n\nlearn more about this file: https://rstats.wtf/r-startup.html#renviron\neasily edit this file with usethis::edit_r_environ()\n\n\nmotus:::sessionVariable(name = \"userLogin\", val = Sys.getenv(\"URBAN_USER\"))\nmotus:::sessionVariable(name = \"userPassword\", val = Sys.getenv(\"URBAN_PASSWORD\"))",
+    "crumbs": [
+      "Appendicies",
+      "Setup"
+    ]
+  },
+  {
+    "objectID": "XX_setup.html#define-projects",
+    "href": "XX_setup.html#define-projects",
+    "title": "Setup",
+    "section": "Define projects",
+    "text": "Define projects\nHere we’re using a small set of pilot projects\n\nUrban Ecology of Birds in the Lower mainland of BC #484\nMontreal Urban Forests #551 (191 tags but 62 on resident cardinals)\nMontreal Connectivity #373 (105 tags)\nMontreal moult migrant research #168 (113 tags)\n\n\nprojects &lt;- c(484, 551, 373, 168)\nprojects &lt;- setNames(projects, projects)",
+    "crumbs": [
+      "Appendicies",
+      "Setup"
+    ]
+  },
+  {
+    "objectID": "XX_setup.html#define-data-to-include",
+    "href": "XX_setup.html#define-data-to-include",
+    "title": "Setup",
+    "section": "Define data to include",
+    "text": "Define data to include\nTODO: What are ‘near-passerines’? cf https://en.wikipedia.org/wiki/Near_passerine\n\n# naturecounts::nc_metadata() # Update naturecounts taxonomy lists\n\nspecies &lt;- naturecounts::meta_species_taxonomy() |&gt;\n  filter(order_taxon == \"Passeriformes\")",
+    "crumbs": [
+      "Appendicies",
+      "Setup"
+    ]
+  },
+  {
+    "objectID": "XX_setup.html#functions",
+    "href": "XX_setup.html#functions",
+    "title": "Setup",
+    "section": "Functions",
+    "text": "Functions\nThese functions are sourced from XX_functions.R\n\nremove_by_ID &lt;- function(src, t, id_type = \"batchID\", ids) {\n  if(length(ids) &gt; 0) {\n    if(t %in% DBI::dbListTables(src)) {\n      n &lt;- DBI::dbExecute(\n        src, \n        glue::glue(\"DELETE FROM {`t`} WHERE {`id_type`} IN (\",\n                   glue::glue_collapse(ids, sep = ', '), \n                   \")\"))\n      if(n &gt; 0) message(msg_fmt(\"  {n} rows deleted from {t}\"))\n    }\n  }\n}\n\n\nfilter_count &lt;- function(dbs) {\n  before &lt;- map(dbs, \\(x) tbl(x, \"runs\") |&gt; count(name = \"n_before\") |&gt; collect()) |&gt;\n    list_rbind(names_to = \"proj_id\")\n  after &lt;- map(dbs, \\(x) {\n    remove &lt;- getRunsFilters(x, \"all\")\n    tbl(x, \"runs\") |&gt;\n      anti_join(remove, by = c(\"runID\", \"motusTagID\")) |&gt;\n      count(name = \"n_after\") |&gt;\n      collect()\n  }) |&gt;\n    list_rbind()\n  \n  bind_cols(before, after) |&gt;\n    mutate(p_reduced = (n_before - n_after) / n_before * 100)\n}",
+    "crumbs": [
+      "Appendicies",
+      "Setup"
+    ]
+  }
+]

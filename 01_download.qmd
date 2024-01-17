@@ -1,21 +1,29 @@
 ---
 title: Download/Update Data
+freeze: auto
 ---
 
+In this step we download, or update, our Motus SQLite databases.
+
 ## Setup
+
 ```{r}
 #| message: false
-library(motus)
-library(purrr)
-library(dplyr)
-source("00_setup.R")
+source("XX_setup.R")
 ```
+
+This step can take a lot of time and it may not be necessary to be constantly updating the data bases. Set `update <- TRUE` to update, `update <- FALSE` to just check the number of new observations.
+
+```{r}
+update <- FALSE
+```
+
+## Status
 
 Get the status of each project (i.e. how much data left to download?)
 
-- This will create new project-XXX.motus SQLite data bases for us if it doesn't
- already exist (but will not download the data)
- 
+-   This will create new `project-XXX.motus` SQLite data bases for us if it doesn't already exist (but will not download the data)
+
 ```{r}
 status <- map(
   projects, 
@@ -26,27 +34,32 @@ gt(status)
 
 ## Download data
 
-
 **If this is the first time running, it will take time!**
 
-- `tagme()` without arguments will update all databases in the folder
-- we can run this intermittently to update the databases as new data arrives
+-   `tagme()` without arguments will update all databases in the folder
+-   we can run this intermittently to update the databases as new data arrives
 
 ```{r}
 #| message: false
-tagme(dir = "Data/Raw")
+if(update) tagme(dir = "Data/Raw")
 ```
 
 ## Remove deprecated batches
 
-Deprecated batches are removed from the Motus server, but are still present
-in data that was previously downloaded.
-This step cleans up the database.
+Deprecated batches are removed from the Motus server, but are still present in data that was previously downloaded. This step cleans up the database.
 
 ```{r}
-walk(projects, \(x) {
-  message("\nProject ", x)
-  t <- tagme(x, dir = "Data/Raw", update = FALSE)
-  deprecateBatches(t, ask = FALSE)
-  DBI::dbDisconnect(t)
-})
+if(update) {
+  walk(projects, \(x) {
+    message("\nProject ", x)
+    t <- tagme(x, dir = "Data/Raw", update = FALSE)
+    deprecateBatches(t, ask = FALSE)
+    DBI::dbDisconnect(t)
+  })
+}
+```
+
+
+
+{{< include _reproducibility.qmd >}}
+

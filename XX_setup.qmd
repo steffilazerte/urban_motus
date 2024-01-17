@@ -1,0 +1,57 @@
+---
+title: Setup
+---
+
+```{r}
+#| include: false
+knitr::read_chunk("XX_setup.R")
+```
+
+This page explains the setup code defined in `XX_setup.R` which is sourced 
+at the start of each workflow step.
+
+## Packages
+
+```{r packages}
+#| message: false
+```
+
+## Motus credentials 
+
+Here we set the credentials for this session 
+(so you don't have to manually type it in every time)
+ 
+This code expects that you store your Motus login and password as 
+`URBAN_USER` and `URBAN_PASSWORD` in an .Renviron file
+
+- learn more about this file: https://rstats.wtf/r-startup.html#renviron
+- easily edit this file with `usethis::edit_r_environ()`
+
+```{r credentials}
+```
+
+## Define projects 
+
+Here we're using a small set of pilot projects
+
+- Urban Ecology of Birds in the Lower mainland of BC #484
+- Montreal Urban Forests #551 (191 tags but 62 on resident cardinals)
+- Montreal Connectivity #373 (105 tags)
+- Montreal moult migrant research #168 (113 tags)
+
+```{r projects}
+```
+
+## Define data to include
+
+TODO: What are 'near-passerines'? cf https://en.wikipedia.org/wiki/Near_passerine
+
+```{r data}
+```
+
+## Functions
+These functions are sourced from `XX_functions.R`
+```{r}
+#| file: XX_functions.R
+```
+

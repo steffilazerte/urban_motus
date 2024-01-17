@@ -1,24 +1,32 @@
+---
+title: Basic Filtering
+eval: false
+---
+
 # Setup ---------------------------------------------------------------
-library(motus)
-library(DBI)
-library(tidyverse)
-library(assertr)
-source("00_setup.R")
+
 
 # In this step we apply broad filters for species, dates, and receivers of 
 # interest. 
 # 
-# Note that these lists are defined in `00_setup.R`
+# Note that these lists are defined in `XX_setup.R`
 
 # Connect to databases ------------------------------------------------
+
+```{r}
 dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
+```
 
 # Check existing filters ----------------------------------------------
+```{r}
 f <- map(dbs, listRunsFilters) |>
   list_rbind()
 f
+```
+
 
 # TODO: consider removing them all and starting fresh on each run?
+```{r}
 if(TRUE && nrow(f) > 0) walk(dbs, \(x) deleteRunsFilter(x, "all"))
 
 # Create a filter placeholder
@@ -197,4 +205,10 @@ ambig <- map(dbs, \(x) tbl(x, "alltags") |>
                filter(!is.na(ambigID)) |>
                distinct() |>
                collect())
+
+```
+
+
+
+{{< include _reproducibility.qmd >}}
 

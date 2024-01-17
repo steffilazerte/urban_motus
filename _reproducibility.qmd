@@ -1,0 +1,9 @@
+
+## Reproducibility
+
+:::{.callout-note collapse=true}
+### Session Info
+```{r}
+devtools::session_info()
+```
+:::

@@ -27,4 +27,3 @@ filter_count <- function(dbs) {
   bind_cols(before, after) |>
     mutate(p_reduced = (n_before - n_after) / n_before * 100)
 }
-  

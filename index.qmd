@@ -1,0 +1,18 @@
+---
+title: "Quantifying bird migration and stopover within an urbanized landscapes using Motus data"
+---
+
+__*Pilot Phase*__
+
+## Getting Started
+
+This site contains the workflow for obtaining and filtering Motus track data
+for the analysis of Urban/Rural stopovers during avian migration.
+
+
+## To Do
+
+- Setup instructions (installing packages, renv?)
+- How to use this repository
+- How to update this workflow
+- How to interpret these outputs
