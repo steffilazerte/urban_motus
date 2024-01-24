@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-01-17">
+<meta name="dcterms.date" content="2024-01-24">
 
 <title>Motus tracking of urban migration stopovers - Download/Update Data</title>
 <style>
@@ -66,8 +66,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./02_range_maps.html" rel="next">
-<link href="./00_workflow.html" rel="prev">
+<link href="./03_range_maps.html" rel="next">
+<link href="./01_select_projects.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -117,7 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./01_download.html">Download/Update Data</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./02_download.html">Download/Update Data</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -157,24 +157,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./00_workflow.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Workflow</span></a>
+ <span class="menu-text">Plans</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./01_download.html" class="sidebar-item-text sidebar-link active">
+  <a href="./01_select_projects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Selecting Projects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02_download.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Download/Update Data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./02_range_maps.html" class="sidebar-item-text sidebar-link">
+  <a href="./03_range_maps.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Range Maps</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./03_basic_filters.html" class="sidebar-item-text sidebar-link">
+  <a href="./04_basic_filters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Basic Filtering</span></a>
   </div>
 </li>
@@ -219,12 +225,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#remove-deprecated-batches" id="toc-remove-deprecated-batches" class="nav-link" data-scroll-target="#remove-deprecated-batches">Remove deprecated batches</a></li>
   <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/01_download.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/02_download.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./01_download.html">Download/Update Data</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./02_download.html">Download/Update Data</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Download/Update Data</h1>
 </div>
@@ -243,7 +249,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 17, 2024</p>
+      <p class="date">January 24, 2024</p>
     </div>
   </div>
   
@@ -276,26 +282,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  projects, </span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  \(x) <span class="fu">tellme</span>(x, <span class="at">dir =</span> <span class="st">"Data/Raw"</span>,  <span class="at">new =</span> <span class="fu">file.exists</span>(<span class="fu">paste0</span>(<span class="st">"project-"</span>, x, <span class="st">".motus"</span>)))) <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">gt</span>(status)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Database Data/Raw/project-551.motus already exists, so I'm ignoring
+the 'new = TRUE' option</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gt</span>(status)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="sltmoijbvd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#sltmoijbvd table {
+<div id="nrveurqvrp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#nrveurqvrp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#sltmoijbvd thead, #sltmoijbvd tbody, #sltmoijbvd tfoot, #sltmoijbvd tr, #sltmoijbvd td, #sltmoijbvd th {
+#nrveurqvrp thead, #nrveurqvrp tbody, #nrveurqvrp tfoot, #nrveurqvrp tr, #nrveurqvrp td, #nrveurqvrp th {
   border-style: none;
 }
 
-#sltmoijbvd p {
+#nrveurqvrp p {
   margin: 0;
   padding: 0;
 }
 
-#sltmoijbvd .gt_table {
+#nrveurqvrp .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -321,12 +331,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_caption {
+#nrveurqvrp .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#sltmoijbvd .gt_title {
+#nrveurqvrp .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -338,7 +348,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#sltmoijbvd .gt_subtitle {
+#nrveurqvrp .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -350,7 +360,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#sltmoijbvd .gt_heading {
+#nrveurqvrp .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -362,13 +372,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_bottom_border {
+#nrveurqvrp .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_col_headings {
+#nrveurqvrp .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -383,7 +393,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_col_heading {
+#nrveurqvrp .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -403,7 +413,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#sltmoijbvd .gt_column_spanner_outer {
+#nrveurqvrp .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -415,15 +425,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#sltmoijbvd .gt_column_spanner_outer:first-child {
+#nrveurqvrp .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#sltmoijbvd .gt_column_spanner_outer:last-child {
+#nrveurqvrp .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#sltmoijbvd .gt_column_spanner {
+#nrveurqvrp .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -435,11 +445,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#sltmoijbvd .gt_spanner_row {
+#nrveurqvrp .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#sltmoijbvd .gt_group_heading {
+#nrveurqvrp .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -465,7 +475,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#sltmoijbvd .gt_empty_group_heading {
+#nrveurqvrp .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -480,15 +490,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#sltmoijbvd .gt_from_md > :first-child {
+#nrveurqvrp .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#sltmoijbvd .gt_from_md > :last-child {
+#nrveurqvrp .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#sltmoijbvd .gt_row {
+#nrveurqvrp .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -507,7 +517,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#sltmoijbvd .gt_stub {
+#nrveurqvrp .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -520,7 +530,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sltmoijbvd .gt_stub_row_group {
+#nrveurqvrp .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -534,15 +544,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#sltmoijbvd .gt_row_group_first td {
+#nrveurqvrp .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#sltmoijbvd .gt_row_group_first th {
+#nrveurqvrp .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#sltmoijbvd .gt_summary_row {
+#nrveurqvrp .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -552,16 +562,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sltmoijbvd .gt_first_summary_row {
+#nrveurqvrp .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_first_summary_row.thick {
+#nrveurqvrp .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#sltmoijbvd .gt_last_summary_row {
+#nrveurqvrp .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -571,7 +581,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_grand_summary_row {
+#nrveurqvrp .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -581,7 +591,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sltmoijbvd .gt_first_grand_summary_row {
+#nrveurqvrp .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -591,7 +601,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_last_grand_summary_row_top {
+#nrveurqvrp .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -601,11 +611,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_striped {
+#nrveurqvrp .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#sltmoijbvd .gt_table_body {
+#nrveurqvrp .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -614,7 +624,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_footnotes {
+#nrveurqvrp .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -628,7 +638,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_footnote {
+#nrveurqvrp .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -637,7 +647,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sltmoijbvd .gt_sourcenotes {
+#nrveurqvrp .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -651,7 +661,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#sltmoijbvd .gt_sourcenote {
+#nrveurqvrp .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -659,63 +669,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sltmoijbvd .gt_left {
+#nrveurqvrp .gt_left {
   text-align: left;
 }
 
-#sltmoijbvd .gt_center {
+#nrveurqvrp .gt_center {
   text-align: center;
 }
 
-#sltmoijbvd .gt_right {
+#nrveurqvrp .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#sltmoijbvd .gt_font_normal {
+#nrveurqvrp .gt_font_normal {
   font-weight: normal;
 }
 
-#sltmoijbvd .gt_font_bold {
+#nrveurqvrp .gt_font_bold {
   font-weight: bold;
 }
 
-#sltmoijbvd .gt_font_italic {
+#nrveurqvrp .gt_font_italic {
   font-style: italic;
 }
 
-#sltmoijbvd .gt_super {
+#nrveurqvrp .gt_super {
   font-size: 65%;
 }
 
-#sltmoijbvd .gt_footnote_marks {
+#nrveurqvrp .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#sltmoijbvd .gt_asterisk {
+#nrveurqvrp .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#sltmoijbvd .gt_indent_1 {
+#nrveurqvrp .gt_indent_1 {
   text-indent: 5px;
 }
 
-#sltmoijbvd .gt_indent_2 {
+#nrveurqvrp .gt_indent_2 {
   text-indent: 10px;
 }
 
-#sltmoijbvd .gt_indent_3 {
+#nrveurqvrp .gt_indent_3 {
   text-indent: 15px;
 }
 
-#sltmoijbvd .gt_indent_4 {
+#nrveurqvrp .gt_indent_4 {
   text-indent: 20px;
 }
 
-#sltmoijbvd .gt_indent_5 {
+#nrveurqvrp .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -734,35 +744,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_right" headers="proj_id">484</td>
-<td class="gt_row gt_right" headers="numHits">0</td>
-<td class="gt_row gt_right" headers="numBytes">0</td>
-<td class="gt_row gt_right" headers="numRuns">0</td>
-<td class="gt_row gt_right" headers="numBatches">0</td>
-<td class="gt_row gt_right" headers="numGPS">0</td>
+<td class="gt_row gt_right" headers="numHits">2816</td>
+<td class="gt_row gt_right" headers="numBytes">892842</td>
+<td class="gt_row gt_right" headers="numRuns">969</td>
+<td class="gt_row gt_right" headers="numBatches">113</td>
+<td class="gt_row gt_right" headers="numGPS">11859</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_right" headers="proj_id">551</td>
-<td class="gt_row gt_right" headers="numHits">1317609</td>
-<td class="gt_row gt_right" headers="numBytes">123845723</td>
-<td class="gt_row gt_right" headers="numRuns">14857</td>
-<td class="gt_row gt_right" headers="numBatches">119</td>
-<td class="gt_row gt_right" headers="numGPS">9755</td>
+<td class="gt_row gt_right" headers="numHits">6353214</td>
+<td class="gt_row gt_right" headers="numBytes">596093948</td>
+<td class="gt_row gt_right" headers="numRuns">77167</td>
+<td class="gt_row gt_right" headers="numBatches">223</td>
+<td class="gt_row gt_right" headers="numGPS">18937</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_right" headers="proj_id">373</td>
-<td class="gt_row gt_right" headers="numHits">0</td>
-<td class="gt_row gt_right" headers="numBytes">0</td>
-<td class="gt_row gt_right" headers="numRuns">0</td>
-<td class="gt_row gt_right" headers="numBatches">0</td>
-<td class="gt_row gt_right" headers="numGPS">0</td>
+<td class="gt_row gt_right" headers="numHits">1785</td>
+<td class="gt_row gt_right" headers="numBytes">549827</td>
+<td class="gt_row gt_right" headers="numRuns">244</td>
+<td class="gt_row gt_right" headers="numBatches">39</td>
+<td class="gt_row gt_right" headers="numGPS">7658</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_right" headers="proj_id">168</td>
-<td class="gt_row gt_right" headers="numHits">0</td>
-<td class="gt_row gt_right" headers="numBytes">0</td>
-<td class="gt_row gt_right" headers="numRuns">0</td>
-<td class="gt_row gt_right" headers="numBatches">0</td>
-<td class="gt_row gt_right" headers="numGPS">0</td>
+<td class="gt_row gt_right" headers="numHits">1819</td>
+<td class="gt_row gt_right" headers="numBytes">330457</td>
+<td class="gt_row gt_right" headers="numRuns">896</td>
+<td class="gt_row gt_right" headers="numBatches">13</td>
+<td class="gt_row gt_right" headers="numGPS">2297</td>
 </tr>
 </tbody>
 </table>
@@ -779,21 +789,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>we can run this intermittently to update the databases as new data arrives</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(update) <span class="fu">tagme</span>(<span class="at">dir =</span> <span class="st">"Data/Raw"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(update) <span class="fu">tagme</span>(<span class="at">dir =</span> <span class="st">"Data/Raw"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="remove-deprecated-batches" class="level2">
 <h2 class="anchored" data-anchor-id="remove-deprecated-batches">Remove deprecated batches</h2>
 <p>Deprecated batches are removed from the Motus server, but are still present in data that was previously downloaded. This step cleans up the database.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(update) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">walk</span>(projects, \(x) {</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Project "</span>, x)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    t <span class="ot">&lt;-</span> <span class="fu">tagme</span>(x, <span class="at">dir =</span> <span class="st">"Data/Raw"</span>, <span class="at">update =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">deprecateBatches</span>(t, <span class="at">ask =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    DBI<span class="sc">::</span><span class="fu">dbDisconnect</span>(t)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(update) {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">walk</span>(projects, \(x) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Project "</span>, x)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    t <span class="ot">&lt;-</span> <span class="fu">tagme</span>(x, <span class="at">dir =</span> <span class="st">"Data/Raw"</span>, <span class="at">update =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">deprecateBatches</span>(t, <span class="at">ask =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    DBI<span class="sc">::</span><span class="fu">dbDisconnect</span>(t)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="reproducibility" class="level2">
@@ -811,7 +821,7 @@ Session Info
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>─ Session info ───────────────────────────────────────────────────────────────
  setting  value
@@ -823,7 +833,7 @@ Session Info
  collate  en_CA.UTF-8
  ctype    en_CA.UTF-8
  tz       America/Toronto
- date     2024-01-17
+ date     2024-01-24
  pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────
@@ -836,43 +846,44 @@ Session Info
  callr           3.7.3      2022-11-02 [1] CRAN (R 4.3.0)
  class           7.3-22     2023-05-03 [4] CRAN (R 4.3.1)
  classInt        0.4-10     2023-09-05 [1] CRAN (R 4.3.1)
- cli             3.6.1      2023-03-23 [1] CRAN (R 4.3.0)
+ cli             3.6.2      2023-12-11 [1] CRAN (R 4.3.2)
  colorspace      2.1-0      2023-01-23 [1] CRAN (R 4.3.0)
  crayon          1.5.2      2022-09-29 [1] CRAN (R 4.3.0)
- curl            5.1.0      2023-10-02 [1] CRAN (R 4.3.1)
+ curl            5.2.0      2023-12-08 [1] CRAN (R 4.3.2)
  DBI           * 1.1.3      2022-06-18 [1] CRAN (R 4.3.0)
  dbplyr          2.4.0      2023-10-26 [1] CRAN (R 4.3.1)
  devtools        2.4.5      2022-10-11 [1] CRAN (R 4.3.0)
- digest          0.6.33     2023-07-07 [1] CRAN (R 4.3.1)
- dplyr         * 1.1.3      2023-09-03 [1] CRAN (R 4.3.1)
+ digest          0.6.34     2024-01-11 [1] CRAN (R 4.3.2)
+ dplyr         * 1.1.4      2023-11-17 [1] CRAN (R 4.3.2)
  e1071           1.7-13     2023-02-01 [1] CRAN (R 4.3.0)
  ebirdst       * 3.2022.2   2024-01-15 [1] Github (ebird/ebirdst@bd409c7)
  ellipsis        0.3.2      2021-04-29 [1] CRAN (R 4.3.0)
  evaluate        0.23       2023-11-01 [1] CRAN (R 4.3.1)
- fansi           1.0.5      2023-10-08 [1] CRAN (R 4.3.1)
+ fansi           1.0.6      2023-12-08 [1] CRAN (R 4.3.2)
  fastmap         1.1.1      2023-02-24 [1] CRAN (R 4.3.0)
  fs              1.6.3      2023-07-20 [1] CRAN (R 4.3.1)
  generics        0.1.3      2022-07-05 [1] CRAN (R 4.3.0)
  ggplot2       * 3.4.4      2023-10-12 [1] CRAN (R 4.3.1)
- glue            1.6.2      2022-02-24 [1] CRAN (R 4.3.0)
+ glue            1.7.0      2024-01-09 [1] CRAN (R 4.3.2)
  gt            * 0.10.0     2023-10-07 [1] CRAN (R 4.3.1)
  gtable          0.3.4      2023-08-21 [1] CRAN (R 4.3.1)
  hms             1.1.3      2023-03-21 [1] CRAN (R 4.3.0)
  htmltools       0.5.7      2023-11-03 [1] CRAN (R 4.3.1)
- htmlwidgets     1.6.2      2023-03-17 [1] CRAN (R 4.3.0)
+ htmlwidgets     1.6.4      2023-12-06 [1] CRAN (R 4.3.2)
  httpuv          1.6.12     2023-10-23 [1] CRAN (R 4.3.1)
  httr            1.4.7      2023-08-15 [1] CRAN (R 4.3.1)
- jsonlite        1.8.7      2023-06-29 [1] CRAN (R 4.3.1)
+ jsonlite        1.8.8      2023-12-04 [1] CRAN (R 4.3.2)
  KernSmooth      2.23-22    2023-07-10 [1] CRAN (R 4.3.1)
  knitr           1.45       2023-10-30 [1] CRAN (R 4.3.1)
  later           1.3.1      2023-05-02 [1] CRAN (R 4.3.1)
  lattice         0.22-5     2023-10-24 [4] CRAN (R 4.3.1)
- lifecycle       1.0.3      2022-10-07 [1] CRAN (R 4.3.0)
+ lifecycle       1.0.4      2023-11-07 [1] CRAN (R 4.3.2)
+ lubridate       1.9.3      2023-09-27 [1] CRAN (R 4.3.1)
  magrittr        2.0.3      2022-03-30 [1] CRAN (R 4.3.0)
  memoise         2.0.1      2021-11-26 [1] CRAN (R 4.3.0)
  mime            0.12       2021-09-28 [1] CRAN (R 4.3.0)
  miniUI          0.1.1.1    2018-05-18 [1] CRAN (R 4.3.0)
- motus         * 6.0.1.9000 2024-01-09 [1] local
+ motus         * 6.0.1.9000 2024-01-24 [1] local
  munsell         0.5.0      2018-06-12 [1] CRAN (R 4.3.0)
  naturecounts    0.4.0      2023-06-20 [1] local
  pillar          1.9.0      2023-03-22 [1] CRAN (R 4.3.0)
@@ -890,33 +901,34 @@ Session Info
  Rcpp            1.0.11     2023-07-06 [1] CRAN (R 4.3.1)
  readr         * 2.1.4      2023-02-10 [1] CRAN (R 4.3.0)
  remotes         2.4.2.1    2023-07-18 [1] CRAN (R 4.3.1)
- rlang           1.1.2      2023-11-04 [1] CRAN (R 4.3.1)
+ rlang           1.1.3      2024-01-10 [1] CRAN (R 4.3.2)
  rmarkdown       2.25       2023-09-18 [1] CRAN (R 4.3.1)
  rnaturalearth * 0.3.4      2023-08-21 [1] CRAN (R 4.3.1)
  RSQLite         2.3.3      2023-11-04 [1] CRAN (R 4.3.1)
  rstudioapi      0.15.0     2023-07-07 [1] CRAN (R 4.3.1)
- sass            0.4.7      2023-07-15 [1] CRAN (R 4.3.1)
- scales          1.2.1      2022-08-20 [1] CRAN (R 4.3.0)
+ sass            0.4.8      2023-12-06 [1] CRAN (R 4.3.2)
+ scales          1.3.0      2023-11-28 [1] CRAN (R 4.3.2)
  sessioninfo     1.2.2      2021-12-06 [1] CRAN (R 4.3.0)
  sf            * 1.0-14     2023-07-11 [1] CRAN (R 4.3.1)
  shiny           1.7.5.1    2023-10-14 [1] CRAN (R 4.3.1)
  sp              2.1-1      2023-10-16 [1] CRAN (R 4.3.1)
- stringi         1.7.12     2023-01-11 [1] CRAN (R 4.3.0)
- stringr       * 1.5.0      2022-12-02 [1] CRAN (R 4.3.0)
+ stringi         1.8.3      2023-12-11 [1] CRAN (R 4.3.2)
+ stringr       * 1.5.1      2023-11-14 [1] CRAN (R 4.3.2)
  tibble        * 3.2.1      2023-03-20 [1] CRAN (R 4.3.0)
  tidyr         * 1.3.0      2023-01-24 [1] CRAN (R 4.3.0)
  tidyselect      1.2.0      2022-10-10 [1] CRAN (R 4.3.0)
+ timechange      0.2.0      2023-01-11 [1] CRAN (R 4.3.0)
  tzdb            0.4.0      2023-05-12 [1] CRAN (R 4.3.1)
  units         * 0.8-4      2023-09-13 [1] CRAN (R 4.3.1)
  urlchecker      1.0.1      2021-11-30 [1] CRAN (R 4.3.0)
  usethis         2.2.2      2023-07-06 [1] CRAN (R 4.3.1)
  utf8            1.2.4      2023-10-22 [1] CRAN (R 4.3.1)
- vctrs           0.6.4      2023-10-12 [1] CRAN (R 4.3.1)
- withr           2.5.2      2023-10-30 [1] CRAN (R 4.3.1)
+ vctrs           0.6.5      2023-12-01 [1] CRAN (R 4.3.2)
+ withr           3.0.0      2024-01-16 [1] CRAN (R 4.3.2)
  xfun            0.41       2023-11-01 [1] CRAN (R 4.3.1)
- xml2            1.3.5      2023-07-06 [1] CRAN (R 4.3.1)
+ xml2            1.3.6      2023-12-04 [1] CRAN (R 4.3.2)
  xtable          1.8-4      2019-04-21 [1] CRAN (R 4.3.0)
- yaml            2.3.7      2023-01-23 [1] CRAN (R 4.3.0)
+ yaml            2.3.8      2023-12-11 [1] CRAN (R 4.3.2)
 
  [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3
  [2] /usr/local/lib/R/site-library
@@ -1323,12 +1335,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./00_workflow.html" class="pagination-link  aria-label=" workflow"="">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Workflow</span>
+      <a href="./01_select_projects.html" class="pagination-link  aria-label=" selecting="" projects"="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Selecting Projects</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./02_range_maps.html" class="pagination-link" aria-label="Range Maps">
+      <a href="./03_range_maps.html" class="pagination-link" aria-label="Range Maps">
         <span class="nav-page-text">Range Maps</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -1338,4 +1350,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/01_download.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/02_download.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

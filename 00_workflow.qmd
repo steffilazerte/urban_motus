@@ -1,5 +1,5 @@
 ---
-title: Workflow
+title: Plans
 ---
 
 ## Order of operations

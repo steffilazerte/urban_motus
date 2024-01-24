@@ -1,0 +1,108 @@
+---
+title: Selecting Projects
+---
+
+Here we explore a list of open or semi open Motus projects to select more
+project ids which we can use in our pilot study.
+
+## Setup
+
+```{r}
+#| message: false
+source("XX_setup.R")
+library(readxl)
+```
+
+
+## Cleaning and Filtering
+
+**Cleaning**
+
+The species names (English and scientific) listed here aren't always consistent,
+so we'll omit them and use only the species IDs to match them with the 
+NatureCounts metadata from [`XX_setup`](XX_setup.html).
+
+Then we consolidate the deployments in those projects as some listed some
+deployments under one species name and others under another (even if the species
+was the same)
+
+**Filtering**
+
+- keep only `access == 1` which are fully public projects 
+- omit species ID 129470 which are listed as attached to a Human...(?)
+- omit projects with non-Canadian species
+
+```{r}
+p_sp <- read_excel("Data/Raw/TagsSpeciesProject.xlsx") |>
+  rename_with(.cols = contains("No column"), \(x) "access") |>
+  filter(access == 1,             # Only completely open projects
+         speciesID != 129470) |>  # Don't worry about Human tags :D
+  select(-speciesName, -motusEnglishName, -access) |> # Species Names are not consistent
+  summarize(across(everything(), sum), .by = c("tagProjectID", "speciesID")) |>
+  left_join(select(species, species_id, scientific_name, english_name),
+            by = c("speciesID" = "species_id")) |>
+  mutate(good = !is.na(scientific_name),
+         other = str_detect(english_name, "Eurasian|European|Elaenia")) |>
+  group_by(tagProjectID) |>
+  filter(all(!other | is.na(other))) |> # Omit projects with non-Canadian species
+  mutate(good_tags = sum(num_deployments[good]),
+         prop_good_tags =  good_tags / sum(num_deployments)) |>
+  ungroup() |>
+  select(-other) |>
+  arrange(desc(prop_good_tags))
+
+gt(p_sp) |>
+  fmt_number("prop_good_tags", decimals = 2)
+```
+
+## Summarize
+
+Now we can summarize these projects by how many species, deployments (tags) and
+the average number of deployments per species. 
+
+We'll aim to include projects with a bread of species but also reasonable coverage,
+so we exclude projects with less than 100% passerines and fewer than three species.
+```{r}
+p <- p_sp |>
+  filter(prop_good_tags == 1) |>
+  group_by(tagProjectID) |>
+  summarize(total_tags = sum(num_deployments),
+            n_species = n_distinct(speciesID),
+            mean_tags_per_species = mean(num_deployments),
+            species = list(unique(english_name))) |>
+  filter(n_species > 3) |>
+  arrange(desc(mean_tags_per_species), desc(n_species), desc(total_tags))
+
+gt(p) |>
+  fmt_number(columns = "mean_tags_per_species", decimals = 1)
+```
+
+
+## Data sizes
+
+Now, we can check the amount of data per project (see what we're in for!)
+
+For reference, 7,006,847,799 bytes is ~ 7 GB
+
+```{r}
+#| cache: true
+dir.create("Data/Temp")
+status <- map(
+  set_names(p$tagProjectID), 
+  \(x) tellme(x, dir = "Data/Temp",  new = TRUE)) |>
+  list_rbind(names_to = "proj_id")
+unlink("Data/Temp", recursive = TRUE)
+```
+
+So this, isn't too bad, data-wise, I think we could use all projects.
+
+```{r}
+status |> 
+  mutate(Megabytes = numBytes / 1000000) |>
+  arrange(desc(numBytes)) |>
+  gt() |>
+  fmt_number(decimals = 0) 
+```
+
+
+

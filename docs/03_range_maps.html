@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-01-17">
+<meta name="dcterms.date" content="2024-01-24">
 
 <title>Motus tracking of urban migration stopovers - Range Maps</title>
 <style>
@@ -66,8 +66,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./03_basic_filters.html" rel="next">
-<link href="./01_download.html" rel="prev">
+<link href="./04_basic_filters.html" rel="next">
+<link href="./02_download.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -120,7 +120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./02_range_maps.html">Range Maps</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./03_range_maps.html">Range Maps</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -160,24 +160,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./00_workflow.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Workflow</span></a>
+ <span class="menu-text">Plans</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./01_download.html" class="sidebar-item-text sidebar-link">
+  <a href="./01_select_projects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Selecting Projects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02_download.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Download/Update Data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./02_range_maps.html" class="sidebar-item-text sidebar-link active">
+  <a href="./03_range_maps.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Range Maps</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./03_basic_filters.html" class="sidebar-item-text sidebar-link">
+  <a href="./04_basic_filters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Basic Filtering</span></a>
   </div>
 </li>
@@ -230,12 +236,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#save-outputs" id="toc-save-outputs" class="nav-link" data-scroll-target="#save-outputs">Save Outputs</a></li>
   <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/02_range_maps.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/03_range_maps.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./02_range_maps.html">Range Maps</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./03_range_maps.html">Range Maps</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Range Maps</h1>
 </div>
@@ -254,7 +260,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 17, 2024</p>
+      <p class="date">January 24, 2024</p>
     </div>
   </div>
   
@@ -326,23 +332,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gt</span>(sp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="taxsbambyq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#taxsbambyq table {
+<div id="xlfbgijrnd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#xlfbgijrnd table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#taxsbambyq thead, #taxsbambyq tbody, #taxsbambyq tfoot, #taxsbambyq tr, #taxsbambyq td, #taxsbambyq th {
+#xlfbgijrnd thead, #xlfbgijrnd tbody, #xlfbgijrnd tfoot, #xlfbgijrnd tr, #xlfbgijrnd td, #xlfbgijrnd th {
   border-style: none;
 }
 
-#taxsbambyq p {
+#xlfbgijrnd p {
   margin: 0;
   padding: 0;
 }
 
-#taxsbambyq .gt_table {
+#xlfbgijrnd .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -368,12 +374,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_caption {
+#xlfbgijrnd .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#taxsbambyq .gt_title {
+#xlfbgijrnd .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -385,7 +391,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#taxsbambyq .gt_subtitle {
+#xlfbgijrnd .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -397,7 +403,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#taxsbambyq .gt_heading {
+#xlfbgijrnd .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -409,13 +415,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_bottom_border {
+#xlfbgijrnd .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_col_headings {
+#xlfbgijrnd .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -430,7 +436,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_col_heading {
+#xlfbgijrnd .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -450,7 +456,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#taxsbambyq .gt_column_spanner_outer {
+#xlfbgijrnd .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -462,15 +468,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#taxsbambyq .gt_column_spanner_outer:first-child {
+#xlfbgijrnd .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#taxsbambyq .gt_column_spanner_outer:last-child {
+#xlfbgijrnd .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#taxsbambyq .gt_column_spanner {
+#xlfbgijrnd .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -482,11 +488,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#taxsbambyq .gt_spanner_row {
+#xlfbgijrnd .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#taxsbambyq .gt_group_heading {
+#xlfbgijrnd .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -512,7 +518,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#taxsbambyq .gt_empty_group_heading {
+#xlfbgijrnd .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -527,15 +533,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#taxsbambyq .gt_from_md > :first-child {
+#xlfbgijrnd .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#taxsbambyq .gt_from_md > :last-child {
+#xlfbgijrnd .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#taxsbambyq .gt_row {
+#xlfbgijrnd .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -554,7 +560,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#taxsbambyq .gt_stub {
+#xlfbgijrnd .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -567,7 +573,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#taxsbambyq .gt_stub_row_group {
+#xlfbgijrnd .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -581,15 +587,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#taxsbambyq .gt_row_group_first td {
+#xlfbgijrnd .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#taxsbambyq .gt_row_group_first th {
+#xlfbgijrnd .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#taxsbambyq .gt_summary_row {
+#xlfbgijrnd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -599,16 +605,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#taxsbambyq .gt_first_summary_row {
+#xlfbgijrnd .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_first_summary_row.thick {
+#xlfbgijrnd .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#taxsbambyq .gt_last_summary_row {
+#xlfbgijrnd .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -618,7 +624,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_grand_summary_row {
+#xlfbgijrnd .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -628,7 +634,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#taxsbambyq .gt_first_grand_summary_row {
+#xlfbgijrnd .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -638,7 +644,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_last_grand_summary_row_top {
+#xlfbgijrnd .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -648,11 +654,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_striped {
+#xlfbgijrnd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#taxsbambyq .gt_table_body {
+#xlfbgijrnd .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -661,7 +667,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_footnotes {
+#xlfbgijrnd .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -675,7 +681,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_footnote {
+#xlfbgijrnd .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -684,7 +690,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#taxsbambyq .gt_sourcenotes {
+#xlfbgijrnd .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -698,7 +704,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#taxsbambyq .gt_sourcenote {
+#xlfbgijrnd .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -706,63 +712,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#taxsbambyq .gt_left {
+#xlfbgijrnd .gt_left {
   text-align: left;
 }
 
-#taxsbambyq .gt_center {
+#xlfbgijrnd .gt_center {
   text-align: center;
 }
 
-#taxsbambyq .gt_right {
+#xlfbgijrnd .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#taxsbambyq .gt_font_normal {
+#xlfbgijrnd .gt_font_normal {
   font-weight: normal;
 }
 
-#taxsbambyq .gt_font_bold {
+#xlfbgijrnd .gt_font_bold {
   font-weight: bold;
 }
 
-#taxsbambyq .gt_font_italic {
+#xlfbgijrnd .gt_font_italic {
   font-style: italic;
 }
 
-#taxsbambyq .gt_super {
+#xlfbgijrnd .gt_super {
   font-size: 65%;
 }
 
-#taxsbambyq .gt_footnote_marks {
+#xlfbgijrnd .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#taxsbambyq .gt_asterisk {
+#xlfbgijrnd .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#taxsbambyq .gt_indent_1 {
+#xlfbgijrnd .gt_indent_1 {
   text-indent: 5px;
 }
 
-#taxsbambyq .gt_indent_2 {
+#xlfbgijrnd .gt_indent_2 {
   text-indent: 10px;
 }
 
-#taxsbambyq .gt_indent_3 {
+#xlfbgijrnd .gt_indent_3 {
   text-indent: 15px;
 }
 
-#taxsbambyq .gt_indent_4 {
+#xlfbgijrnd .gt_indent_4 {
   text-indent: 20px;
 }
 
-#taxsbambyq .gt_indent_5 {
+#xlfbgijrnd .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -975,23 +981,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>) <span class="sc">|&gt;</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="qqidciwfve" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#qqidciwfve table {
+<div id="mvxhvobtsg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mvxhvobtsg table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#qqidciwfve thead, #qqidciwfve tbody, #qqidciwfve tfoot, #qqidciwfve tr, #qqidciwfve td, #qqidciwfve th {
+#mvxhvobtsg thead, #mvxhvobtsg tbody, #mvxhvobtsg tfoot, #mvxhvobtsg tr, #mvxhvobtsg td, #mvxhvobtsg th {
   border-style: none;
 }
 
-#qqidciwfve p {
+#mvxhvobtsg p {
   margin: 0;
   padding: 0;
 }
 
-#qqidciwfve .gt_table {
+#mvxhvobtsg .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1017,12 +1023,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_caption {
+#mvxhvobtsg .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#qqidciwfve .gt_title {
+#mvxhvobtsg .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1034,7 +1040,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#qqidciwfve .gt_subtitle {
+#mvxhvobtsg .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1046,7 +1052,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#qqidciwfve .gt_heading {
+#mvxhvobtsg .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1058,13 +1064,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_bottom_border {
+#mvxhvobtsg .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_col_headings {
+#mvxhvobtsg .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1079,7 +1085,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_col_heading {
+#mvxhvobtsg .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1099,7 +1105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#qqidciwfve .gt_column_spanner_outer {
+#mvxhvobtsg .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1111,15 +1117,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#qqidciwfve .gt_column_spanner_outer:first-child {
+#mvxhvobtsg .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#qqidciwfve .gt_column_spanner_outer:last-child {
+#mvxhvobtsg .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#qqidciwfve .gt_column_spanner {
+#mvxhvobtsg .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1131,11 +1137,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#qqidciwfve .gt_spanner_row {
+#mvxhvobtsg .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#qqidciwfve .gt_group_heading {
+#mvxhvobtsg .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1161,7 +1167,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#qqidciwfve .gt_empty_group_heading {
+#mvxhvobtsg .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1176,15 +1182,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#qqidciwfve .gt_from_md > :first-child {
+#mvxhvobtsg .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#qqidciwfve .gt_from_md > :last-child {
+#mvxhvobtsg .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#qqidciwfve .gt_row {
+#mvxhvobtsg .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1203,7 +1209,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#qqidciwfve .gt_stub {
+#mvxhvobtsg .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1216,7 +1222,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#qqidciwfve .gt_stub_row_group {
+#mvxhvobtsg .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1230,15 +1236,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#qqidciwfve .gt_row_group_first td {
+#mvxhvobtsg .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#qqidciwfve .gt_row_group_first th {
+#mvxhvobtsg .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#qqidciwfve .gt_summary_row {
+#mvxhvobtsg .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1248,16 +1254,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#qqidciwfve .gt_first_summary_row {
+#mvxhvobtsg .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_first_summary_row.thick {
+#mvxhvobtsg .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#qqidciwfve .gt_last_summary_row {
+#mvxhvobtsg .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1267,7 +1273,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_grand_summary_row {
+#mvxhvobtsg .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1277,7 +1283,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#qqidciwfve .gt_first_grand_summary_row {
+#mvxhvobtsg .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1287,7 +1293,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_last_grand_summary_row_top {
+#mvxhvobtsg .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1297,11 +1303,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_striped {
+#mvxhvobtsg .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#qqidciwfve .gt_table_body {
+#mvxhvobtsg .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1310,7 +1316,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_footnotes {
+#mvxhvobtsg .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1324,7 +1330,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_footnote {
+#mvxhvobtsg .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1333,7 +1339,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#qqidciwfve .gt_sourcenotes {
+#mvxhvobtsg .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1347,7 +1353,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#qqidciwfve .gt_sourcenote {
+#mvxhvobtsg .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1355,63 +1361,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#qqidciwfve .gt_left {
+#mvxhvobtsg .gt_left {
   text-align: left;
 }
 
-#qqidciwfve .gt_center {
+#mvxhvobtsg .gt_center {
   text-align: center;
 }
 
-#qqidciwfve .gt_right {
+#mvxhvobtsg .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#qqidciwfve .gt_font_normal {
+#mvxhvobtsg .gt_font_normal {
   font-weight: normal;
 }
 
-#qqidciwfve .gt_font_bold {
+#mvxhvobtsg .gt_font_bold {
   font-weight: bold;
 }
 
-#qqidciwfve .gt_font_italic {
+#mvxhvobtsg .gt_font_italic {
   font-style: italic;
 }
 
-#qqidciwfve .gt_super {
+#mvxhvobtsg .gt_super {
   font-size: 65%;
 }
 
-#qqidciwfve .gt_footnote_marks {
+#mvxhvobtsg .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#qqidciwfve .gt_asterisk {
+#mvxhvobtsg .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#qqidciwfve .gt_indent_1 {
+#mvxhvobtsg .gt_indent_1 {
   text-indent: 5px;
 }
 
-#qqidciwfve .gt_indent_2 {
+#mvxhvobtsg .gt_indent_2 {
   text-indent: 10px;
 }
 
-#qqidciwfve .gt_indent_3 {
+#mvxhvobtsg .gt_indent_3 {
   text-indent: 15px;
 }
 
-#qqidciwfve .gt_indent_4 {
+#mvxhvobtsg .gt_indent_4 {
   text-indent: 20px;
 }
 
-#qqidciwfve .gt_indent_5 {
+#mvxhvobtsg .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1802,91 +1808,91 @@ No plots online
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-1.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-1.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-2.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-2.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-3.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-3.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-3.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-3.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-4.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-4.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-4.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-4.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-5.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-5.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-5.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-5.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-6.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-6.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-6.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-6.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-7.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-7.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-7.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-7.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-8.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-8.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-8.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-8.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-9.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-9.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-9.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-9.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-10.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-10.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-10.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-10.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-11.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-11.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-11.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-11.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-12.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-12.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-12.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-12.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="02_range_maps_files/figure-html/unnamed-chunk-11-13.png" class="lightbox" data-gallery="ranges"><img src="02_range_maps_files/figure-html/unnamed-chunk-11-13.png" class="img-fluid figure-img" width="960"></a></p>
+<p><a href="03_range_maps_files/figure-html/unnamed-chunk-11-13.png" class="lightbox" data-gallery="ranges"><img src="03_range_maps_files/figure-html/unnamed-chunk-11-13.png" class="img-fluid figure-img" width="960"></a></p>
 </figure>
 </div>
 </div>
@@ -1926,7 +1932,7 @@ Session Info
  collate  en_CA.UTF-8
  ctype    en_CA.UTF-8
  tz       America/Toronto
- date     2024-01-17
+ date     2024-01-24
  pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────
@@ -1939,44 +1945,44 @@ Session Info
  callr                3.7.3      2022-11-02 [1] CRAN (R 4.3.0)
  class                7.3-22     2023-05-03 [4] CRAN (R 4.3.1)
  classInt             0.4-10     2023-09-05 [1] CRAN (R 4.3.1)
- cli                  3.6.1      2023-03-23 [1] CRAN (R 4.3.0)
+ cli                  3.6.2      2023-12-11 [1] CRAN (R 4.3.2)
  codetools            0.2-19     2023-02-01 [4] CRAN (R 4.2.2)
  colorspace           2.1-0      2023-01-23 [1] CRAN (R 4.3.0)
  crayon               1.5.2      2022-09-29 [1] CRAN (R 4.3.0)
  DBI                * 1.1.3      2022-06-18 [1] CRAN (R 4.3.0)
  dbplyr               2.4.0      2023-10-26 [1] CRAN (R 4.3.1)
  devtools             2.4.5      2022-10-11 [1] CRAN (R 4.3.0)
- digest               0.6.33     2023-07-07 [1] CRAN (R 4.3.1)
- dplyr              * 1.1.3      2023-09-03 [1] CRAN (R 4.3.1)
+ digest               0.6.34     2024-01-11 [1] CRAN (R 4.3.2)
+ dplyr              * 1.1.4      2023-11-17 [1] CRAN (R 4.3.2)
  e1071                1.7-13     2023-02-01 [1] CRAN (R 4.3.0)
  ebirdst            * 3.2022.2   2024-01-15 [1] Github (ebird/ebirdst@bd409c7)
  ellipsis             0.3.2      2021-04-29 [1] CRAN (R 4.3.0)
  evaluate             0.23       2023-11-01 [1] CRAN (R 4.3.1)
- fansi                1.0.5      2023-10-08 [1] CRAN (R 4.3.1)
+ fansi                1.0.6      2023-12-08 [1] CRAN (R 4.3.2)
  farver               2.1.1      2022-07-06 [1] CRAN (R 4.3.0)
  fastmap              1.1.1      2023-02-24 [1] CRAN (R 4.3.0)
  fs                   1.6.3      2023-07-20 [1] CRAN (R 4.3.1)
  generics             0.1.3      2022-07-05 [1] CRAN (R 4.3.0)
  ggplot2            * 3.4.4      2023-10-12 [1] CRAN (R 4.3.1)
- glue                 1.6.2      2022-02-24 [1] CRAN (R 4.3.0)
+ glue                 1.7.0      2024-01-09 [1] CRAN (R 4.3.2)
  gt                 * 0.10.0     2023-10-07 [1] CRAN (R 4.3.1)
  gtable               0.3.4      2023-08-21 [1] CRAN (R 4.3.1)
  hms                  1.1.3      2023-03-21 [1] CRAN (R 4.3.0)
  htmltools            0.5.7      2023-11-03 [1] CRAN (R 4.3.1)
- htmlwidgets          1.6.2      2023-03-17 [1] CRAN (R 4.3.0)
+ htmlwidgets          1.6.4      2023-12-06 [1] CRAN (R 4.3.2)
  httpuv               1.6.12     2023-10-23 [1] CRAN (R 4.3.1)
  httr                 1.4.7      2023-08-15 [1] CRAN (R 4.3.1)
- jsonlite             1.8.7      2023-06-29 [1] CRAN (R 4.3.1)
+ jsonlite             1.8.8      2023-12-04 [1] CRAN (R 4.3.2)
  KernSmooth           2.23-22    2023-07-10 [1] CRAN (R 4.3.1)
  knitr                1.45       2023-10-30 [1] CRAN (R 4.3.1)
  later                1.3.1      2023-05-02 [1] CRAN (R 4.3.1)
  lattice              0.22-5     2023-10-24 [4] CRAN (R 4.3.1)
- lifecycle            1.0.3      2022-10-07 [1] CRAN (R 4.3.0)
+ lifecycle            1.0.4      2023-11-07 [1] CRAN (R 4.3.2)
  magrittr             2.0.3      2022-03-30 [1] CRAN (R 4.3.0)
  memoise              2.0.1      2021-11-26 [1] CRAN (R 4.3.0)
  mime                 0.12       2021-09-28 [1] CRAN (R 4.3.0)
  miniUI               0.1.1.1    2018-05-18 [1] CRAN (R 4.3.0)
- motus              * 6.0.1.9000 2024-01-09 [1] local
+ motus              * 6.0.1.9000 2024-01-24 [1] local
  munsell              0.5.0      2018-06-12 [1] CRAN (R 4.3.0)
  naturecounts         0.4.0      2023-06-20 [1] local
  pillar               1.9.0      2023-03-22 [1] CRAN (R 4.3.0)
@@ -1994,21 +2000,21 @@ Session Info
  Rcpp                 1.0.11     2023-07-06 [1] CRAN (R 4.3.1)
  readr              * 2.1.4      2023-02-10 [1] CRAN (R 4.3.0)
  remotes              2.4.2.1    2023-07-18 [1] CRAN (R 4.3.1)
- rlang                1.1.2      2023-11-04 [1] CRAN (R 4.3.1)
+ rlang                1.1.3      2024-01-10 [1] CRAN (R 4.3.2)
  rmarkdown            2.25       2023-09-18 [1] CRAN (R 4.3.1)
  rnaturalearth      * 0.3.4      2023-08-21 [1] CRAN (R 4.3.1)
  rnaturalearthhires   0.2.1      2023-05-31 [1] Github (ropensci/rnaturalearthhires@c3785a8)
  RSQLite              2.3.3      2023-11-04 [1] CRAN (R 4.3.1)
  rstudioapi           0.15.0     2023-07-07 [1] CRAN (R 4.3.1)
  s2                   1.1.4      2023-05-17 [1] CRAN (R 4.3.1)
- sass                 0.4.7      2023-07-15 [1] CRAN (R 4.3.1)
- scales               1.2.1      2022-08-20 [1] CRAN (R 4.3.0)
+ sass                 0.4.8      2023-12-06 [1] CRAN (R 4.3.2)
+ scales               1.3.0      2023-11-28 [1] CRAN (R 4.3.2)
  sessioninfo          1.2.2      2021-12-06 [1] CRAN (R 4.3.0)
  sf                 * 1.0-14     2023-07-11 [1] CRAN (R 4.3.1)
  shiny                1.7.5.1    2023-10-14 [1] CRAN (R 4.3.1)
  sp                   2.1-1      2023-10-16 [1] CRAN (R 4.3.1)
- stringi              1.7.12     2023-01-11 [1] CRAN (R 4.3.0)
- stringr            * 1.5.0      2022-12-02 [1] CRAN (R 4.3.0)
+ stringi              1.8.3      2023-12-11 [1] CRAN (R 4.3.2)
+ stringr            * 1.5.1      2023-11-14 [1] CRAN (R 4.3.2)
  tibble             * 3.2.1      2023-03-20 [1] CRAN (R 4.3.0)
  tidyr              * 1.3.0      2023-01-24 [1] CRAN (R 4.3.0)
  tidyselect           1.2.0      2022-10-10 [1] CRAN (R 4.3.0)
@@ -2017,15 +2023,15 @@ Session Info
  urlchecker           1.0.1      2021-11-30 [1] CRAN (R 4.3.0)
  usethis              2.2.2      2023-07-06 [1] CRAN (R 4.3.1)
  utf8                 1.2.4      2023-10-22 [1] CRAN (R 4.3.1)
- vctrs                0.6.4      2023-10-12 [1] CRAN (R 4.3.1)
+ vctrs                0.6.5      2023-12-01 [1] CRAN (R 4.3.2)
  viridisLite          0.4.2      2023-05-02 [1] CRAN (R 4.3.1)
  vroom                1.6.4      2023-10-02 [1] CRAN (R 4.3.1)
- withr                2.5.2      2023-10-30 [1] CRAN (R 4.3.1)
+ withr                3.0.0      2024-01-16 [1] CRAN (R 4.3.2)
  wk                   0.9.0      2023-10-22 [1] CRAN (R 4.3.1)
  xfun                 0.41       2023-11-01 [1] CRAN (R 4.3.1)
- xml2                 1.3.5      2023-07-06 [1] CRAN (R 4.3.1)
+ xml2                 1.3.6      2023-12-04 [1] CRAN (R 4.3.2)
  xtable               1.8-4      2019-04-21 [1] CRAN (R 4.3.0)
- yaml                 2.3.7      2023-01-23 [1] CRAN (R 4.3.0)
+ yaml                 2.3.8      2023-12-11 [1] CRAN (R 4.3.2)
 
  [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3
  [2] /usr/local/lib/R/site-library
@@ -2432,18 +2438,18 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./01_download.html" class="pagination-link  aria-label=" download="" update="" data"="">
+      <a href="./02_download.html" class="pagination-link  aria-label=" download="" update="" data"="">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Download/Update Data</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./03_basic_filters.html" class="pagination-link" aria-label="Basic Filtering">
+      <a href="./04_basic_filters.html" class="pagination-link" aria-label="Basic Filtering">
         <span class="nav-page-text">Basic Filtering</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
 </div> <!-- /content -->
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/02_range_maps.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script>var lightboxQuarto = GLightbox({"selector":".lightbox","loop":false,"openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom"});
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/03_range_maps.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script>var lightboxQuarto = GLightbox({"openEffect":"zoom","selector":".lightbox","closeEffect":"zoom","loop":false,"descPosition":"bottom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;

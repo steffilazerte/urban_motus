@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-01-17">
+<meta name="dcterms.date" content="2024-01-24">
 
 <title>Motus tracking of urban migration stopovers - Setup</title>
 <style>
@@ -67,7 +67,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./XX_citations.html" rel="next">
-<link href="./03_basic_filters.html" rel="prev">
+<link href="./04_basic_filters.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -157,24 +157,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./00_workflow.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Workflow</span></a>
+ <span class="menu-text">Plans</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./01_download.html" class="sidebar-item-text sidebar-link">
+  <a href="./01_select_projects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Selecting Projects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02_download.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Download/Update Data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./02_range_maps.html" class="sidebar-item-text sidebar-link">
+  <a href="./03_range_maps.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Range Maps</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./03_basic_filters.html" class="sidebar-item-text sidebar-link">
+  <a href="./04_basic_filters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Basic Filtering</span></a>
   </div>
 </li>
@@ -243,7 +249,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 17, 2024</p>
+      <p class="date">January 24, 2024</p>
     </div>
   </div>
   
@@ -317,7 +323,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># naturecounts::nc_metadata() # Update naturecounts taxonomy lists</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>species <span class="ot">&lt;-</span> naturecounts<span class="sc">::</span><span class="fu">meta_species_taxonomy</span>() <span class="sc">|&gt;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(order_taxon <span class="sc">==</span> <span class="st">"Passeriformes"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(order_taxon <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Passeriformes"</span>, <span class="st">"Piciformes"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="functions" class="level2">
@@ -748,7 +754,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./03_basic_filters.html" class="pagination-link  aria-label=" basic="" filtering"="">
+      <a href="./04_basic_filters.html" class="pagination-link  aria-label=" basic="" filtering"="">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Basic Filtering</span>
       </a>          
   </div>

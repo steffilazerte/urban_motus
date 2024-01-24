@@ -35,7 +35,7 @@ projects <- setNames(projects, projects)
 # naturecounts::nc_metadata() # Update naturecounts taxonomy lists
 
 species <- naturecounts::meta_species_taxonomy() |>
-  filter(order_taxon == "Passeriformes")
+  filter(order_taxon %in% c("Passeriformes", "Piciformes"))
 
 # ---- functions ----
 source("XX_functions.R")
