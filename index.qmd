@@ -4,6 +4,10 @@ title: "Quantifying bird migration and stopover within an urbanized landscapes u
 
 __*Pilot Phase*__
 
+PIs: **Barbara Frei, Elizabeth Gow and Krista De Groot**  
+Technical: Steffi LaZerte
+
+
 ## Getting Started
 
 This site contains the workflow for obtaining and filtering Motus track data
