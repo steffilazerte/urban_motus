@@ -1,15 +1,25 @@
 ---
 title: Range Maps
 cache: true
+format:
+  html: default
+  typst: 
+    toc: true
+    margin: 
+      x: 1.5cm
+      y: 1.5cm
+format-links: false
 ---
+
+::::{.content-hidden when-format="typst"}
 
 In this step we decide **Which receivers do we keep?**
 
 - We keep receivers which are within ranges of the species in question
 - We'll keep runs which have acceptable receivers for a given species
 
-So first we need to get a list of recievers that are within different species 
-ranges.  We'll use this list to filter the motus runs in later steps.
+So first we need to get a list of receivers that are within different species 
+ranges.  We'll use this list to filter the Motus runs in later steps.
 
 We'll acquire the range maps from eBird Status and Trends
 
@@ -27,47 +37,52 @@ In general, we'll keep it below 50 for now, and ask for permission as required.
 :::
 
 ## Setup
+Load packages, connect to databases, and create species lists.
+See [Setup](XX_setup.html) for details. 
 ```{r}
 #| message: false
 #| cache: false
 source("XX_setup.R")
 ```
 
-### Connect to databases
+### Get a map of the Americas
+
+First we'll get a map of the Americas so we can filter out receivers outside this
+area and as a base map to give context to the plots we'll create later on.
+
 ```{r}
-dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
+americas <- ne_countries(continent = c("North America", "South America"), 
+                         returnclass = "sf") |>
+  pull(name) |>
+  ne_states(returnclass = "sf") |>
+  # Omit Hawaii
+  filter(name != "Hawaii") |>
+  st_make_valid() |>
+  group_by(admin) |>
+  summarize() |>
+  st_transform(crs = 3347)
 ```
 
-
-## Get the species list 
+### Get the species list 
+Next we'll create a combined species list base on the existing species in the data
+bases (see [Setup](XX_setup.qmd)) and the eBird species list (`ebirdst_runs`).
 
 :::{.panel-tabset}
-We'll take the species which are in the databases AND in list of approved species (see `XX_setup.R`)
-
-> Notes
->
-> - We rename the scientific name for the yellow-rumped warbler to match the
-eBird listing (no subspecies)
-
 ### Code
 ```{r}
-sp <- imap(dbs, \(x, y) {
-  tbl(x, "species") |>
-    collect()
-}) |>
-  list_rbind() |>
-  distinct() |>
-  filter(id %in% species$species_id) |>
-  arrange(id) |>
-  # Fix yellow-rumped warbler name for joining with eBird
-  mutate(scientific = str_replace(scientific, "coronata coronata", "coronata")) |>
-  left_join(select(ebirdst_runs, "species_code", "scientific_name"),
-            by = c("scientific" = "scientific_name"))
+sp_ebird <- select(ebirdst_runs, "species_code", "scientific_name") |>
+  filter(species_code != "yebsap-example") |> # Remove eBird example species
+  right_join(sp, by = c("scientific_name" = "scientific")) |>
+  arrange(english)
+
+# Get a list of codes
+sp_codes <- sp_ebird$species_code
 ```
 
 ### Species list
 ```{r}
-gt(sp)
+gt(sp_ebird, rownames_to_stub = TRUE) |>
+  gt_theme()
 ```
 :::
 
@@ -79,9 +94,12 @@ Now we'll download the species range maps from eBird at a resolution of 27 km (h
 
 ```{r}
 #| message: false
-walk(sp$species_code,
-     \(x) ebirdst_download_status(x, download_ranges = TRUE,
-                                  pattern = "range\\_raw\\_27km"))
+walk(sp_codes, \(x) {
+  if(!any(str_detect(list.files(ebirdst_data_dir(), recursive = TRUE), x))) {
+    ebirdst_download_status(x, download_ranges = TRUE,
+                            pattern = "range\\_raw\\_27km")
+  }
+})
 ```
 
 
@@ -91,8 +109,14 @@ ranges with a **100km** buffer.
 The idea here is that we may want to include receivers that are near the edges of
 a species range, as observations at those stations may be legitimate.
 
+:::{.callout-tip}
+### Question
+Is a 100km buffer sufficient? Good enough, too much?
+:::
+
 ```{r}
-ranges <- map(sp$species_code, \(x) load_ranges(x, resolution = "27km", smoothed = FALSE)) |>
+ranges <- map(sp_codes, 
+              \(x) load_ranges(x, resolution = "27km", smoothed = FALSE)) |>
   bind_rows() |>
   group_by(species_code, scientific_name, common_name, prediction_year) |>
   summarize(.groups = "drop") |>
@@ -100,9 +124,19 @@ ranges <- map(sp$species_code, \(x) load_ranges(x, resolution = "27km", smoothed
   st_transform(crs = 3347)
 
 # Use a 100km buffer around the range
-ranges_buffer <- st_buffer(ranges, dist = set_units(100, "km"))
+buffer <- set_units(100, "km")
+ranges_buffer <- st_buffer(ranges, dist = buffer)
+
+# Use a generous 1250km buffer around the Americas
+americas_buffer <- st_union(americas) |>
+  st_buffer(dist = set_units(1250, "km"))
+
+# Get the total region covered by at least one species ranges
+any_range <- summarize(ranges_buffer)
 ```
 
+
+## Get Receivers
 Now we'll collect a list of receivers that exist in our data. 
 
 We'll start by doing some preliminary filtering:
@@ -110,93 +144,208 @@ We'll start by doing some preliminary filtering:
 - omit receivers which don't overlap with any species' range
 - omit receivers labelled "test", etc.
 
-:::{.panel-tabset}
+### Filtering
 
-### Code
+Get list of receivers in the databases. We only need to do to one databases, as the
+`metadata()` data step in [Download/Update](02_download.html) data adds full
+receiver lists to all databases (i.e. they are the same in each one).
+
 ```{r}
-any_range <- summarize(ranges_buffer)
-
-# Get list of receivers in the databases
-recvs <- map(dbs, \(x) tbl(x, "recvDeps") |>
-               select(deployID, name, longitude, latitude) |>
-               collect()) |>
-  list_rbind() |>
+recvs_full <- tbl(dbs[[1]], "recvDeps") |>
+  select(deployID, deviceID, name, longitude, latitude, isMobile) |>
   distinct() |>
-  # Omit receivers labelled "test"
-  filter(!str_detect(tolower(name), "teststation|test_sg")) |>
-  assert(not_na, longitude, latitude) |>
+  collect()
+```
+
+There are receivers which we can't / don't want to use. 
+These are receivers missing coordinates, or those which are test setups. 
+
+Let's keep track of those which are problematic.
+
+- Those labelled "test"
+- Mobile stations
+- Those with missing lat/lon
+- Those with no overlap with any species range
+- Those outside of the Americas
+
+We'll first assess the spatial-problems (i.e. where the receiver is), then the 
+regular problems (what the receiver is or it's metadata).
+
+```{r}
+recvs_spatial_problems <- recvs_full |>
+  drop_na(latitude, longitude) |>
   st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
   st_transform(crs = 3347) |>
-  # Filter to only receivers that overlap at least one species
-  st_filter(any_range)
+  mutate(
+    # No overlap at least one species
+    no_species = !st_intersects(geometry, any_range, sparse = FALSE),
+    # Not in the Americas (i.e. European receivers)
+    no_americas = !st_intersects(geometry, americas_buffer, sparse = FALSE)) |> 
+  st_drop_geometry() |>
+  select("deployID", "no_species", "no_americas")
+    
+recvs_problems <- recvs_full |>
+  left_join(recvs_spatial_problems, by = "deployID") |>
+  mutate(problem = case_when(
+    # Missing lat/lon
+    is.na(longitude) | is.na(latitude) ~ "missing coords",
+    # Mobile receivers
+    isMobile == 1 ~ "mobile station",
+    # Receivers labelled "test"
+    str_detect(tolower(name), "teststation|test_sg") ~ "test station",
+    no_americas ~ "out of americas",
+    no_species ~ "out of all species ranges",
+    TRUE ~ "no problem")
+  ) |>
+  filter(problem != "no problem") |>
+  select(deployID, deviceID, name, longitude, latitude, problem)
 ```
 
-Now we'll calculate overlaps with individual species ranges
+
+Clean up master receivers list
+
+- omit receivers we don't want
+- convert to spatial
 ```{r}
-recvs <- bind_cols(
-  recvs, 
-  as_tibble(st_intersects(recvs, ranges_buffer, sparse = FALSE),
-            .name_repair = ~ranges$species_code)) |>
-  pivot_longer(cols = -c(deployID, name, geometry), 
-               names_to = "species_code", values_to = "in_range")
+recvs <- recvs_full |>
+  select(-"isMobile") |>
+  # Omit problems
+  anti_join(recvs_problems, by = "deployID") |>
+  # Transform to a spatial data set  
+  drop_na(latitude, longitude) |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+  st_transform(crs = 3347)
 ```
 
-### Data Preview
+
+
+### Check Removed Receivers
+
+:::{.panel-tabset}
+
+#### Table {style="height:500px; overflow-y:auto"}
+```{r}
+recvs_problems |>
+  arrange(deployID) |>
+  gt() |>
+  gt_theme(container.height = 500)
+```
+
+
+#### Figures
+```{r}
+americas_buffer2 <- st_transform(americas_buffer, crs = "+proj=laea +lon_0=-75.23 +lat_0=15.23 +datum=WGS84 +units=m +no_defs")
+
+r <- recvs |>
+  group_by(deployID) |>
+  slice(1)
+
+p <- recvs_problems |>
+  drop_na(latitude, longitude) |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+  arrange(problem)
+
+g <- ggplot() +
+  theme(legend.position = "top") +
+  geom_sf(data = americas_buffer2, fill = "blue", colour = NA, alpha = 0.2) +
+  geom_sf(data = americas, fill = "white") +
+  geom_sf(data = r, colour = alpha("black", 0.2), size = 0.5) +
+  geom_sf(data = p, aes(fill = problem), shape = 21, size = 2) +
+  scale_fill_viridis_d(direction = -1, option = "plasma") +
+  labs(caption = "Pale blue indicates a 1250km buffer around the Americas within which to include receivers\nSmall black points are included receivers, colourful points are those to be omitted")
+g
+
+g + coord_sf(xlim = c(-5000000, 3000000), ylim = c(0, 7000000))
+```
+:::
+
+
+## Range/Receiver Overlap
+
+Now we'll calculate overlaps with individual species ranges. 
+Here we use the *buffered* range; that is, the species range with an added
+`r buffer` buffer around it. This way we include stations which are on the edge
+of a species range and which might very well include valid species observations
+even if they're not technically inside the range calculated by eBird.
+
+:::{.panel-tabset}
+### Code
+```{r}
+sp_range_intersections <- recvs |>
+  st_intersects(ranges_buffer, sparse = FALSE) |>
+  as_tibble(.name_repair = ~ranges_buffer$species_code)
+
+recvs <- bind_cols(recvs, sp_range_intersections) |>
+  pivot_longer(cols = -c("deployID", "deviceID", "name", "geometry"), 
+               names_to = "species_code", values_to = "in_range") |>
+  left_join(select(sp_ebird, "species_code", "id", "english"), by = "species_code")
+```
+
+### Receivers List Preview
 ```{r}
 recvs |>
   st_drop_geometry() |>
   slice(1:50) |>
-  gt()
+  gt() |>
+  gt_theme(container.height = 500)
 ```
 
 :::
 
-
+::::
 
 ## Plots
 
-### Prepare basemaps
+
+::::{.content-hidden when-format="typst"}
+
+
+### Setup
 
 Next we'll plot each species range and the overlapping receivers for quality 
 control.
 
-First we'll get a map of the Americas as a base map to give context to the plots.
+First we'll make sure our map of the Americas only includes countries for which
+we have at least one station.
 ```{r}
-americas <- ne_countries(continent = c("North America", "South America"), returnclass = "sf") |>
-  pull(name) |>
-  ne_states(returnclass = "sf") |>
-  # Omit Hawaii
-  filter(name != "Hawaii") |>
-  st_make_valid() |>
-  group_by(admin) |>
-  summarize() |>
-  st_transform(crs = 3347) |>
-  st_filter(recvs)
+americas <- st_filter(americas, recvs)
+```
 
-# Get a data frame with both ranges and buffered ranges
+Next, we'll prepare a data frame with both ranges and buffered ranges, so we
+can show on the map the true range but also show that we include stations which
+are within `r buffer` of the true range.
+```{r}
 ranges <- bind_rows(
   bind_cols(ranges, type = "Range"),
   bind_cols(ranges_buffer, type = "Buffered Range"))
 ```
 
+::::
 
 ### Create range plots
 
 Now we're ready to plot!
 
 :::{.callout-important}
-## No plots online
+### No plots online
 There are temporarily no plots in this version of the page online as we have
 not yet received permission from eBird to share these in a semi-open manner.
 :::
 
+
 ```{r}
-#| fig.height: 8
-#| fig.width: 10
-#| lightbox:
-#|   group: ranges
+#| fig-height: 10
+#| fig-width: 12
+#| out-width: 100%
+#| results: asis
+#| code-fold: true
+
 for(i in unique(ranges$species_code)) {
+  
   r <- filter(ranges, species_code == i)
+  
+  # Print title to add to TOC
+  cat("\n\n### ", r$common_name[1], "\n\n")
   
   g <- ggplot() +
     theme_bw() +
@@ -204,28 +353,50 @@ for(i in unique(ranges$species_code)) {
     geom_sf(data = americas) +
     geom_sf(data = r, aes(fill = type, alpha = type)) +
     geom_sf(data = filter(recvs, species_code == r$species_code[1]), 
-            aes(colour = in_range), size = 1) +
+            aes(colour = in_range), size = 0.5) +
     scale_colour_viridis_d(end = 0.9) +
     scale_fill_manual(values = c("blue", "blue")) +
     scale_alpha_manual(values = c(0.25, 0.4)) +
     labs(colour = "Reciever within\nbuffered species range", 
-         title = "Range map & Motus Receivers",
+         title = "Range Map & Motus Receivers",
          subtitle = r$common_name[1], 
          fill = "", alpha = "") +
     guides(alpha = guide_legend(override.aes = list(alpha = c(0.25, 0.65))),
            colour = guide_legend(override.aes = list(size = 3)))
-  
+
   print(g)
 }
 ```
 
+::::{.content-hidden when-format="typst"}
+
 ## Save Outputs
 
+First we'll add in all the receivers we originally omitted. 
+This way we have the reason each receiver is not `in_range` when we go to 
+examine the filters in the next step.
+
 ```{r}
-write_csv(st_drop_geometry(recvs), "Data/Datasets/receivers.csv")
+p <- select(recvs_problems, "deployID", "deviceID", "name", "problem") |>
+  expand_grid(select(sp_ebird, "species_code", "id", "english")) |>
+  mutate(in_range = FALSE)
+
+recvs |>
+  st_drop_geometry() |>
+  full_join(p, by = c("deployID", "deviceID", "name", "species_code", 
+                      "id", "english", "in_range")) |>
+  mutate(problem = replace_na(problem, "none")) |>
+  write_csv("Data/Datasets/receivers.csv")
 ```
 
+## Wrap up
+Disconnect from the databases
+```{r}
+walk(dbs, dbDisconnect)
+```
 
+::::
 
+## Reproducibility
 {{< include _reproducibility.qmd >}}
 
