@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-
 /.quarto/
 .Rdata
 .httr-oauth
@@ -13,3 +12,5 @@ Data/
 */02_range_maps_files/figure-html/*
 *cache/
 *.motus
+References
+*.pdf

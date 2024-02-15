@@ -39,15 +39,37 @@ Here we're using a small set of pilot projects
 - Montreal Connectivity #373 (105 tags)
 - Montreal moult migrant research #168 (113 tags)
 
+Additionally we're using open motus projects selected via 
+[Selecting Projects](01_select_projects.qmd).
+
 ```{r projects}
 ```
 
-## Define data to include
+## Data
 
-TODO: What are 'near-passerines'? cf https://en.wikipedia.org/wiki/Near_passerine
+Get species lists from naturecounts taxonomy and join this with the species
+metadata from the motus data bases. 
 
-```{r data}
+We only need to do this to one database, as the `metadata()` data step in [Download/Update data](02_download.html) adds full species lists to all databases (so all database metadata are the same).
+
+### Species
+```{r data_sp}
 ```
+
+### Databases
+
+#### Load existing databases
+```{r db_load}
+```
+
+#### Establish included species
+- We match existing species in the databases to the species list from naturecounts
+- We rename scientific names to omit subspecies (e.g., myrtle yellow-rumped warbler)
+  [required for later eBird range steps]
+  
+```{r db_species}
+```
+
 
 ## Functions
 These functions are sourced from `XX_functions.R`

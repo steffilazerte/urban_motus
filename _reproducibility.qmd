@@ -1,5 +1,4 @@
 
-## Reproducibility
 
 :::{.callout-note collapse=true}
 ### Session Info

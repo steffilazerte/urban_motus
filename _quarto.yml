@@ -13,6 +13,7 @@ website:
           - auto: "[!X]*.qmd"
       - section: Appendicies
         contents: 
+          - "XX_details.qmd"
           - "XX_setup.qmd"
           - "XX_citations.qmd"
     tools:
@@ -30,6 +31,8 @@ format:
     toc: true
     toc-depth: 3
     toc-expand: true
+    number-sections: true
+    number-depth: 1
     lightbox: auto
     callout-icon: false
     callout-appearance: minimal

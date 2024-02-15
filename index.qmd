@@ -1,10 +1,10 @@
 ---
-title: "Quantifying bird migration and stopover within an urbanized landscapes using Motus data"
+title: "Summarizing bird migration and stopovers within urbanized landscapes using Motus data"
 ---
 
 __*Pilot Phase*__
 
-PIs: **Barbara Frei, Elizabeth Gow and Krista De Groot**  
+Principal Investigators: **Barbara Frei, Elizabeth Gow and Krista De Groot**  
 Technical: Steffi LaZerte
 
 

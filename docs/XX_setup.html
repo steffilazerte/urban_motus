@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.543">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-01-24">
+<meta name="dcterms.date" content="2024-02-05">
 
 <title>Motus tracking of urban migration stopovers - Setup</title>
 <style>
@@ -67,7 +67,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./XX_citations.html" rel="next">
-<link href="./04_basic_filters.html" rel="prev">
+<link href="./XX_details.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -117,7 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./XX_setup.html">Appendicies</a></li><li class="breadcrumb-item"><a href="./XX_setup.html">Setup</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./XX_details.html">Appendicies</a></li><li class="breadcrumb-item"><a href="./XX_setup.html">Setup</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -184,6 +184,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Basic Filtering</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05_fine_filters.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Fine-scale Filtering</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -195,6 +201,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           </a> 
       </div>
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./XX_details.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notes &amp; Details</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./XX_setup.html" class="sidebar-item-text sidebar-link active">
@@ -222,7 +234,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#packages" id="toc-packages" class="nav-link active" data-scroll-target="#packages">Packages</a></li>
   <li><a href="#motus-credentials" id="toc-motus-credentials" class="nav-link" data-scroll-target="#motus-credentials">Motus credentials</a></li>
   <li><a href="#define-projects" id="toc-define-projects" class="nav-link" data-scroll-target="#define-projects">Define projects</a></li>
-  <li><a href="#define-data-to-include" id="toc-define-data-to-include" class="nav-link" data-scroll-target="#define-data-to-include">Define data to include</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
+  <ul class="collapse">
+  <li><a href="#species" id="toc-species" class="nav-link" data-scroll-target="#species">Species</a></li>
+  <li><a href="#databases" id="toc-databases" class="nav-link" data-scroll-target="#databases">Databases</a></li>
+  </ul></li>
   <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/XX_setup.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -230,7 +246,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./XX_setup.html">Appendicies</a></li><li class="breadcrumb-item"><a href="./XX_setup.html">Setup</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./XX_details.html">Appendicies</a></li><li class="breadcrumb-item"><a href="./XX_setup.html">Setup</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Setup</h1>
 </div>
@@ -249,7 +265,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 24, 2024</p>
+      <p class="date">February 5, 2024</p>
     </div>
   </div>
   
@@ -277,16 +293,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(assertr) <span class="co"># Check data quality</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Data display</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Spatial data</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ebirdst) <span class="co"># Species ranges</span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(units)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(assertr) <span class="co"># Check data quality</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Data display</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Spatial data</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ebirdst) <span class="co"># Species ranges</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(units)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="motus-credentials" class="level2">
@@ -311,54 +328,102 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Montreal Connectivity #373 (105 tags)</li>
 <li>Montreal moult migrant research #168 (113 tags)</li>
 </ul>
+<p>Additionally we’re using open motus projects selected via <a href="./01_select_projects.html">Selecting Projects</a>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>projects <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">484</span>, <span class="dv">551</span>, <span class="dv">373</span>, <span class="dv">168</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>projects <span class="ot">&lt;-</span> <span class="fu">setNames</span>(projects, projects)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>projects <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">484</span>, <span class="dv">551</span>, <span class="dv">373</span>, <span class="dv">168</span>, <span class="co"># From Barbara and Elizabeth</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>              <span class="dv">352</span>, <span class="dv">364</span>, <span class="dv">393</span>, <span class="dv">417</span>, <span class="dv">464</span>, <span class="dv">515</span>, <span class="dv">607</span>) <span class="co"># Open Motus projects</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>projects <span class="ot">&lt;-</span> <span class="fu">setNames</span>(projects, projects)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="define-data-to-include" class="level2">
-<h2 class="anchored" data-anchor-id="define-data-to-include">Define data to include</h2>
-<p>TODO: What are ‘near-passerines’? cf https://en.wikipedia.org/wiki/Near_passerine</p>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>Get species lists from naturecounts taxonomy and join this with the species metadata from the motus data bases.</p>
+<p>We only need to do this to one database, as the <code>metadata()</code> data step in <a href="02_download.html">Download/Update data</a> adds full species lists to all databases (so all database metadata are the same).</p>
+<section id="species" class="level3">
+<h3 class="anchored" data-anchor-id="species">Species</h3>
+</section>
+<section id="databases" class="level3">
+<h3 class="anchored" data-anchor-id="databases">Databases</h3>
+<section id="load-existing-databases" class="level4">
+<h4 class="anchored" data-anchor-id="load-existing-databases">Load existing databases</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># naturecounts::nc_metadata() # Update naturecounts taxonomy lists</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>species <span class="ot">&lt;-</span> naturecounts<span class="sc">::</span><span class="fu">meta_species_taxonomy</span>() <span class="sc">|&gt;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(order_taxon <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Passeriformes"</span>, <span class="st">"Piciformes"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs <span class="ot">&lt;-</span> <span class="fu">map</span>(projects, \(x) <span class="fu">tagme</span>(x, <span class="at">dir =</span> <span class="st">"Data/Raw"</span>, <span class="at">update =</span> <span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="establish-included-species" class="level4">
+<h4 class="anchored" data-anchor-id="establish-included-species">Establish included species</h4>
+<ul>
+<li>We match existing species in the databases to the species list from naturecounts</li>
+<li>We rename scientific names to omit subspecies (e.g., myrtle yellow-rumped warbler) [required for later eBird range steps]</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># naturecounts::nc_metadata() # Update naturecounts taxonomy lists</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>species_list <span class="ot">&lt;-</span> naturecounts<span class="sc">::</span><span class="fu">meta_species_taxonomy</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(order_taxon <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Passeriformes"</span>, <span class="st">"Piciformes"</span>))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>sp <span class="ot">&lt;-</span> <span class="fu">tbl</span>(dbs[[<span class="dv">1</span>]], <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Only get species which are in our specific projects</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(projectID <span class="sc">%in%</span> projects) <span class="sc">|&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(<span class="at">x =</span> <span class="fu">tbl</span>(dbs[[<span class="dv">1</span>]], <span class="st">"species"</span>), <span class="at">y =</span> _,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"speciesID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">"group"</span>, <span class="sc">-</span><span class="st">"sort"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Keep only chosen species</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id <span class="sc">%in%</span> species_list<span class="sc">$</span>species_id) <span class="sc">|&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(id) <span class="sc">|&gt;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fix subspecies names for joining with eBird (e.g., myrtle yellow-rumped warbler)</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">scientific_motus =</span> scientific,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">scientific =</span> <span class="fu">str_replace</span>(scientific, <span class="st">"Setophaga coronata coronata"</span>, <span class="st">"Setophaga coronata"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
 </section>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
 <p>These functions are sourced from <code>XX_functions.R</code></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>remove_by_ID <span class="ot">&lt;-</span> <span class="cf">function</span>(src, t, <span class="at">id_type =</span> <span class="st">"batchID"</span>, ids) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(ids) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t <span class="sc">%in%</span> DBI<span class="sc">::</span><span class="fu">dbListTables</span>(src)) {</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>      n <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbExecute</span>(</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        src, </span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"DELETE FROM {`t`} WHERE {`id_type`} IN ("</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                   glue<span class="sc">::</span><span class="fu">glue_collapse</span>(ids, <span class="at">sep =</span> <span class="st">', '</span>), </span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">")"</span>))</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>(n <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="fu">message</span>(<span class="fu">msg_fmt</span>(<span class="st">"  {n} rows deleted from {t}"</span>))</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>filter_count <span class="ot">&lt;-</span> <span class="cf">function</span>(dbs) {</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  before <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_before"</span>) <span class="sc">|&gt;</span> <span class="fu">collect</span>()) <span class="sc">|&gt;</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  after <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) {</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    remove <span class="ot">&lt;-</span> <span class="fu">getRunsFilters</span>(x, <span class="st">"all"</span>)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">anti_join</span>(remove, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"motusTagID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_after"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">collect</span>()</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>()</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(before, after) <span class="sc">|&gt;</span></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_reduced =</span> (n_before <span class="sc">-</span> n_after) <span class="sc">/</span> n_before <span class="sc">*</span> <span class="dv">100</span>)</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>remove_by_ID <span class="ot">&lt;-</span> <span class="cf">function</span>(src, t, <span class="at">id_type =</span> <span class="st">"batchID"</span>, ids) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(ids) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t <span class="sc">%in%</span> DBI<span class="sc">::</span><span class="fu">dbListTables</span>(src)) {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>      n <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbExecute</span>(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        src, </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"DELETE FROM {`t`} WHERE {`id_type`} IN ("</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                   glue<span class="sc">::</span><span class="fu">glue_collapse</span>(ids, <span class="at">sep =</span> <span class="st">', '</span>), </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">")"</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>(n <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="fu">message</span>(<span class="fu">msg_fmt</span>(<span class="st">"  {n} rows deleted from {t}"</span>))</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>filter_count <span class="ot">&lt;-</span> <span class="cf">function</span>(dbs) {</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  before <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_before"</span>) <span class="sc">|&gt;</span> <span class="fu">collect</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  after <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) {</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    remove <span class="ot">&lt;-</span> <span class="fu">getRunsFilters</span>(x, <span class="st">"all"</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">anti_join</span>(remove, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"motusTagID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_after"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">collect</span>()</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>()</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(before, after) <span class="sc">|&gt;</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_reduced =</span> (n_before <span class="sc">-</span> n_after) <span class="sc">/</span> n_before <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>gt_theme <span class="ot">&lt;-</span> <span class="cf">function</span>(data, ...) {</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  data <span class="sc">|&gt;</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_options</span>(</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">table.border.top.width =</span> <span class="fu">px</span>(<span class="dv">3</span>), </span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">column_labels.font.weight =</span> <span class="st">"bold"</span>,</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">column_labels.border.bottom.width =</span> <span class="fu">px</span>(<span class="dv">3</span>),</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">data_row.padding =</span> <span class="fu">px</span>(<span class="dv">7</span>),</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>      ...</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
@@ -754,8 +819,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./04_basic_filters.html" class="pagination-link  aria-label=" basic="" filtering"="">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Basic Filtering</span>
+      <a href="./XX_details.html" class="pagination-link  aria-label=" notes="" &amp;="" details"="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Notes &amp; Details</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

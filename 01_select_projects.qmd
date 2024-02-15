@@ -5,6 +5,9 @@ title: Selecting Projects
 Here we explore a list of open or semi open Motus projects to select more
 project ids which we can use in our pilot study.
 
+This data `TagSpeciesProject.xlsx` was given to us by Birds Canada but in future
+should be accessibly directly through the motus package.
+
 ## Setup
 
 ```{r}
@@ -39,7 +42,7 @@ p_sp <- read_excel("Data/Raw/TagsSpeciesProject.xlsx") |>
          speciesID != 129470) |>  # Don't worry about Human tags :D
   select(-speciesName, -motusEnglishName, -access) |> # Species Names are not consistent
   summarize(across(everything(), sum), .by = c("tagProjectID", "speciesID")) |>
-  left_join(select(species, species_id, scientific_name, english_name),
+  left_join(select(species_list, "species_id", "scientific_name", "english_name"),
             by = c("speciesID" = "species_id")) |>
   mutate(good = !is.na(scientific_name),
          other = str_detect(english_name, "Eurasian|European|Elaenia")) |>
@@ -52,7 +55,8 @@ p_sp <- read_excel("Data/Raw/TagsSpeciesProject.xlsx") |>
   arrange(desc(prop_good_tags))
 
 gt(p_sp) |>
-  fmt_number("prop_good_tags", decimals = 2)
+  fmt_number("prop_good_tags", decimals = 2) |>
+  gt_theme()
 ```
 
 ## Summarize
@@ -74,7 +78,8 @@ p <- p_sp |>
   arrange(desc(mean_tags_per_species), desc(n_species), desc(total_tags))
 
 gt(p) |>
-  fmt_number(columns = "mean_tags_per_species", decimals = 1)
+  fmt_number(columns = "mean_tags_per_species", decimals = 1) |>
+  gt_theme()
 ```
 
 
@@ -101,7 +106,8 @@ status |>
   mutate(Megabytes = numBytes / 1000000) |>
   arrange(desc(numBytes)) |>
   gt() |>
-  fmt_number(decimals = 0) 
+  fmt_number(decimals = 0)  |>
+  gt_theme()
 ```
 
 

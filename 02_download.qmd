@@ -15,34 +15,58 @@ source("XX_setup.R")
 This step can take a lot of time and it may not be necessary to be constantly updating the data bases. Set `update <- TRUE` to update, `update <- FALSE` to just check the number of new observations.
 
 ```{r}
-update <- FALSE
+update <- TRUE
 ```
 
 ## Status
 
 Get the status of each project (i.e. how much data left to download?)
 
--   This will create new `project-XXX.motus` SQLite data bases for us if it doesn't already exist (but will not download the data)
+- This will create new `project-XXX.motus` SQLite data bases for us if it 
+  doesn't already exist (but will not download the data)
 
 ```{r}
-status <- map(
-  projects, 
-  \(x) tellme(x, dir = "Data/Raw",  new = file.exists(paste0("project-", x, ".motus")))) |>
-  list_rbind(names_to = "proj_id")
-gt(status)
+status <- data.frame(proj_id = projects, 
+                     file = paste0("Data/Raw/project-", projects, ".motus")) |>
+  mutate(status = map2(
+    proj_id, file, 
+    \(x, y) tellme(x, dir = "Data/Raw", new = !file.exists(y)))) |>
+  unnest(status) |>
+  mutate(currentMB = file.size(file)/1024/1024,
+         newMB = numBytes/1024/1024)
+
+select(status, -file, -numBytes) |>
+  relocate(currentMB, newMB, .after = proj_id) |>
+  arrange(proj_id) |>
+  gt() |>
+  fmt_number(decimals = 0) |>
+  tab_spanner(label = "New Data", columns = -c(proj_id, currentMB)) |>
+  gt_theme()
+  
 ```
 
 ## Download data
 
 **If this is the first time running, it will take time!**
 
--   `tagme()` without arguments will update all databases in the folder
--   we can run this intermittently to update the databases as new data arrives
+- `tagme()` without arguments will update all databases in the folder
+- we can run this intermittently to update the databases as new data arrives
 
 ```{r}
 #| message: false
 if(update) tagme(dir = "Data/Raw")
 ```
+
+## Clean up
+
+Here we'll deal with deprecated batches and metadata.
+
+First we'll load the database connections.
+
+```{r}
+dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
+```
+
 
 ## Remove deprecated batches
 
@@ -50,16 +74,36 @@ Deprecated batches are removed from the Motus server, but are still present in d
 
 ```{r}
 if(update) {
-  walk(projects, \(x) {
-    message("\nProject ", x)
-    t <- tagme(x, dir = "Data/Raw", update = FALSE)
-    deprecateBatches(t, ask = FALSE)
-    DBI::dbDisconnect(t)
+  iwalk(dbs, \(x, y) {
+    message("\nProject ", y)
+    deprecateBatches(x, ask = FALSE)
   })
 }
 ```
 
 
+## Update metadata
 
+Here we'll update the metadata associated with *all* projects so that we 
+have better information on different tags, receivers, etc. which these projects
+may be interacting with.
+
+```{r}
+if(update) {
+  iwalk(dbs, \(x, y) {
+    message("\nProject ", y)
+    metadata(x)
+  })
+}
+```
+
+## Wrap up
+Disconnect from the databases
+```{r}
+walk(dbs, dbDisconnect)
+```
+
+
+## Reproducibility
 {{< include _reproducibility.qmd >}}
 
