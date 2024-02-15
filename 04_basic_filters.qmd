@@ -1,220 +1,470 @@
 ---
 title: Basic Filtering
-eval: false
+freeze: auto
 ---
 
-:::{.callout-note}
-# Work in progress
-This section needs to be formatted and finished
+```{r}
+#| include: false
+knitr::read_chunk("XX_functions.R")
+```
+
+Here we apply broad filters for missing details, time, space, and species. 
+We'll omit runs missing deployment information for tags and receivers, 
+runs which occur during times we're not interested in, and runs which occur
+for species/receiver pairs which are not within a particular species' range 
+(ranges were determined in [Range Maps](03_range_maps.html)), also omitting 
+species we're not interested in.
+
+The idea is to reduce the size of the data we're working with as much as possible
+before we get into the fine details of assessing data quality.
+
+However, we don't want to simply delete records in our original .motus databases because
+
+- we're working with databases which may need to be updated
+- we can't go back if we change our criteria
+
+So we will create lists of all the run/tagID combinations *to be removed*,
+and we'll store these as a new table inside the databases.
+
+When we want to calculate our final summaries, we can apply these filters 
+in the last step *before* `collect()`ing (flattening) the database. 
+
+## Setup
+```{r}
+#| message: false
+#| cache: false
+source("XX_setup.R")
+
+recvs <- read_csv("Data/Datasets/receivers.csv")
+```
+
+### Custom tables
+
+Normally, we would use the `allruns` view from our .motus data bases. 
+
+However, this view includes a lot of data that we don't need and I find it faster 
+to pull out the variables we're interested by hand using a custom function,
+`custom_runs()`. 
+
+:::{.callout-important title="Caution"}
+That being said, there are some complex joins going on in the `allruns` view.
+I have replicated the relevant ones here, and while I reasonably
+sure these yield the same data, if there are is any hint that they're not exactly
+the same, we should double check.
 :::
 
 
-# Setup ---------------------------------------------------------------
-
-
-# In this step we apply broad filters for species, dates, and receivers of 
-# interest. 
-# 
-# Note that these lists are defined in `XX_setup.R`
-
-# Connect to databases ------------------------------------------------
-
-```{r}
-dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
+```{r custom_runs}
+#| code-fold: true
 ```
 
-# Check existing filters ----------------------------------------------
+
+This function is faster than collecting the `allruns` view
 ```{r}
-f <- map(dbs, listRunsFilters) |>
+system.time(tbl(dbs[["607"]], "allRuns") |> collect())
+system.time(custom_runs(dbs[["607"]]) |> collect())
+```
+
+Get the custom run tables for all databases
+```{r}
+runs <- map(dbs, custom_runs)
+```
+
+
+## Non-deployments
+
+Both tags and receivers have device ids and deployment ids. 
+Deployments are associated with a particular device (tag or receiver) 
+being deployed at a certain time. 
+
+Many erroneous runs are associated with a tag at a time
+in which that tag was not recorded as deployed. 
+
+Funnily enough this can also occur with receivers where the run occurs at a time
+where the associated receiver is not recorded as deployed.
+
+This could occur for several reasons:
+
+- The metadata is incorrect and the tag/receiver was, in fact deployed at that time
+- This is false positive recording of the tag
+- This is non-trustworthy receiver data, which may have been collecting during 
+  testing or installation
+
+As we cannot be sure which is correct, for now we will omit those runs.
+
+:::{.panel-tabset}
+
+### Create filter
+In our custom `runs` tables, any run/tag combination with missing a `tagDeployID` 
+or a `recvDeployID` did not actually have a record of the tag/receiver being deployed at that time.
+
+:::{.callout-tip}
+#### `speciesID` vs. `tagDeployID`
+Technically we should omit those without a tagDeployID, however, looking at the
+records which *have* a tagDeployID but do *not have* a speciesID shows that 
+they are all test tags, so we'll go ahead and just remove all records missing
+a speciesID.
+
+See the "Explore - Tags" panel for this exploration
+:::
+
+```{r}
+no_tag_dep <- map(runs, \(x) filter(x, is.na(speciesID)))
+no_recv_dep <- map(runs, \(x) filter(x, is.na(recvDeployID)))
+```
+
+### Explore - Tags
+
+To be sure that we're not missing things, we'll explore what is removed if
+we use `tagDeployID` rather than `speciesID` (as we could conceivibly have
+tags with a deploy id but not species ids).
+
+```{r}
+no_tag_dep_check <- map(runs, \(x) filter(x, is.na(tagDeployID)))
+```
+
+
+For example, in this project for this tag, we have no species ids for a series
+of runs. 
+```{r}
+no_tag_dep_check[["484"]] |>
+  filter(tagID == 63138) |>
+  collect_ts()
+```
+
+Note that the `motusFilter` is also 0, indicating that they are likely false positives
+based on other metrics as well.
+
+Now if we look at the tag deployment dates for that tag, we see that these
+runs occurred even before the tag was deployed, further indicating that they 
+are false positives.
+```{r}
+tbl(dbs[["484"]], "tagDeps") |>
+  filter(tagID == "63138") |>
+  select(tagID, deployID, projectID, tsStart, tsEnd, speciesID) |>
+  collect_ts()
+```
+
+However, just because we have a tagDeployID, it doesn't necessarily mean we
+have a speciesID
+
+```{r}
+missing_species <- map(runs, \(x) filter(x, !is.na(tagDeployID), is.na(speciesID)))
+```
+
+In this example, it is because one deployment is a test deployment
+```{r}
+missing_species[["551"]]
+
+tbl(dbs[["551"]], "tagDeps") |>
+  filter(tagID == 68914) |>
+  select(tagID, deployID, projectID, test)
+```
+
+And that's what it looks like for all of them too. 
+
+This returns records missing a species id which are NOT tests. 
+Since nothing is returned, they are all tests.
+```{r}
+imap(runs, \(x, y) {
+  x |>
+    filter(!is.na(tagDeployID), is.na(speciesID)) |>
+    left_join(tbl(dbs[[y]], "tagDeps") |> select(tagID, deployID, projectID, test),
+              by = c("tagID", "tagDeployID" = "deployID")) |>
+    filter(!test) |>
+    collect()
+}) |>
   list_rbind()
-f
 ```
 
+So we can actually remove all records with missing species ids without worry.
 
-# TODO: consider removing them all and starting fresh on each run?
+
+### Explore - Receivers
+
+For example, in this project (484) for this receiver device ID (3071), 
+we have no deployment ids (`recvDeployID`) for a series of runs. 
+
 ```{r}
-if(TRUE && nrow(f) > 0) walk(dbs, \(x) deleteRunsFilter(x, "all"))
+no_recv_dep_check <- map(runs, \(x) filter(x, is.na(recvDeployID)))
 
-# Create a filter placeholder
-iwalk(dbs, \(x, y) createRunsFilter(x, filterName = "all", motusProjID = y, 
-                                    descr = "Full set of runs to omit"))
+no_recv_dep_check[["484"]] |>
+  filter(recvDeviceID == "3071") |>
+  collect_ts()
+```
 
-filter_count(dbs)
+Now if we look at the receiver deployment dates for that device, we see that these
+runs occurred before the receiver was deployed, although not that much earlier. 
 
-# Noise ---------------------------------------------------------------
-# TODO: use a custom noise filter?
-noise <- imap(dbs, \(x, y) tbl(x, "runs") |> 
-    select(runID, motusTagID, motusFilter) |>
-    filter(motusFilter == 0) |>
-    mutate(proj_id = y, probability = motusFilter) |>
-    collect())
+Perhaps these are semi-legitimate runs, which were detected when testing and 
+installing the receiver.
+```{r}
+tbl(dbs[["484"]], "recvDeps") |>
+  filter(deviceID == "3071") |>
+  select(deviceID, deployID, projectID, tsStart, tsEnd, status) |>
+  collect_ts()
+```
+:::
 
-walk2(dbs, noise, 
-      \(x, y) writeRunsFilter(x, "all", motusProjID = y$proj_id[1], df = y))
+## Time
 
-filter_count(dbs)
+In this filter, we omit times of year that don't apply to our study.
+This is the easiest filter to apply as it doesn't rely on metadata or other variables.
 
-# Timeframe ----------------------------------------------------
-# Which dates do we keep?
-# - Fall and Spring migration 
-# - August - December & February - July
-#
-# motus date/times are stored as ts in UTC these is a standard number that can
-# be converted to a date time:
+**Which dates do we keep?**
 
+- Fall and Spring migration
+- August - December & February - July
+
+Motus date/times are stored as ts in UTC these is a standard number that can
+be converted to a date time:
+
+```{r}
 as_datetime(1646289838)
+```
 
-# And back
+And back
 
+```{r}
 as.numeric(as_datetime("2022-03-03 06:43:58"))
+```
 
-# Here we will create a list of time stamp ranges to use when filtering
-date_ranges <- expand_grid(year = 1990:2030, 
+Here we will create a list of time stamp ranges to use when filtering. 
+We'll create a list of dates from the first year in the data up to the end
+of the current analysis year.
+
+:::{.panel-tabset}
+
+### Calculate date ranges
+
+```{r}
+min_year <- map_dbl(dbs, \(x) tbl(x, "runs") |> pull(tsBegin) |> min()) |>
+  min(na.rm = TRUE) |>
+  as_datetime() |>
+  year()
+
+max_year <- year(Sys.Date())
+
+date_ranges <- expand_grid(year = min_year:max_year, 
                            data.frame(migration = c("spring", "fall"),
                                       start = c("02-01", "08-01"),
                                       end = c("07-01", "12-01"))) |>
   mutate(across(c("start", "end"), \(x) as_datetime(paste0(year, "-", x))),
          across(c("start", "end"), .names = "ts_{.col}", as.numeric))
+```
 
-# Get all runs that are NOT within these dates
-non_mig_dates <- imap(
-  dbs, 
-  \(x, y) tbl(x, "runs") |>
-    anti_join(date_ranges, by = join_by(between(tsBegin, ts_start, ts_end, bounds = "[)")), 
-              copy = TRUE) |>
-    select(runID, motusTagID) |>
-    mutate(proj_id = y, probability = 0) |>
-    collect())
+### Explore date ranges
 
-walk2(dbs, non_mig_dates, 
-      \(x, y) writeRunsFilter(x, "all", motusProjID = y$proj_id[1], df = y))
+These are the ranges of dates we want to keep.
+```{r}
+gt(date_ranges) |>
+  gt_theme()
+```
 
-filter_count(dbs)
+:::
 
-# Check months in the 'anti' group - Doesn't remove much, ah well
-tbl(dbs[[1]], "runs") |>
-  anti_join(date_ranges, by = join_by(between(tsBegin, ts_start, ts_end, bounds = "[)")), 
+
+:::{.panel-tabset}
+
+### Create filter
+Get all runs that are NOT within these dates
+```{r}
+# Avoid anti_join() (see Details)
+dts <- select(date_ranges, "migration", "ts_start", "ts_end")
+
+noise_time <- map(runs, \(x) {
+  left_join(x, dts, 
+            by = join_by(between(tsBegin, ts_start, ts_end, bounds = "[)")), 
             copy = TRUE) |>
-  pull(tsBegin) |>
-  as_datetime() |> 
-  month() |> 
-  unique()
+    filter(is.na(migration)) |>
+    select(-"migration", -"ts_start", -"ts_end")
+})
+```
 
+### Check filter values
 
-
-
-# Ambiguous detections --------------------------------------------------
-# TODO: Needs to be done post-filtering (as much as possible)
-
-ambig <- map(dbs, \(x) tbl(x, "allruns") |>
-               select(ambigID, motusTagID) |>
-               filter(!is.na(ambigID)) |>
-                distinct() |>
-                collect()) |>
-  list_rbind(names_to = "proj_id")
-
-
-
-# Check tag details ------------------------
-tag_deps <- map(dbs, \(x) tbl(x, "tagDeps") |> collect()) |>
-  list_rbind() |>
-  mutate(tsStart = as_datetime(tsStart), tsEnd = as_datetime(tsEnd))
-
-tag_deps |>
-  select(projectID, tagID, deployID, tsStart, tsEnd, speciesID) |>
-  summary()
-
-# TODO: Questions
-# - Can the end be after the current date? e.g., 2026-12-16...
-# - Should there be missing start/end dates?
-
-select(tag_deps, projectID, tagID, deployID, tsStart, tsEnd, speciesID) |>
-  filter(is.na(tsStart))
-
-# Check for appropriate species ----------------------------------------
-sp <- map(dbs, \(x) tbl(x, "species") |> collect()) |>
-  list_rbind() |>
-  filter(id %in% tag_deps$speciesID)
-
-# TODO: Questions
-# - Do we expect Monarchs?
-
-m <- filter(tag_deps, speciesID == 252456) |> pull(tagID)
-  
-
-map(dbs, \(x) tbl(x, "runs") |>
-      filter(motusTagID %in% m)
-)
-
-# Check for multiple tag deployments ----------------------------------
-multi_tags <- map(dbs, \(x) tbl(x, "tagDeps") |> 
-                    select(tagID, deployID, projectID, tsStart, tsEnd) |>
-                    mutate(n = n(), .by = "tagID") |>
-                    filter(n > 1) |>
-                    collect()) |>
-  list_rbind() |>
-  mutate(tsStart = as_datetime(tsStart), tsEnd = as_datetime(tsEnd))
-
-# Multiple deployments shouldn't be able to overlap... right?
-multi_tags |>
-  group_by(tagID) |>
-  filter(tsEnd >= lead(tsStart) | tsStart <= lag(tsEnd))
-
-# Triple deploy ids all at the same time???
-tbl(dbs[["551"]], "allruns") |>
-  select(motusTagID, tagDeployID, tsBegin) |>
-  filter(motusTagID == 68470) |>
-  collect() |>
-  mutate(tsBegin = as_datetime(tsBegin))
-
-# Triple deploy ids all at the same time???
-tbl(dbs[["168"]], "allruns") |>
-  select(motusTagID, tagDeployID, tsBegin) |>
-  filter(motusTagID == 26448) |>
-  collect() |>
-  mutate(tsBegin = as_datetime(tsBegin)) |>
-  filter(tsBegin > "2017-08-01 20:00:00")
-
-
-
-
-
-
-
-
-
-# Species  -----------------------------------------------------
-
-# Species in the databases
-sp <- imap(dbs, \(x, y) {
-  tbl(x, "species") |>
+**Months omitted by filter**
+```{r}
+map(noise_time, \(x) {
+  x |> 
+    select(tsBegin) |>
     collect() |>
-    mutate(proj_id = y)
+    mutate(ts = as_datetime(tsBegin),
+           month = month(ts)) |>
+    pull(month) |>
+    sort() |>
+    unique()
 }) |>
-  list_rbind() |>
-  arrange(id)
+  unlist() |>
+  unique()
+```
 
-# Species to remove 
-anti_join(sp, species, by = c("id" = "species_id"))
+> Good!
 
-# Purge unwanted species from the data 
-rm_ids <- filter(sp, !id %in% species$species_id) |>
-  pull(id)
-rm_tags <- map(dbs, \(x) tbl(x, "tagDeps") |>
-              filter(speciesID %in% ids) |>
-              pull(tagID))
+**Example of the data omitted**
+
+```{r}
+#| fig-width: 8
+#| fig-asp: 1.5
+
+d <- runs[["464"]] |>
+  select(runID, tagID, tsBegin) |>
+  left_join(mutate(noise_time[["464"]], probability = 0), by = c("runID", "tagID", "tsBegin")) |>
+  collect() |>
+  mutate(probability = as.integer(replace_na(probability, 1)),
+         time = as_datetime(tsBegin))
+
+ggplot(data = d, aes(x = time, y = factor(tagID), colour = factor(probability))) +
+  theme_bw() +
+  geom_point() +
+  scale_color_viridis_d(end = 0.8) +
+  labs(caption = "Probability of 0 is data omitted by the filter")
+```
+:::
+
+## Space
+
+Here we identify runs which are *not* associated with appropriate stations as determined by
+overlap with a species range map ([Range Maps](03_range_maps.html)).
+
+These are runs associated with a species which is unlikely to be found at that
+station and can therefore be assumed to be false positives.
+
+Note that this step *also* omits species we're not interested in, as they are
+not included in the list of species ranges and receivers.
+
+:::{.panel-tabset}
 
 
-# Ambiguous detections
-ambig <- map(dbs, \(x) tbl(x, "alltags") |>
-               select(ambigID, motusTagID) |>
-               filter(!is.na(ambigID)) |>
-               distinct() |>
-               collect())
+### Create filter
 
+First we'll add the master list of whether or not a species is in range for each 
+receiver deployment.
+```{r}
+rs <- recvs |>
+  mutate(speciesID = as.integer(id), 
+         recvDeployID = as.integer(deployID)) |>
+  filter(in_range) |>
+  select(speciesID, recvDeployID, in_range)
+```
+
+Now, get all runs which are NOT in range given the species and the receiver deployment.
+```{r}
+# Avoid anti_join() (see Details)
+noise_space <- map(runs, \(x) {
+  left_join(x, rs, by = c("recvDeployID", "speciesID"), copy = TRUE) |>
+    filter(is.na(in_range)) |>
+    select(-"in_range")
+})
 ```
 
 
+### Check filter values
 
+Many of these omitted are omitted because they are missing the speciesID or the
+recevDeployID (which is already accounted for the the [Non-deployments](#non-depoloyments) 
+section above.
+
+However, let's take a look at the remaining ones to check.
+
+Hmm, most of these are poor quality runs (i.e. the `motusFilter` is 0). 
+So this is a good sign that these are indeed false positives which should be 
+omitted.
+
+```{r}
+map(noise_space, \(x) {
+  x |> 
+    filter(!is.na(speciesID), !is.na(recvDeployID)) |>
+    count(motusFilter) |>
+    collect()
+}) |>
+  list_rbind(names_to = "proj_id") |>
+  gt() |>
+  gt_theme()
+```
+
+
+Let's take a closer look at one species in one project.
+
+There is quite possibly a lot of noise (see the amount of scatter in the `motusFilter = 0` 
+category. And clearly this individual (Spotted Towhee) had a home base in 
+southern BC.
+
+```{r}
+ns <- noise_space[[1]] |> 
+  filter(speciesID == 18550) |>
+  select("runID", "tagID") |>
+  mutate(in_range = 0)
+
+coords <- tbl(dbs[["484"]], "recvDeps") |> 
+  select("deployID", "latitude", "longitude")
+
+rn <- filter(runs[["484"]], speciesID == 18550) |>
+  left_join(coords, by = c("recvDeployID" = "deployID")) |>
+  left_join(ns, by = c("runID", "tagID")) |>
+
+  filter(!is.na(latitude), !is.na(longitude)) |>
+  select(motusFilter, tagDeployID, tsBegin, tsEnd, in_range, latitude, longitude) |>
+  collect() |>
+  mutate(in_range = factor(replace_na(in_range, 1)))
+
+map <- ne_countries(country = c("Canada", "United States of America"), returnclass = "sf")
+
+rn_sf_cnt <- rn |>
+  summarize(n = n(), .by = c("motusFilter", "in_range", "latitude", "longitude")) |> 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+  
+ggplot(rn_sf_cnt) +
+  geom_sf(data = map) +
+  geom_sf(aes(colour = in_range, size = n)) +
+  facet_wrap(~motusFilter)
+
+```
+
+:::
+
+## Looking at the filters
+
+First we'll combine and collect the 'bad' runs.
+```{r}
+noise <- pmap(list(no_recv_dep, no_tag_dep, noise_time, noise_space), \(w, x, y, z) {
+  map(list(w, x, y, z), \(a) collect(select(a, "runID", "tagID"))) |>
+    list_rbind() |> 
+    distinct() |>
+    mutate(BAD = 1)
+})
+```
+
+
+Next we'll take a look at how this compares to the motusFilter
+
+```{r}
+count(runs[[1]], motusFilter)
+count(anti_join_quick(runs[[1]], noise[[1]], copy = TRUE), motusFilter)
+```
+
+There are still many 'bad' data according to the motusFilter... perhaps we should
+use that as well, or see what happens after we do the next stage of fine scale
+filtering.
+
+## Add filters to database
+We'll record these filters in the database for use in the next steps.
+
+```{r}
+walk2(dbs, noise, \(x, y) {
+  if("bad_data" %in% dbListTables(x)) dbRemoveTable(x, name = "bad_data")
+  dbCreateTable(x, name = "bad_data", fields = y)
+  dbAppendTable(x, name = "bad_data", value = y)
+})
+```
+
+
+## Wrap up
+Disconnect from the databases
+```{r}
+walk(dbs, dbDisconnect)
+```
+
+## Reproducibility
 {{< include _reproducibility.qmd >}}
 

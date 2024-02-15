@@ -1,0 +1,158 @@
+---
+title: Fine-scale Filtering
+eval: false
+freeze: auto
+---
+
+Here we perform fine-scale filtering which involves more assessments of potential issues. 
+
+## Setup
+```{r}
+#| message: false
+#| cache: false
+source("XX_setup.R")
+```
+
+### Custom tables
+```{r custom_hits}
+#| code-fold: true
+```
+
+Get the custom hit tables for all databases (filtered to omit 'bad' data from previous step)
+```{r}
+hits <- map(dbs, custom_hits)
+```
+
+
+## Noise
+
+TODO: use a custom noise filter?
+
+Here is the first and simplest filter, we'll gather all the run/tag combinations
+with a `motusFilter` value of 0.
+
+See [in-depth detections filtering](https://motuswts.github.io/motus/articles/filtering.html) and [A tool to identify probable false positive detections](https://motuswts.github.io/motus/articles/identifying-false-positives.html) for more details.
+
+```{r}
+# noise <- imap(dbs, \(x, y) {
+#   tbl(x, "runs") |> 
+#     select(runID, motusTagID, probability = motusFilter) |>
+#     filter(probability == 0) |>
+#     mutate(proj_id = y) |>
+#     collect()
+# })
+```
+
+## Hits
+
+These are based on notes from Amie MacDonald's scripts
+
+Here we'll use a modified version of the motusFilter
+
+- Hits from SENSORGNOME stations with a freqSD > 0.1 will be considered 'bad' data
+
+
+Then we'll 
+
+- Omit individual tags with only bad data using a modified version of the motusFilter
+- Calculate the proportion of good/bad data per tag, per receiver, per day, 
+  omit those where less than half are 'good'
+
+Collect all runs relating to tag deployments with *only* bad motusFilter data (i.e. all 0)
+```{r}
+noise_tags <- map(hits, \(x) {
+  x |>
+    mutate(motusFilter = if_else(recvType == "SENSORGNOME" & freqSD > 0.1, 0, motusFilter)) |>
+    summarize(motusFilter = sum(motusFilter, na.rm = TRUE), .by = c("tagID", "tagDeployID")) |>
+    filter(motusFilter == 0) |>
+    select("tagID", "tagDeployID")
+})
+```
+
+Use a ts date for now (60 * 60 * 24) seconds in a day, so we can categorize
+ts by numeric UTC date.
+```{r}
+noise_quality <- map(hits, \(x) {
+  x |>
+    mutate(motusFilter = if_else(recvType == "SENSORGNOME" & freqSD > 0.1, 
+                                 0, motusFilter),
+           ts_date = floor(ts / (60 * 60 * 24))) |>
+    select(runID, tagID, tagDeployID, recvDeployID, ts_date, motusFilter) |>
+    group_by(tagID, tagDeployID, recvDeployID, ts_date) |>
+    mutate(p_good = sum(motusFilter, na.rm = TRUE) / n(), .groups = "drop") |>
+    ungroup() |>
+    filter(p_good <= 0.5) |>
+    select("runID", "tagID", "tagDeployID") |>
+    distinct()
+})
+```
+
+```{r}
+final <- map2(hits, noise_quality, \(x, y) anti_join_quick(x, y))
+final <- map2(final, noise_tags, \(x, y) {
+   left_join(x, select(y, "tagID", "tagDeployID") |> mutate(bad = TRUE), 
+             by = c("tagID", "tagDeployID")) |>
+    filter(!is.n(bad)) |>
+    select(-"bad")
+})
+    
+system.time(test <- collect(final[[1]]))
+```
+
+
+
+## Tags
+
+There are two broad classes of tags, Lotek and CTT. 
+These tags [have different properties and are processed differently](https://motuswts.github.io/motus/articles/identifying-false-positives.html?q=Lotek%20nanotags#introduction), so 
+care should be taken to treat them differently. 
+
+Let's first take a look a see how many tags of each type we have
+
+```{r}
+tbl(dbs[[1]], "tags") |>
+  filter(projectID %in% projects) |>
+  select(projectID, manufacturer, tagID) |>
+  distinct() |>
+  count(projectID, manufacturer) |>
+  collect() |>
+  gt()
+```
+
+So we mostly have Lotek tags (which much of the filtering suggestions have been based on),
+but we do have two projects with CTT tags to consider.
+
+
+## Ambiguous detections
+
+TODO: Needs to be done post-filtering (as much as possible)
+
+```{r}
+
+tags.ambigs <- ambig %>% 
+  group_by(ambigID) %>%
+  mutate(inds = ifelse(any(motusTagID %in% tag.list), "yes","no")) %>%
+  filter(inds == "yes") %>%
+  distinct() %>%
+  ungroup() %>%
+  rename(tagID = motusTagID)
+
+ambig <- map(dbs, \(x) tbl(x, "runs") |>
+               select(ambigID, motusTagID) |>
+               filter(!is.na(ambigID)) |>
+                distinct() |>
+                collect()) |>
+  list_rbind(names_to = "proj_id")
+```
+
+
+
+## Wrap up
+Disconnect from the databases
+```{r}
+walk(dbs, dbDisconnect)
+```
+
+## Reproducibility
+{{< include _reproducibility.qmd >}}
+

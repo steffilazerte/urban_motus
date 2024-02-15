@@ -53,3 +53,85 @@ collect_filter <- function(db) {
     select(runID, motusTagID) |>
     mutate(probability = 0) |>
     collect()
+}
+
+anti_join_quick <- function(x, y, by = NULL, copy = FALSE, motus_filter = TRUE) {
+  if(motus_filter) {
+    y <- select(y, "runID", "tagID")
+    if(is.null(by)) by <- c("runID", "tagID")
+  }
+  y <- mutate(y, ANTI = 1) 
+  left_join(x, y, by = by, copy = copy) |>
+    filter(is.na(ANTI)) |>
+    select(-"ANTI")
+}
+
+# ---- custom_runs ----
+custom_runs <- function(db) {
+  # Replacement for NULL tsEnd values (i.e. today plus change)
+  max_ts <- round(as.numeric(Sys.time()) + 1000)
+  
+  # Get Receivers
+  r <- tbl(db, "recvDeps") |> 
+    select("deviceID", "recvDeployID" = "deployID", "tsStartRecv" = "tsStart", "tsEndRecv" = "tsEnd") |>
+    mutate(tsEndRecv = if_else(is.na(tsEndRecv), max_ts, tsEndRecv))
+  
+  # Get tags
+  t <- tbl(db, "tagDeps") |> 
+    select("tagID", "tagDeployID" = "deployID", "speciesID", "tsStartTag" = "tsStart", "tsEndTag" = "tsEnd") |>
+    mutate(tsEndTag = if_else(is.na(tsEndTag), max_ts, tsEndTag))
+  
+  # Combine with runs
+  tbl(db, "runs") |>
+    select("runID", "tsBegin", "tsEnd", "tagID" = "motusTagID", "motusFilter") |>
+    # Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run
+    left_join(t, by = join_by(tagID, between(tsBegin, tsStartTag, tsEndTag))) |>
+    # Add in batchRuns by runID (to get the batchID)
+    left_join(tbl(db, "batchRuns"), by = "runID") |>
+    # Add in batches by batchID (to get the deviceID)
+    left_join(tbl(db, "batches") |> select("batchID", "motusDeviceID"), by = "batchID") |>
+    # Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run
+    left_join(r, by = join_by(motusDeviceID == deviceID, between(tsBegin, tsStartRecv, tsEndRecv))) |>
+    # Keep only relevant data
+    select(runID, motusFilter, 
+           tagID, tagDeployID, speciesID, 
+           recvDeployID, recvDeviceID = motusDeviceID, 
+           tsBegin, tsEnd) |>
+    distinct()
+}
+
+# ---- custom_hits ----
+custom_hits <- function(db) {
+  # Replacement for NULL tsEnd values (i.e. today plus change)
+  max_ts <- round(as.numeric(Sys.time()) + 1000)
+  
+  # Get Receivers
+  r <- tbl(db, "recvDeps") |> 
+    select("deviceID", "recvDeployID" = "deployID", "tsStartRecv" = "tsStart", "tsEndRecv" = "tsEnd",
+           "recvType" = "receiverType") |>
+    mutate(tsEndRecv = if_else(is.na(tsEndRecv), max_ts, tsEndRecv))
+  
+  # Get tags
+  t <- tbl(db, "tagDeps") |> 
+    select("tagID", "tagDeployID" = "deployID", "speciesID", "tsStartTag" = "tsStart", "tsEndTag" = "tsEnd") |>
+    mutate(tsEndTag = if_else(is.na(tsEndTag), max_ts, tsEndTag))  
+  
+  # Combine with the rest - And OMIT BAD filtered observations from previous step
+  tbl(db, "hits") |>
+    select(-"validated") |>
+    # Add in runs and motusFilters
+    left_join(tbl(db, "runs") |> select("runID", "motusFilter", "tagID" = "motusTagID"), by = "runID") |>
+    # Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run
+    left_join(t, by = join_by(tagID, between(ts, tsStartTag, tsEndTag))) |>
+    # Filter out "Bad runs" from previous step
+    left_join(tbl(db, "bad_data"), by = c("runID", "tagID")) |>
+    filter(is.na(BAD)) |>
+    select(-"BAD") |>
+    # Add in batches by batchID (to get the deviceID)
+    left_join(tbl(db, "batches") |> select("batchID", "motusDeviceID"), by = "batchID") |>
+    # Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run
+    left_join(r, by = join_by(motusDeviceID == deviceID, between(ts, tsStartRecv, tsEndRecv))) |>
+    # Keep only relevant data
+    select(-"batchID", -"tsStartRecv", -"tsEndRecv", -"tsStartTag", -"tsEndTag") |>
+    rename("recvDeciveID" = "motusDeviceID")
+}
