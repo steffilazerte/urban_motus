@@ -9,7 +9,7 @@
 <meta name="author" content="Steffi LaZerte">
 <meta name="dcterms.date" content="2024-02-16">
 
-<title>Motus tracking of urban migration stopovers - Citations</title>
+<title>Motus tracking of urban migration stopovers - Metadata checks</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -66,7 +66,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./XX_setup.html" rel="prev">
+<link href="./XX_details.html" rel="next">
+<link href="./05_fine_filters.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -116,7 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./XX_details.html">Appendicies</a></li><li class="breadcrumb-item"><a href="./XX_citations.html">Citations</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./99_checks.html">Metadata checks</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -191,7 +192,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./99_checks.html" class="sidebar-item-text sidebar-link">
+  <a href="./99_checks.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Metadata checks</span></a>
   </div>
 </li>
@@ -220,7 +221,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./XX_citations.html" class="sidebar-item-text sidebar-link active">
+  <a href="./XX_citations.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Citations</span></a>
   </div>
 </li>
@@ -236,18 +237,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#ebird-status-and-trends" id="toc-ebird-status-and-trends" class="nav-link active" data-scroll-target="#ebird-status-and-trends">eBird Status and Trends</a></li>
-  <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages">Packages</a></li>
-  <li><a href="#general-info" id="toc-general-info" class="nav-link" data-scroll-target="#general-info">General Info</a></li>
+  <li><a href="#check-tag-details" id="toc-check-tag-details" class="nav-link active" data-scroll-target="#check-tag-details">Check tag details</a>
+  <ul class="collapse">
+  <li><a href="#check-for-multiple-tag-deployments" id="toc-check-for-multiple-tag-deployments" class="nav-link" data-scroll-target="#check-for-multiple-tag-deployments">Check for multiple tag deployments</a></li>
+  <li><a href="#triple-deploy-ids-all-at-the-same-time" id="toc-triple-deploy-ids-all-at-the-same-time" class="nav-link" data-scroll-target="#triple-deploy-ids-all-at-the-same-time">Triple deploy ids all at the same time???</a></li>
+  </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/XX_citations.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/99_checks.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./XX_details.html">Appendicies</a></li><li class="breadcrumb-item"><a href="./XX_citations.html">Citations</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./99_checks.html">Metadata checks</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Citations</h1>
+<h1 class="title">Metadata checks</h1>
 </div>
 
 
@@ -276,118 +279,66 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This section contains citations that we should remember to include.</p>
-<section id="ebird-status-and-trends" class="level3">
-<h3 class="anchored" data-anchor-id="ebird-status-and-trends">eBird Status and Trends</h3>
-<p>In addition to citing the <code>ebirdst</code> package (below). We <em>also</em> have to cite the eBird data itself.</p>
-<p>eBird data requires attributions, citations, and disclaimers</p>
-<p>For the most up-to-date instructions see Part 2: <a href="https://science.ebird.org/en/status-and-trends/products-access-terms-of-use" class="uri">https://science.ebird.org/en/status-and-trends/products-access-terms-of-use</a></p>
-</section>
-<section id="packages" class="level3">
-<h3 class="anchored" data-anchor-id="packages">Packages</h3>
-<p>You probably only need to cite <strong>motus</strong>, <strong>ebirdst</strong>, and possibly the <strong>tidyverse</strong>, but you should keep track of the packages used and their versions (see General Info, note that if an workflow step was updated separately, see the most up-to-date package versions under that pages “General Info”).</p>
-<section id="motus" class="level4">
-<h4 class="anchored" data-anchor-id="motus">motus</h4>
-<p>Birds Canada (2024). <em>motus: Fetch and use data from the Motus Wildlife Tracking System</em>. <a href="https://motusWTS.github.io/motus/" class="uri">https://motusWTS.github.io/motus/</a>.</p>
-</section>
-<section id="ebirdst-for-access-to-range-maps" class="level4">
-<h4 class="anchored" data-anchor-id="ebirdst-for-access-to-range-maps">ebirdst (for access to range maps)</h4>
-<pre><code>Please cite the eBird Status and Trends data using: 
-  Fink, D., T. Auer, A. Johnston, M. Strimas-Mackey, S. Ligocki, O. Robinson, 
-  W. Hochachka, L. Jaromczyk, C. Crowley, K. Dunham, A. Stillman, I. Davies, 
-  A. Rodewald, V. Ruiz-Gutierrez, C. Wood. 2023.
-  eBird Status and Trends, Data Version: 2022; Released: 2023. Cornell Lab of
-  Ornithology, Ithaca, New York. https://doi.org/10.2173/ebirdst.2022
-
-This version of the package provides access to the 2022 version of the eBird
-Status and Trends Data Products. Access to the 2022 data will be provided 
-until November 2024 when it will be replaced by the 2023 data. At that 
-point, you will be required to update this R package and transition to using 
-the new data.</code></pre>
-</section>
-<section id="tidyverse-for-general-data-management-and-figures" class="level4">
-<h4 class="anchored" data-anchor-id="tidyverse-for-general-data-management-and-figures">tidyverse (for general data management and figures)</h4>
-<p>Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” <em>Journal of Open Source Software</em>, <em>4</em>(43), 1686. doi:10.21105/joss.01686 <a href="https://doi.org/10.21105/joss.01686" class="uri">https://doi.org/10.21105/joss.01686</a>.</p>
-</section>
-</section>
-<section id="general-info" class="level3">
-<h3 class="anchored" data-anchor-id="general-info">General Info</h3>
+<p>Check metadata for projects we have control over. If we find any problems we have the <strong>power</strong> (💪) to fix them (😁).</p>
+<section id="check-tag-details" class="level2">
+<h2 class="anchored" data-anchor-id="check-tag-details">Check tag details</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>─ Session info ───────────────────────────────────────────────────────────────
- setting  value
- version  R version 4.3.2 (2023-10-31)
- os       Ubuntu 22.04.3 LTS
- system   x86_64, linux-gnu
- ui       X11
- language en_CA:en
- collate  en_CA.UTF-8
- ctype    en_CA.UTF-8
- tz       America/Winnipeg
- date     2024-02-16
- pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
-
-─ Packages ───────────────────────────────────────────────────────────────────
- package     * version  date (UTC) lib source
- cachem        1.0.8    2023-05-01 [1] CRAN (R 4.3.0)
- callr         3.7.3    2022-11-02 [1] CRAN (R 4.3.0)
- cli           3.6.2    2023-12-11 [1] CRAN (R 4.3.2)
- crayon        1.5.2    2022-09-29 [1] CRAN (R 4.3.0)
- devtools      2.4.5    2022-10-11 [1] CRAN (R 4.3.0)
- digest        0.6.34   2024-01-11 [1] CRAN (R 4.3.2)
- ebirdst     * 3.2022.2 2024-01-15 [1] Github (ebird/ebirdst@bd409c7)
- ellipsis      0.3.2    2021-04-29 [1] CRAN (R 4.3.0)
- evaluate      0.23     2023-11-01 [1] CRAN (R 4.3.1)
- fastmap       1.1.1    2023-02-24 [1] CRAN (R 4.3.0)
- fs            1.6.3    2023-07-20 [1] CRAN (R 4.3.1)
- glue          1.7.0    2024-01-09 [1] CRAN (R 4.3.2)
- htmltools     0.5.7    2023-11-03 [1] CRAN (R 4.3.1)
- htmlwidgets   1.6.4    2023-12-06 [1] CRAN (R 4.3.2)
- httpuv        1.6.14   2024-01-26 [1] CRAN (R 4.3.2)
- jsonlite      1.8.8    2023-12-04 [1] CRAN (R 4.3.2)
- knitr         1.45     2023-10-30 [1] CRAN (R 4.3.1)
- later         1.3.2    2023-12-06 [1] CRAN (R 4.3.2)
- lifecycle     1.0.4    2023-11-07 [1] CRAN (R 4.3.2)
- magrittr      2.0.3    2022-03-30 [1] CRAN (R 4.3.0)
- memoise       2.0.1    2021-11-26 [1] CRAN (R 4.3.0)
- mime          0.12     2021-09-28 [1] CRAN (R 4.3.0)
- miniUI        0.1.1.1  2018-05-18 [1] CRAN (R 4.3.0)
- pkgbuild      1.4.2    2023-06-26 [1] CRAN (R 4.3.1)
- pkgload       1.3.3    2023-09-22 [1] CRAN (R 4.3.1)
- prettyunits   1.2.0    2023-09-24 [1] CRAN (R 4.3.1)
- processx      3.8.2    2023-06-30 [1] CRAN (R 4.3.1)
- profvis       0.3.8    2023-05-02 [1] CRAN (R 4.3.1)
- promises      1.2.1    2023-08-10 [1] CRAN (R 4.3.1)
- ps            1.7.5    2023-04-18 [1] CRAN (R 4.3.0)
- purrr         1.0.2    2023-08-10 [1] CRAN (R 4.3.1)
- R6            2.5.1    2021-08-19 [1] CRAN (R 4.3.0)
- Rcpp          1.0.12   2024-01-09 [1] CRAN (R 4.3.2)
- remotes       2.4.2.1  2023-07-18 [1] CRAN (R 4.3.2)
- rlang         1.1.3    2024-01-10 [1] CRAN (R 4.3.2)
- rmarkdown     2.25     2023-09-18 [1] CRAN (R 4.3.1)
- rstudioapi    0.15.0   2023-07-07 [1] CRAN (R 4.3.1)
- sessioninfo   1.2.2    2021-12-06 [1] CRAN (R 4.3.0)
- shiny         1.8.0    2023-11-17 [1] CRAN (R 4.3.2)
- stringi       1.8.3    2023-12-11 [1] CRAN (R 4.3.2)
- stringr       1.5.1    2023-11-14 [1] CRAN (R 4.3.2)
- urlchecker    1.0.1    2021-11-30 [1] CRAN (R 4.3.0)
- usethis       2.2.2    2023-07-06 [1] CRAN (R 4.3.1)
- vctrs         0.6.5    2023-12-01 [1] CRAN (R 4.3.2)
- xfun          0.42     2024-02-08 [1] CRAN (R 4.3.2)
- xtable        1.8-4    2019-04-21 [1] CRAN (R 4.3.0)
- yaml          2.3.8    2023-12-11 [1] CRAN (R 4.3.2)
-
- [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3
- [2] /usr/local/lib/R/site-library
- [3] /usr/lib/R/site-library
- [4] /usr/lib/R/library
-
-──────────────────────────────────────────────────────────────────────────────</code></pre>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>tag_deps <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> <span class="fu">collect</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">tsStart =</span> <span class="fu">as_datetime</span>(tsStart), <span class="at">tsEnd =</span> <span class="fu">as_datetime</span>(tsEnd))</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>tag_deps <span class="sc">|&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(projectID, tagID, deployID, tsStart, tsEnd, speciesID) <span class="sc">|&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>TODO: Questions</p>
+<ul>
+<li>Can the end be after the current date? e.g., 2026-12-16…</li>
+<li>Should there be missing start/end dates?</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(tag_deps, projectID, tagID, deployID, tsStart, tsEnd, speciesID) <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(tsStart))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="check-for-multiple-tag-deployments" class="level3">
+<h3 class="anchored" data-anchor-id="check-for-multiple-tag-deployments">Check for multiple tag deployments</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>multi_tags <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">select</span>(tagID, deployID, projectID, tsStart, tsEnd) <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">mutate</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.by =</span> <span class="st">"tagID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">filter</span>(n <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">collect</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">tsStart =</span> <span class="fu">as_datetime</span>(tsStart), <span class="at">tsEnd =</span> <span class="fu">as_datetime</span>(tsEnd))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Multiple deployments shouldn’t be able to overlap… right?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>multi_tags <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(tagID) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tsEnd <span class="sc">&gt;=</span> <span class="fu">lead</span>(tsStart) <span class="sc">|</span> tsStart <span class="sc">&lt;=</span> <span class="fu">lag</span>(tsEnd))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Triple deploy ids all at the same time???</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(dbs[[<span class="st">"551"</span>]], <span class="st">"allruns"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(motusTagID, tagDeployID, tsBegin) <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(motusTagID <span class="sc">==</span> <span class="dv">68470</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">tsBegin =</span> <span class="fu">as_datetime</span>(tsBegin))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="triple-deploy-ids-all-at-the-same-time" class="level3">
+<h3 class="anchored" data-anchor-id="triple-deploy-ids-all-at-the-same-time">Triple deploy ids all at the same time???</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(dbs[[<span class="st">"168"</span>]], <span class="st">"allruns"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(motusTagID, tagDeployID, tsBegin) <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(motusTagID <span class="sc">==</span> <span class="dv">26448</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">tsBegin =</span> <span class="fu">as_datetime</span>(tsBegin)) <span class="sc">|&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tsBegin <span class="sc">&gt;</span> <span class="st">"2017-08-01 20:00:00"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
@@ -780,11 +731,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./XX_setup.html" class="pagination-link  aria-label=" setup"="">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Setup</span>
+      <a href="./05_fine_filters.html" class="pagination-link  aria-label=" fine-scale="" filtering"="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Fine-scale Filtering</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="./XX_details.html" class="pagination-link" aria-label="Notes &amp; Details">
+        <span class="nav-page-text">Notes &amp; Details</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
@@ -792,4 +746,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/XX_citations.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/99_checks.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

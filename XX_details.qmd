@@ -1,0 +1,83 @@
+---
+title: "Notes & Details"
+---
+
+> WIP
+
+This section contains notes and details about the analysis, from design choices
+to coding explanations. This is most relevant for those who may be working with
+the code, as opposed to those interpreting the outputs.
+
+## Quarto
+
+### Typst
+
+In one situation (Range maps), we create a pdf copy of just the range maps
+by [specifing multiple formats](https://quarto.org/docs/output-formats/html-multi-format.html#specifying-formats-to-link) in the YAML and using [Quarto conditional content](https://quarto.org/docs/authoring/conditional.html#content-hidden).
+
+We specify that in addition to html we also want to use [typst ](https://quarto.org/docs/output-formats/typst.html), a 
+new typesetting system which can be used instead of LaTeX for creating PDFs.
+This creates a PDF of just the plots which can be easily distributed via email
+(while we are waiting on eBird permission to include the range maps semi-openly).
+
+
+## Pipes `|>` 
+
+Here I use pipes, namely the R base pipe `|>` which allows you to 'pipe' the 
+output from the first line as the input to the second line ((details)[https://r4ds.hadley.nz/workflow-style.html#sec-pipes]).
+
+One handy way of reading code with pipes is to think "and then..." every time you
+see it.
+
+For example, the following code could be read as:
+
+To make the `sp_ebird` object (here a data frame) first...
+
+- select columns from `ebirdst_runs`, *and then*...
+- filter the data, *and then*...
+- join the data to the `sp` data frame, *and then*...
+- arrange the data by the `english` column
+
+```{r}
+#| eval: false
+sp_ebird <- select(ebirdst_runs, "species_code", "scientific_name") |>
+  filter(species_code != "yebsap-example") |> # Remove eBird example species
+  right_join(sp, by = c("scientific_name" = "scientific")) |>
+  arrange(english)
+```
+
+## `map()` and family
+
+The functions `map()`, `imap()`, `walk()`, etc. are from the [purrr package](https://purrr.tidyverse.org/)
+and are ways in which to loop over a list. 
+Using `map()` is very similar to using `lapply()` or `for()` loops ((details)[https://r4ds.hadley.nz/iteration.html]).
+
+In this workflow, `map()` is often use to perform a task on each motus database.
+This is why it often iterates over `projects` (the list of project ids) or
+`dbs` (the list of database connections).
+
+For example, we use `dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))`
+in the [Setup]("XX_setup.html") to read each data base connection and put it in 
+the `dbs` list.
+
+Similarly, in [Download/Update Data](02_download.qmd), we use
+`walk(dbs, metadata)` to 'walk' through the list of databases and add the full
+metadata to each one.
+
+
+## Spatial
+
+**`st_make_valid()`**
+
+In manipulation of spatial data sets, they occasionally become invalid and return
+errors on future manipulations. `st_make_valid()` is a function which fixes these
+errors and will occasionally be found in the middle of a pipe for this reason.
+
+
+## Databases
+
+**Avoiding `anti_join()`**
+- This is pretty [slow for SQLite databases](https://github.com/tidyverse/dbplyr/issues/1355)
+- So we'll use a left join plus filter instead 
+  (but remember that may have to filter to *keep* missing values if appropriate)
+

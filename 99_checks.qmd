@@ -1,0 +1,74 @@
+---
+title: Metadata checks
+eval: false
+---
+
+Check metadata for projects we have control over. 
+If we find any problems we have the **power** (`r emo::ji("strong")`) to fix them (`r emo::ji("grin")`).
+
+
+
+
+
+## Check tag details
+
+```{r}
+tag_deps <- map(dbs, \(x) tbl(x, "tagDeps") |> collect()) |>
+  list_rbind() |>
+  mutate(tsStart = as_datetime(tsStart), tsEnd = as_datetime(tsEnd))
+
+tag_deps |>
+  select(projectID, tagID, deployID, tsStart, tsEnd, speciesID) |>
+  summary()
+```
+
+
+TODO: Questions
+
+- Can the end be after the current date? e.g., 2026-12-16...
+- Should there be missing start/end dates?
+
+```{r}
+select(tag_deps, projectID, tagID, deployID, tsStart, tsEnd, speciesID) |>
+  filter(is.na(tsStart))
+```
+
+
+### Check for multiple tag deployments
+```{r}
+multi_tags <- map(dbs, \(x) tbl(x, "tagDeps") |> 
+                    select(tagID, deployID, projectID, tsStart, tsEnd) |>
+                    mutate(n = n(), .by = "tagID") |>
+                    filter(n > 1) |>
+                    collect()) |>
+  list_rbind() |>
+  mutate(tsStart = as_datetime(tsStart), tsEnd = as_datetime(tsEnd))
+```
+
+Multiple deployments shouldn't be able to overlap... right?
+
+```{r}
+multi_tags |>
+  group_by(tagID) |>
+  filter(tsEnd >= lead(tsStart) | tsStart <= lag(tsEnd))
+```
+
+Triple deploy ids all at the same time???
+```{r}
+tbl(dbs[["551"]], "allruns") |>
+  select(motusTagID, tagDeployID, tsBegin) |>
+  filter(motusTagID == 68470) |>
+  collect() |>
+  mutate(tsBegin = as_datetime(tsBegin))
+```
+
+
+### Triple deploy ids all at the same time???
+```{r}
+tbl(dbs[["168"]], "allruns") |>
+  select(motusTagID, tagDeployID, tsBegin) |>
+  filter(motusTagID == 26448) |>
+  collect() |>
+  mutate(tsBegin = as_datetime(tsBegin)) |>
+  filter(tsBegin > "2017-08-01 20:00:00")
+```

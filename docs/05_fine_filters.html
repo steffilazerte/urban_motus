@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-02-14">
+<meta name="dcterms.date" content="2024-02-16">
 
 <title>Motus tracking of urban migration stopovers - Fine-scale Filtering</title>
 <style>
@@ -237,11 +237,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a>
+  <ul class="collapse">
   <li><a href="#custom-tables" id="toc-custom-tables" class="nav-link" data-scroll-target="#custom-tables">Custom tables</a></li>
-  <li><a href="#noise" id="toc-noise" class="nav-link" data-scroll-target="#noise">Noise</a></li>
-  <li><a href="#hits" id="toc-hits" class="nav-link" data-scroll-target="#hits">Hits</a></li>
+  </ul></li>
+  <li><a href="#hit-based-filtering" id="toc-hit-based-filtering" class="nav-link" data-scroll-target="#hit-based-filtering">Hit based filtering</a></li>
+  <li><a href="#collect-to-csv" id="toc-collect-to-csv" class="nav-link" data-scroll-target="#collect-to-csv">Collect to CSV</a></li>
+  <li><a href="#noise" id="toc-noise" class="nav-link" data-scroll-target="#noise">Noise</a>
+  <ul class="collapse">
   <li><a href="#tags" id="toc-tags" class="nav-link" data-scroll-target="#tags">Tags</a></li>
+  <li><a href="#motus-filter-etc." id="toc-motus-filter-etc." class="nav-link" data-scroll-target="#motus-filter-etc.">Motus Filter etc.</a></li>
+  </ul></li>
   <li><a href="#ambiguous-detections" id="toc-ambiguous-detections" class="nav-link" data-scroll-target="#ambiguous-detections">Ambiguous detections</a></li>
   <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap up</a></li>
   <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
@@ -270,7 +276,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 14, 2024</p>
+      <p class="date">February 16, 2024</p>
     </div>
   </div>
   
@@ -288,68 +294,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"XX_setup.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
-<section id="custom-tables" class="level2">
-<h2 class="anchored" data-anchor-id="custom-tables">Custom tables</h2>
+<section id="custom-tables" class="level3">
+<h3 class="anchored" data-anchor-id="custom-tables">Custom tables</h3>
+<p>Get the custom hit tables for all databases (filtered to omit ‘bad’ data from previous step)</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>custom_hits <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Replacement for NULL tsEnd values (i.e. today plus change)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  max_ts <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">Sys.time</span>()) <span class="sc">+</span> <span class="dv">1000</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Receivers</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"deviceID"</span>, <span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"tsStartRecv"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndRecv"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>           <span class="st">"recvType"</span> <span class="ot">=</span> <span class="st">"receiverType"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndRecv =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndRecv), max_ts, tsEndRecv))</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get tags</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"speciesID"</span>, <span class="st">"tsStartTag"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndTag"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndTag =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndTag), max_ts, tsEndTag))  </span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine with the rest - And OMIT BAD filtered observations from previous step</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(db, <span class="st">"hits"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"validated"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Filter out "Bad runs" from previous step</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"bad_data"</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">is.na</span>(BAD)) <span class="sc">|&gt;</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"BAD"</span>)</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in runs and motusFilters</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"motusFilter"</span>, <span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>), <span class="at">by =</span> <span class="st">"runID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(t, <span class="at">by =</span> <span class="fu">join_by</span>(tagID, <span class="fu">between</span>(ts, tsStartTag, tsEndTag))) <span class="sc">|&gt;</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batches by batchID (to get the deviceID)</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batches"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"batchID"</span>, <span class="st">"motusDeviceID"</span>), <span class="at">by =</span> <span class="st">"batchID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(r, <span class="at">by =</span> <span class="fu">join_by</span>(motusDeviceID <span class="sc">==</span> deviceID, <span class="fu">between</span>(ts, tsStartRecv, tsEndRecv))) <span class="sc">|&gt;</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only relevant data</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"batchID"</span>, <span class="sc">-</span><span class="st">"tsStartRecv"</span>, <span class="sc">-</span><span class="st">"tsEndRecv"</span>, <span class="sc">-</span><span class="st">"tsStartTag"</span>, <span class="sc">-</span><span class="st">"tsEndTag"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">"recvDeciveID"</span> <span class="ot">=</span> <span class="st">"motusDeviceID"</span>)</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, custom_hits)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, custom_hits)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>hits_df <span class="ot">&lt;-</span> <span class="fu">imap</span>(hits, \(x, y) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">collect</span>(x)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_csv</span>(d, <span class="fu">paste0</span>(<span class="st">"Data/Datasets/hits_"</span>, y, <span class="st">".csv"</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  d</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(hits_df, <span class="st">"Data/Datasets/hits_full.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="noise" class="level2">
-<h2 class="anchored" data-anchor-id="noise">Noise</h2>
-<p>TODO: use a custom noise filter?</p>
-<p>Here is the first and simplest filter, we’ll gather all the run/tag combinations with a <code>motusFilter</code> value of 0.</p>
-<p>See <a href="https://motuswts.github.io/motus/articles/filtering.html">in-depth detections filtering</a> and <a href="https://motuswts.github.io/motus/articles/identifying-false-positives.html">A tool to identify probable false positive detections</a> for more details.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>noise <span class="ot">&lt;-</span> <span class="fu">imap</span>(dbs, \(x, y) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, motusTagID, <span class="at">probability =</span> motusFilter) <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(probability <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">proj_id =</span> y) <span class="sc">|&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 </section>
-<section id="hits" class="level2">
-<h2 class="anchored" data-anchor-id="hits">Hits</h2>
+<section id="hit-based-filtering" class="level2">
+<h2 class="anchored" data-anchor-id="hit-based-filtering">Hit based filtering</h2>
 <p>These are based on notes from Amie MacDonald’s scripts</p>
 <p>Here we’ll use a modified version of the motusFilter</p>
 <ul>
@@ -362,60 +324,102 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Collect all runs relating to tag deployments with <em>only</em> bad motusFilter data (i.e.&nbsp;all 0)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>noise_tags <span class="ot">&lt;-</span> <span class="fu">map</span>(hits, \(x) {</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">motusFilter =</span> <span class="fu">if_else</span>(recvType <span class="sc">==</span> <span class="st">"SENSORGNOME"</span> <span class="sc">&amp;</span> freqSD <span class="sc">&gt;</span> <span class="fl">0.1</span>, <span class="dv">0</span>, motusFilter)) <span class="sc">|&gt;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">sum</span>(motusFilter) <span class="sc">==</span> <span class="dv">0</span>, <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>))</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>noise_tags <span class="ot">&lt;-</span> <span class="fu">map</span>(hits, \(x) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">motusFilter =</span> <span class="fu">if_else</span>(recvType <span class="sc">==</span> <span class="st">"SENSORGNOME"</span> <span class="sc">&amp;</span> freqSD <span class="sc">&gt;</span> <span class="fl">0.1</span>, <span class="dv">0</span>, motusFilter)) <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">motusFilter =</span> <span class="fu">sum</span>(motusFilter, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(motusFilter <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Use a ts date for now (60 * 60 * 24) seconds in a day, so we can categorize ts by numeric UTC date.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>noise_quality <span class="ot">&lt;-</span> <span class="fu">map</span>(hits, \(x) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">motusFilter =</span> <span class="fu">if_else</span>(recvType <span class="sc">==</span> <span class="st">"SENSORGNOME"</span> <span class="sc">&amp;</span> freqSD <span class="sc">&gt;</span> <span class="fl">0.1</span>, </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="dv">0</span>, motusFilter),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">ts_date =</span> <span class="fu">floor</span>(ts <span class="sc">/</span> (<span class="dv">60</span> <span class="sc">*</span> <span class="dv">60</span> <span class="sc">*</span> <span class="dv">24</span>))) <span class="sc">|&gt;</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, tagID, tagDeployID, recvDeployID, ts_date, motusFilter) <span class="sc">|&gt;</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(tagID, tagDeployID, recvDeployID, ts_date) <span class="sc">|&gt;</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_good =</span> <span class="fu">sum</span>(motusFilter) <span class="sc">/</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(p_good <span class="sc">&lt;=</span> <span class="fl">0.5</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>noise_quality <span class="ot">&lt;-</span> <span class="fu">map</span>(hits, \(x) {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">motusFilter =</span> <span class="fu">if_else</span>(recvType <span class="sc">==</span> <span class="st">"SENSORGNOME"</span> <span class="sc">&amp;</span> freqSD <span class="sc">&gt;</span> <span class="fl">0.1</span>, </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="dv">0</span>, motusFilter),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">ts_date =</span> <span class="fu">floor</span>(ts <span class="sc">/</span> (<span class="dv">60</span> <span class="sc">*</span> <span class="dv">60</span> <span class="sc">*</span> <span class="dv">24</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, tagID, tagDeployID, recvDeployID, ts_date, motusFilter) <span class="sc">|&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(tagID, tagDeployID, recvDeployID, ts_date) <span class="sc">|&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_good =</span> <span class="fu">sum</span>(motusFilter, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(p_good <span class="sc">&lt;=</span> <span class="fl">0.5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> <span class="fu">map2</span>(hits, noise_quality, \(x, y) <span class="fu">anti_join_quick</span>(x, y))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> <span class="fu">map2</span>(final, noise_tags, \(x, y) {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">left_join</span>(x, <span class="fu">select</span>(y, <span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">bad =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.n</span>(bad)) <span class="sc">|&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"bad"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="tags" class="level2">
-<h2 class="anchored" data-anchor-id="tags">Tags</h2>
+<section id="collect-to-csv" class="level2">
+<h2 class="anchored" data-anchor-id="collect-to-csv">Collect to CSV</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>full <span class="ot">&lt;-</span> <span class="fu">imap</span>(final, \(x, y) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">collect</span>(x)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_csv</span>(d, <span class="fu">paste0</span>(<span class="st">"Datasets/hits_"</span>, y, <span class="st">".csv"</span>))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  d</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(full, <span class="st">"hits_full.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="noise" class="level2">
+<h2 class="anchored" data-anchor-id="noise">Noise</h2>
+<section id="tags" class="level3">
+<h3 class="anchored" data-anchor-id="tags">Tags</h3>
 <p>There are two broad classes of tags, Lotek and CTT. These tags <a href="https://motuswts.github.io/motus/articles/identifying-false-positives.html?q=Lotek%20nanotags#introduction">have different properties and are processed differently</a>, so care should be taken to treat them differently.</p>
 <p>Let’s first take a look a see how many tags of each type we have</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(dbs[[<span class="dv">1</span>]], <span class="st">"tags"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(projectID <span class="sc">%in%</span> projects) <span class="sc">|&gt;</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(projectID, manufacturer, tagID) <span class="sc">|&gt;</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(projectID, manufacturer) <span class="sc">|&gt;</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tbl(dbs[[1]], "tags") |&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   filter(projectID %in% projects) |&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   select(projectID, manufacturer, tagID) |&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   distinct() |&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   count(projectID, manufacturer) |&gt;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   collect() |&gt;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#   gt()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So we mostly have Lotek tags (which much of the filtering suggestions have been based on), but we do have two projects with CTT tags to consider.</p>
+</section>
+<section id="motus-filter-etc." class="level3">
+<h3 class="anchored" data-anchor-id="motus-filter-etc.">Motus Filter etc.</h3>
+<p>TODO: use a custom noise filter?</p>
+<p>Here is the first and simplest filter, we’ll gather all the run/tag combinations with a <code>motusFilter</code> value of 0.</p>
+<p>See <a href="https://motuswts.github.io/motus/articles/filtering.html">in-depth detections filtering</a> and <a href="https://motuswts.github.io/motus/articles/identifying-false-positives.html">A tool to identify probable false positive detections</a> for more details.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># noise &lt;- imap(dbs, \(x, y) {</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   tbl(x, "runs") |&gt; </span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     select(runID, motusTagID, probability = motusFilter) |&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     filter(probability == 0) |&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     mutate(proj_id = y) |&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     collect()</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># })</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
 </section>
 <section id="ambiguous-detections" class="level2">
 <h2 class="anchored" data-anchor-id="ambiguous-detections">Ambiguous detections</h2>
 <p>TODO: Needs to be done post-filtering (as much as possible)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ambig <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"allruns"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>               <span class="fu">select</span>(ambigID, motusTagID) <span class="sc">|&gt;</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>               <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ambigID)) <span class="sc">|&gt;</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">collect</span>()) <span class="sc">|&gt;</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ambig &lt;- map(dbs, \(x) tbl(x, "runs") |&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#                select(ambigID, motusTagID) |&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#                filter(!is.na(ambigID)) |&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#                 distinct() |&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#                 collect()) |&gt;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   list_rbind(names_to = "proj_id")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="wrap-up" class="level2">
 <h2 class="anchored" data-anchor-id="wrap-up">Wrap up</h2>
 <p>Disconnect from the databases</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk</span>(dbs, dbDisconnect)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk</span>(dbs, dbDisconnect)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="reproducibility" class="level2">
@@ -433,7 +437,7 @@ Session Info
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>

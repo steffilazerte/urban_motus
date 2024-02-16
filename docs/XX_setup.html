@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-02-05">
+<meta name="dcterms.date" content="2024-02-16">
 
 <title>Motus tracking of urban migration stopovers - Setup</title>
 <style>
@@ -190,6 +190,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Fine-scale Filtering</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./99_checks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Metadata checks</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -265,7 +271,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 5, 2024</p>
+      <p class="date">February 16, 2024</p>
     </div>
   </div>
   
@@ -398,18 +404,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>filter_count <span class="ot">&lt;-</span> <span class="cf">function</span>(dbs) {</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>filter_count <span class="ot">&lt;-</span> <span class="cf">function</span>(dbs, filter) {</span>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  before <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_before"</span>) <span class="sc">|&gt;</span> <span class="fu">collect</span>()) <span class="sc">|&gt;</span></span>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  after <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) {</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    remove <span class="ot">&lt;-</span> <span class="fu">getRunsFilters</span>(x, <span class="st">"all"</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  after <span class="ot">&lt;-</span> <span class="fu">imap</span>(dbs, \(x, y) {</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    remove <span class="ot">&lt;-</span> <span class="fu">getRunsFilters</span>(x, filter, y)</span>
 <span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">anti_join</span>(remove, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"motusTagID"</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_after"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">collect</span>()</span>
 <span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
 <span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>()</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(before, after) <span class="sc">|&gt;</span></span>
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_reduced =</span> (n_before <span class="sc">-</span> n_after) <span class="sc">/</span> n_before <span class="sc">*</span> <span class="dv">100</span>)</span>
 <span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>}</span>
@@ -423,7 +429,104 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">data_row.padding =</span> <span class="fu">px</span>(<span class="dv">7</span>),</span>
 <span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>      ...</span>
 <span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect and transform ts values to date/times </span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>collect_ts <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>  db <span class="sc">|&gt;</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">contains</span>(<span class="st">"ts"</span>, <span class="at">ignore.case =</span> <span class="cn">FALSE</span>), as_datetime))</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect run/tag information for filters</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>collect_filter <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>  db <span class="sc">|&gt;</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename_with</span>(<span class="sc">~</span><span class="st">"motusTagID"</span>, <span class="at">.cols =</span> <span class="fu">any_of</span>(<span class="st">"tagID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, motusTagID) <span class="sc">|&gt;</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">probability =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>anti_join_quick <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, <span class="at">by =</span> <span class="cn">NULL</span>, <span class="at">copy =</span> <span class="cn">FALSE</span>, <span class="at">motus_filter =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(motus_filter) {</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">select</span>(y, <span class="st">"runID"</span>, <span class="st">"tagID"</span>)</span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">is.null</span>(by)) by <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>)</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">mutate</span>(y, <span class="at">ANTI =</span> <span class="dv">1</span>) </span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(x, y, <span class="at">by =</span> by, <span class="at">copy =</span> copy) <span class="sc">|&gt;</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">is.na</span>(ANTI)) <span class="sc">|&gt;</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"ANTI"</span>)</span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- custom_runs ----</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>custom_runs <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Replacement for NULL tsEnd values (i.e. today plus change)</span></span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>  max_ts <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">Sys.time</span>()) <span class="sc">+</span> <span class="dv">1000</span>)</span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Receivers</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"deviceID"</span>, <span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"tsStartRecv"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndRecv"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndRecv =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndRecv), max_ts, tsEndRecv))</span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get tags</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"speciesID"</span>, <span class="st">"tsStartTag"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndTag"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndTag =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndTag), max_ts, tsEndTag))</span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine with runs</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(db, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tsBegin"</span>, <span class="st">"tsEnd"</span>, <span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>, <span class="st">"motusFilter"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run</span></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(t, <span class="at">by =</span> <span class="fu">join_by</span>(tagID, <span class="fu">between</span>(tsBegin, tsStartTag, tsEndTag))) <span class="sc">|&gt;</span></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batchRuns by runID (to get the batchID)</span></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batchRuns"</span>), <span class="at">by =</span> <span class="st">"runID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batches by batchID (to get the deviceID)</span></span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batches"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"batchID"</span>, <span class="st">"motusDeviceID"</span>), <span class="at">by =</span> <span class="st">"batchID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run</span></span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(r, <span class="at">by =</span> <span class="fu">join_by</span>(motusDeviceID <span class="sc">==</span> deviceID, <span class="fu">between</span>(tsBegin, tsStartRecv, tsEndRecv))) <span class="sc">|&gt;</span></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only relevant data</span></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, motusFilter, </span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>           tagID, tagDeployID, speciesID, </span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a>           recvDeployID, <span class="at">recvDeviceID =</span> motusDeviceID, </span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>           tsBegin, tsEnd) <span class="sc">|&gt;</span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-102"><a href="#cb6-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-103"><a href="#cb6-103" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- custom_hits ----</span></span>
+<span id="cb6-104"><a href="#cb6-104" aria-hidden="true" tabindex="-1"></a>custom_hits <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
+<span id="cb6-105"><a href="#cb6-105" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Replacement for NULL tsEnd values (i.e. today plus change)</span></span>
+<span id="cb6-106"><a href="#cb6-106" aria-hidden="true" tabindex="-1"></a>  max_ts <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">Sys.time</span>()) <span class="sc">+</span> <span class="dv">1000</span>)</span>
+<span id="cb6-107"><a href="#cb6-107" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-108"><a href="#cb6-108" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Receivers</span></span>
+<span id="cb6-109"><a href="#cb6-109" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb6-110"><a href="#cb6-110" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"deviceID"</span>, <span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"tsStartRecv"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndRecv"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>,</span>
+<span id="cb6-111"><a href="#cb6-111" aria-hidden="true" tabindex="-1"></a>           <span class="st">"recvType"</span> <span class="ot">=</span> <span class="st">"receiverType"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-112"><a href="#cb6-112" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndRecv =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndRecv), max_ts, tsEndRecv))</span>
+<span id="cb6-113"><a href="#cb6-113" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-114"><a href="#cb6-114" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get tags</span></span>
+<span id="cb6-115"><a href="#cb6-115" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb6-116"><a href="#cb6-116" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"speciesID"</span>, <span class="st">"tsStartTag"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndTag"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-117"><a href="#cb6-117" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndTag =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndTag), max_ts, tsEndTag))  </span>
+<span id="cb6-118"><a href="#cb6-118" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-119"><a href="#cb6-119" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine with the rest - And OMIT BAD filtered observations from previous step</span></span>
+<span id="cb6-120"><a href="#cb6-120" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(db, <span class="st">"hits"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-121"><a href="#cb6-121" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"validated"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-122"><a href="#cb6-122" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in runs and motusFilters</span></span>
+<span id="cb6-123"><a href="#cb6-123" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"motusFilter"</span>, <span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>), <span class="at">by =</span> <span class="st">"runID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-124"><a href="#cb6-124" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run</span></span>
+<span id="cb6-125"><a href="#cb6-125" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(t, <span class="at">by =</span> <span class="fu">join_by</span>(tagID, <span class="fu">between</span>(ts, tsStartTag, tsEndTag))) <span class="sc">|&gt;</span></span>
+<span id="cb6-126"><a href="#cb6-126" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Filter out "Bad runs" from previous step</span></span>
+<span id="cb6-127"><a href="#cb6-127" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"bad_data"</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-128"><a href="#cb6-128" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">is.na</span>(BAD)) <span class="sc">|&gt;</span></span>
+<span id="cb6-129"><a href="#cb6-129" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"BAD"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-130"><a href="#cb6-130" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batches by batchID (to get the deviceID)</span></span>
+<span id="cb6-131"><a href="#cb6-131" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batches"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"batchID"</span>, <span class="st">"motusDeviceID"</span>), <span class="at">by =</span> <span class="st">"batchID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-132"><a href="#cb6-132" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run</span></span>
+<span id="cb6-133"><a href="#cb6-133" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(r, <span class="at">by =</span> <span class="fu">join_by</span>(motusDeviceID <span class="sc">==</span> deviceID, <span class="fu">between</span>(ts, tsStartRecv, tsEndRecv))) <span class="sc">|&gt;</span></span>
+<span id="cb6-134"><a href="#cb6-134" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only relevant data</span></span>
+<span id="cb6-135"><a href="#cb6-135" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"batchID"</span>, <span class="sc">-</span><span class="st">"tsStartRecv"</span>, <span class="sc">-</span><span class="st">"tsEndRecv"</span>, <span class="sc">-</span><span class="st">"tsStartTag"</span>, <span class="sc">-</span><span class="st">"tsEndTag"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-136"><a href="#cb6-136" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">"recvDeciveID"</span> <span class="ot">=</span> <span class="st">"motusDeviceID"</span>)</span>
+<span id="cb6-137"><a href="#cb6-137" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
