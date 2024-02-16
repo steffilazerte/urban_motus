@@ -20,30 +20,21 @@ source("XX_setup.R")
 
 Get the custom hit tables for all databases (filtered to omit 'bad' data from previous step)
 ```{r}
+#| eval: false
 hits <- map(dbs, custom_hits)
+
+hits_df <- imap(hits, \(x, y) {
+  d <- collect(x)
+  write_csv(d, paste0("Data/Datasets/hits_", y, ".csv"))
+  d
+})
+
+write_rds(hits_df, "Data/Datasets/hits_full.rds")
 ```
 
 
-## Noise
 
-TODO: use a custom noise filter?
-
-Here is the first and simplest filter, we'll gather all the run/tag combinations
-with a `motusFilter` value of 0.
-
-See [in-depth detections filtering](https://motuswts.github.io/motus/articles/filtering.html) and [A tool to identify probable false positive detections](https://motuswts.github.io/motus/articles/identifying-false-positives.html) for more details.
-
-```{r}
-# noise <- imap(dbs, \(x, y) {
-#   tbl(x, "runs") |> 
-#     select(runID, motusTagID, probability = motusFilter) |>
-#     filter(probability == 0) |>
-#     mutate(proj_id = y) |>
-#     collect()
-# })
-```
-
-## Hits
+## Hit based filtering
 
 These are based on notes from Amie MacDonald's scripts
 
@@ -95,13 +86,26 @@ final <- map2(final, noise_tags, \(x, y) {
     filter(!is.n(bad)) |>
     select(-"bad")
 })
-    
-system.time(test <- collect(final[[1]]))
+```
+
+
+## Collect to CSV
+
+```{r}
+full <- imap(final, \(x, y) {
+  d <- collect(x)
+  write_csv(d, paste0("Datasets/hits_", y, ".csv"))
+  d
+})
+
+write_rds(full, "hits_full.rds")
 ```
 
 
 
-## Tags
+## Noise
+
+### Tags
 
 There are two broad classes of tags, Lotek and CTT. 
 These tags [have different properties and are processed differently](https://motuswts.github.io/motus/articles/identifying-false-positives.html?q=Lotek%20nanotags#introduction), so 
@@ -110,41 +114,49 @@ care should be taken to treat them differently.
 Let's first take a look a see how many tags of each type we have
 
 ```{r}
-tbl(dbs[[1]], "tags") |>
-  filter(projectID %in% projects) |>
-  select(projectID, manufacturer, tagID) |>
-  distinct() |>
-  count(projectID, manufacturer) |>
-  collect() |>
-  gt()
+# tbl(dbs[[1]], "tags") |>
+#   filter(projectID %in% projects) |>
+#   select(projectID, manufacturer, tagID) |>
+#   distinct() |>
+#   count(projectID, manufacturer) |>
+#   collect() |>
+#   gt()
 ```
 
 So we mostly have Lotek tags (which much of the filtering suggestions have been based on),
 but we do have two projects with CTT tags to consider.
 
+### Motus Filter etc.
+
+TODO: use a custom noise filter?
+
+Here is the first and simplest filter, we'll gather all the run/tag combinations
+with a `motusFilter` value of 0.
+
+See [in-depth detections filtering](https://motuswts.github.io/motus/articles/filtering.html) and [A tool to identify probable false positive detections](https://motuswts.github.io/motus/articles/identifying-false-positives.html) for more details.
+
+```{r}
+# noise <- imap(dbs, \(x, y) {
+#   tbl(x, "runs") |> 
+#     select(runID, motusTagID, probability = motusFilter) |>
+#     filter(probability == 0) |>
+#     mutate(proj_id = y) |>
+#     collect()
+# })
+```
 
 ## Ambiguous detections
 
 TODO: Needs to be done post-filtering (as much as possible)
 
 ```{r}
-
-tags.ambigs <- ambig %>% 
-  group_by(ambigID) %>%
-  mutate(inds = ifelse(any(motusTagID %in% tag.list), "yes","no")) %>%
-  filter(inds == "yes") %>%
-  distinct() %>%
-  ungroup() %>%
-  rename(tagID = motusTagID)
-
-ambig <- map(dbs, \(x) tbl(x, "runs") |>
-               select(ambigID, motusTagID) |>
-               filter(!is.na(ambigID)) |>
-                distinct() |>
-                collect()) |>
-  list_rbind(names_to = "proj_id")
+# ambig <- map(dbs, \(x) tbl(x, "runs") |>
+#                select(ambigID, motusTagID) |>
+#                filter(!is.na(ambigID)) |>
+#                 distinct() |>
+#                 collect()) |>
+#   list_rbind(names_to = "proj_id")
 ```
-
 
 
 ## Wrap up
