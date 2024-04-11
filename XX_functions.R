@@ -140,6 +140,7 @@ custom_hits <- function(db) {
     select(-"batchID", -"tsStartRecv", -"tsEndRecv", -"tsStartTag", -"tsEndTag") |>
     rename("recvDeciveID" = "motusDeviceID")
 }
+
 plot_bouts <- function(trans, bouts, tagDeployID, runs = NULL, hits = NULL) {
   
   trans <- filter(trans, tagDeployID == .env$tagDeployID)
@@ -301,3 +302,4 @@ calc_trans <- function(x) {
     filter(recvDeployID != next_stn) |>
     select(tagDeployID, id1, id2)
 }
+
