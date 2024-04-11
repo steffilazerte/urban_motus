@@ -15,6 +15,8 @@ library(ggplot2)
 library(readr)
 library(lubridate)
 library(assertr) # Check data quality
+library(forcats)
+library(ggrepel)
 
 # Data display
 library(gt)
@@ -24,6 +26,10 @@ library(sf)
 library(rnaturalearth)
 library(ebirdst) # Species ranges
 library(units)
+
+# ---- constants ----
+max_flight_speed <- set_units(72, "m/s")
+max_tower_radius <- set_units(50, "km")
 
 # ---- credentials ----
 motus:::sessionVariable(name = "userLogin", val = Sys.getenv("URBAN_USER"))

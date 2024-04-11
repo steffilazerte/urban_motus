@@ -1,0 +1,281 @@
+---
+title: "Bouts and Transitions"
+---
+
+## Setup
+```{r}
+#| message: false
+#| cache: false
+source("XX_setup.R")
+library(ggspatial)
+library(patchwork)
+library(furrr)
+
+
+noise_runs <- open_dataset("Data/Datasets/noise_runs.feather", format = "feather")
+noise_hits <- open_dataset("Data/Datasets/noise_hits.feather", format = "feather")
+
+runs <- open_dataset("Data/Datasets/runs", format = "feather") |>
+  anti_join(noise_runs, by = c("runID")) |>
+  anti_join(noise_hits, by = c("runID")) |>
+  filter(len > 2) |>
+  select(runID, timeBegin, timeEnd, tagID, ant, len, motusFilter, tagDeployID, 
+         speciesID, starts_with("recvDeploy"), matches("date|month|year")) |>
+  arrange(timeBegin) |>
+  collect()
+
+#good_runs <- unique(runs$runID)
+
+#hits <- map(hits, \(x) filter(x, runID %in% good_runs))
+
+```
+
+## Assumptions
+In this script we'll be filtering out unlikely movements between stations (i.e. super fast birds).
+
+This involves setting a maximum allowable flight speed, but also the distance from a station 
+in which a bird could conceivably be detected (otherwise we might calculate super fast flight speeds
+simply because a bird was at the detection limit of two stations and moved back and forth across the 
+boundary).
+
+We will assume the following limits for `max_flight_speed` and `max_tower_radius` (defined in `XX_setup.R`).
+
+- Flight speed 72 m/s 
+    - from Amie via Anderson et al. (2019) and Gronroos et al. (2012))
+    - for shorebirds and with a buffer to avoid missing true flights, so may result in false positives for us
+- Tower radius 50 km
+    - from Amie, based on a 25km radius at each tower (so 50 between the two)
+    - generous as most towers have a smaller detection range, but possible
+
+
+```{r}
+#| include: false
+knitr::read_chunk("XX_setup.R")
+```
+
+```{r constants}
+#| message: false
+```
+
+## Get distances among stations
+
+We'll look at movements between stations and how quickly they occur.
+
+- Here we use the units package to handle the unit conversions for time (min) and distance (m)
+  into speed (km/day)
+- Units can then be compared with the `max_flight_speed` in units of `m/s`
+
+
+We can't reliably assess speed over very small distances, because each tower
+could presumably detect birds up to 25km away.
+
+So we'll only consider fast birds when the distance between towers is greater than 
+our buffer `max_tower_radius` and the flight speed is more than `max_flight_speed`
+
+
+
+```{r}
+recvs <- runs |>
+  select(contains("recv")) |>
+  distinct() |>
+  drop_na()
+
+recvs_sf <- recvs |>
+  st_as_sf(coords = c("recvDeployLon", "recvDeployLat"), crs = 4326) |>
+  arrange(recvDeployID)
+  
+dist <- st_distance(recvs_sf) |>
+  as_tibble() |>
+  mutate(recv_from = recvs_sf$recvDeployID) |>
+  relocate(recv_from) |>
+  rename_with(\(x) as.character(recvs_sf$recvDeployID), .cols = -1) |>
+  pivot_longer(-recv_from, names_to = "recv_to", values_to = "next_dist") |>
+  mutate(recv_to = as.integer(recv_to)) |>
+  arrange(recv_from, recv_to) |>
+  mutate(next_pair = paste0(recv_from, "_", recv_to),
+         next_dist = set_units(next_dist, "km"),
+         min_time = next_dist / max_flight_speed) |>
+  #filter(next_dist > max_tower_radius) |>
+  mutate(min_time = as.duration(as.numeric(set_units(min_time, "s"))))
+```
+
+## Summarize Bouts
+
+```{r}
+plan(multisession, workers = 6)
+#x <- filter(runs, tagDeployID == 35306, recvDeployID == 7624) |>
+#  select(runID, timeBegin, timeEnd, recvDeployID, len, ant, motusFilter)
+cutoff <- set_units(30, "min")
+
+bouts <- nest(runs, .by = c("tagDeployID", "recvDeployID")) |>
+  mutate(bouts = future_map(data, \(x) {
+    x1 <- create_bouts(arrange(x, timeBegin), cutoff)
+    x2 <- create_bouts(arrange(x1, timeEnd), cutoff)
+
+    # Keep running until no more overlaps hve been resolved    
+    while(nrow(x1) != nrow(x2)) {
+      x1 <- create_bouts(arrange(x2, timeBegin), cutoff)
+      x2 <- create_bouts(arrange(x1, timeEnd), cutoff)
+    }
+    
+    x2 |>
+      mutate(n_runs = map_dbl(runID, n_distinct),
+             len_min = map_dbl(len, min),
+             len_max = map_dbl(len, max),
+             n_ant = map_dbl(ant, n_distinct))
+  }, .progress = TRUE, .options = furrr_options(seed = 123)))
+
+bouts_all <- bouts |>
+  select(-data) |>
+  unnest(bouts) |>
+  mutate(dateBegin = as_date(timeBegin),
+         id = paste0(tagDeployID, "_", recvDeployID, "_", bout)) |>
+  arrange(tagDeployID, timeBegin) |>
+  left_join(recvs, by = "recvDeployID")
+
+```
+
+## Transitions
+
+We'll identify transitions as movements between stations for an individual
+
+```{r}
+o <- nest(bouts_all, data = -tagDeployID) |>
+  mutate(overlaps = map(data, \(x) find_overlaps(x, "df"), .progress = TRUE)) |>
+  select(-"data") |>
+  unnest("overlaps") |>
+  mutate(id1 = paste0(tagDeployID, "_", id1),
+         id2 = paste0(tagDeployID, "_", id2))
+
+
+trans1 <- bouts_all |> 
+  arrange(timeBegin) |>
+  calc_trans()
+
+trans2 <- bouts_all |> 
+  arrange(timeEnd) |>
+  calc_trans()
+
+b <- select(bouts_all, "stn1" = "recvDeployID", "id1" = "id", "b1" = "timeBegin", "e1" = "timeEnd")
+
+trans <- bind_rows(trans1, trans2) |>
+  distinct() |>
+  full_join(o, by = c("tagDeployID", "id1", "id2")) |>
+  left_join(b, by = "id1") |>
+  left_join(rename(b, "stn2"= 1, "id2" = 2, "b2" = 3, "e2" = 4), by = "id2") |>
+  left_join(rename(recvs, "stn1" = 1, "lat1" = 2, "lon1" = 3), by = "stn1") |>
+  left_join(rename(recvs, "stn2" = 1, "lat2" = 2, "lon2" = 3), by = "stn2") |>
+  mutate(stn_pair = paste0(stn1, "_", stn2),
+         overlap = replace_na(overlap, FALSE),
+         lag1 = as_units(difftime(b2, e1, units = "min")),
+         lag2 = as_units(difftime(e2, e1, units = "min")),
+         time_diff = pmin(lag1, lag2),
+         time_diff = as.duration(as.numeric(set_units(time_diff, "s"))),
+         time_diff = if_else(overlap, duration(0), time_diff),
+         date = as_date(e1)) |>
+  left_join(select(dist, "stn_pair" = "next_pair", next_dist, min_time),
+            by = "stn_pair") |>
+  mutate(problem = next_dist >= max_tower_radius & (time_diff < min_time | overlap))
+
+g1 <- plot_map(t, b)
+  
+t <- filter(trans, tagDeployID == 35306) |>
+  arrange(e2) 
+
+b <- filter(bouts_all, tagDeployID == 35306)
+
+plot_bouts(trans, bouts_all, tagDeployID = 35306)
+```
+
+
+```{r}
+g <- plot_bouts(trans, bouts_all, tagDeployID = 35306, runs, hits)
+ggsave(plot = g, filename = "temp3.pdf", width = 20, height = 12)
+
+g <- plot_bouts(trans, bouts_all, tagDeployID = 13847, runs, hits)
+ggsave(plot = g, filename = "temp_13847.pdf", width = 20, height = 12)
+
+g <- plot_bouts(trans, bouts_all, tagDeployID = 13854, runs, hits)
+ggsave(plot = g, filename = "temp_13854.pdf", width = 20, height = 12)
+
+g <- plot_bouts(trans, bouts_all, tagDeployID = 17695, runs, hits)
+ggsave(plot = g, filename = "temp_17695.pdf", width = 20, height = 12)
+
+# PROGRAMATICALLY CATCH WRONG DIRECTION?
+g <- plot_bouts(trans, bouts_all, tagDeployID = 18548, runs, hits)
+ggsave(plot = g, filename = "temp_18548.pdf", width = 20, height = 12)
+
+g <- plot_bouts(trans, bouts_all, tagDeployID = 18880, runs, hits)
+ggsave(plot = g, filename = "temp_18880.pdf", width = 20, height = 12)
+
+
+g <- plot_bouts(trans, bouts_all, tagDeployID = 35476, runs, hits)
+ggsave(plot = g, filename = "temp_35476.pdf", width = 20, height = 12)
+
+```
+
+## Arrival Patterns
+
+```{r}
+arrange(bouts_all, tagDeployID, timeBegin)
+
+test <- filter(hits[["364"]], 
+               tagDeployID == 2661, 
+               time >= "2014-10-24 13:03:45", 
+               time <= "2014-10-25 10:45:58") |>
+    collect()
+
+
+ggplot(data = test, aes(x = time, y = sig)) +
+  geom_point() +
+  stat_smooth()
+
+```
+
+
+## Noise
+
+### Tags
+
+There are two broad classes of tags, Lotek and CTT. 
+These tags [have different properties and are processed differently](https://motuswts.github.io/motus/articles/identifying-false-positives.html?q=Lotek%20nanotags#introduction), so 
+care should be taken to treat them differently. 
+
+Let's first take a look a see how many tags of each type we have
+
+```{r}
+# tbl(dbs[[1]], "tags") |>
+#   filter(projectID %in% projects) |>
+#   select(projectID, manufacturer, tagID) |>
+#   distinct() |>
+#   count(projectID, manufacturer) |>
+#   collect() |>
+#   gt()
+```
+
+So we mostly have Lotek tags (which much of the filtering suggestions have been based on),
+but we do have two projects with CTT tags to consider.
+
+### Motus Filter etc.
+
+TODO: use a custom noise filter?
+
+Here is the first and simplest filter, we'll gather all the run/tag combinations
+with a `motusFilter` value of 0.
+
+See [in-depth detections filtering](https://motuswts.github.io/motus/articles/filtering.html) and [A tool to identify probable false positive detections](https://motuswts.github.io/motus/articles/identifying-false-positives.html) for more details.
+
+```{r}
+# noise <- imap(dbs, \(x, y) {
+#   tbl(x, "runs") |> 
+#     select(runID, motusTagID, probability = motusFilter) |>
+#     filter(probability == 0) |>
+#     mutate(proj_id = y) |>
+#     collect()
+# })
+```
+
+
+
+
+
