@@ -1,163 +1,151 @@
 ---
 title: Fine-scale Filtering
-eval: false
 freeze: auto
 ---
 
 Here we perform fine-scale filtering which involves more assessments of potential issues. 
+
+Many of these steps rely on hit-level data, as opposed to run-level data from the
+previous steps.
 
 ## Setup
 ```{r}
 #| message: false
 #| cache: false
 source("XX_setup.R")
-```
+noise_runs <- open_dataset("Data/Datasets/noise_runs.feather", format = "feather")
 
-### Custom tables
-```{r custom_hits}
-#| code-fold: true
-```
+runs <- open_dataset("Data/Datasets/runs", format = "feather") |>
+  anti_join(noise_runs)
 
-Get the custom hit tables for all databases (filtered to omit 'bad' data from previous step)
-```{r}
-#| eval: false
-hits <- map(dbs, custom_hits)
-
-hits_df <- imap(hits, \(x, y) {
-  d <- collect(x)
-  write_csv(d, paste0("Data/Datasets/hits_", y, ".csv"))
-  d
+hits <- map(hits, \(x) {
+  anti_join(x, noise_runs, by = c("runID", "recvDeployID", "tagDeployID")) |>
+    left_join(select(runs, "runID", "recvType"), by = "runID")
 })
+  
+```
 
-write_rds(hits_df, "Data/Datasets/hits_full.rds")
+We'll also use a modified version of the motusFilter[^1], such that 
+hits from SENSORGNOME stations with a `freqSD > 0.1` will be considered 'bad' data 
+(i.e., we'll set the motusFilter value to 0 for these hits).
+
+[^1]: Based on notes from Amie MacDonald's scripts
+
+```{r}
+hits <- map(hits, \(x) {
+  mutate(x, motusFilter = if_else(recvType == "SENSORGNOME" & freqSD > 0.1, 0, motusFilter))
+})
 ```
 
 
 
-## Hit based filtering
+## Bad Tags[^1]
 
-These are based on notes from Amie MacDonald's scripts
+First, we'll collect individual tags which have *only* bad data (i.e. all 0)
 
-Here we'll use a modified version of the motusFilter
-
-- Hits from SENSORGNOME stations with a freqSD > 0.1 will be considered 'bad' data
-
-
-Then we'll 
-
-- Omit individual tags with only bad data using a modified version of the motusFilter
-- Calculate the proportion of good/bad data per tag, per receiver, per day, 
-  omit those where less than half are 'good'
-
-Collect all runs relating to tag deployments with *only* bad motusFilter data (i.e. all 0)
 ```{r}
 noise_tags <- map(hits, \(x) {
-  x |>
-    mutate(motusFilter = if_else(recvType == "SENSORGNOME" & freqSD > 0.1, 0, motusFilter)) |>
+  noise <- x |>
+    select("tagID", "tagDeployID", "motusFilter") |>
     summarize(motusFilter = sum(motusFilter, na.rm = TRUE), .by = c("tagID", "tagDeployID")) |>
-    filter(motusFilter == 0) |>
-    select("tagID", "tagDeployID")
-})
+    filter(motusFilter == 0)
+  
+  semi_join(x, noise, by = c("tagID", "tagDeployID")) |>
+    select("runID", "tagDeployID", "recvDeployID") |>
+    collect()
+}) |> list_rbind()
 ```
 
-Use a ts date for now (60 * 60 * 24) seconds in a day, so we can categorize
-ts by numeric UTC date.
+## Bad Runs[^1]
+
+Now we'll calculate the proportion of good/bad data per tag, per receiver, per day. 
+
+- We'll omit all runs on a day for this tag/receiver combo where less than half are 'good'
+   
 ```{r}
 noise_quality <- map(hits, \(x) {
-  x |>
-    mutate(motusFilter = if_else(recvType == "SENSORGNOME" & freqSD > 0.1, 
-                                 0, motusFilter),
-           ts_date = floor(ts / (60 * 60 * 24))) |>
-    select(runID, tagID, tagDeployID, recvDeployID, ts_date, motusFilter) |>
-    group_by(tagID, tagDeployID, recvDeployID, ts_date) |>
-    mutate(p_good = sum(motusFilter, na.rm = TRUE) / n(), .groups = "drop") |>
-    ungroup() |>
+  noise <- x |>
+    select("date", "runID", "tagID", "tagDeployID", "recvDeployID", "motusFilter") |>
+    summarize(p_good = sum(motusFilter, na.rm = TRUE) / n(),
+              .by = c("tagID", "tagDeployID", "recvDeployID", "date")) |>
     filter(p_good <= 0.5) |>
-    select("runID", "tagID", "tagDeployID") |>
     distinct()
-})
+  
+  semi_join(x, noise, by = c("tagID", "tagDeployID", "recvDeployID", "date")) |>
+    select("runID", "tagDeployID", "recvDeployID") |>
+    collect()
+}) |> list_rbind()
+  
 ```
-
-```{r}
-final <- map2(hits, noise_quality, \(x, y) anti_join_quick(x, y))
-final <- map2(final, noise_tags, \(x, y) {
-   left_join(x, select(y, "tagID", "tagDeployID") |> mutate(bad = TRUE), 
-             by = c("tagID", "tagDeployID")) |>
-    filter(!is.n(bad)) |>
-    select(-"bad")
-})
-```
-
-
-## Collect to CSV
-
-```{r}
-full <- imap(final, \(x, y) {
-  d <- collect(x)
-  write_csv(d, paste0("Datasets/hits_", y, ".csv"))
-  d
-})
-
-write_rds(full, "hits_full.rds")
-```
-
-
-
-## Noise
-
-### Tags
-
-There are two broad classes of tags, Lotek and CTT. 
-These tags [have different properties and are processed differently](https://motuswts.github.io/motus/articles/identifying-false-positives.html?q=Lotek%20nanotags#introduction), so 
-care should be taken to treat them differently. 
-
-Let's first take a look a see how many tags of each type we have
-
-```{r}
-# tbl(dbs[[1]], "tags") |>
-#   filter(projectID %in% projects) |>
-#   select(projectID, manufacturer, tagID) |>
-#   distinct() |>
-#   count(projectID, manufacturer) |>
-#   collect() |>
-#   gt()
-```
-
-So we mostly have Lotek tags (which much of the filtering suggestions have been based on),
-but we do have two projects with CTT tags to consider.
-
-### Motus Filter etc.
-
-TODO: use a custom noise filter?
-
-Here is the first and simplest filter, we'll gather all the run/tag combinations
-with a `motusFilter` value of 0.
-
-See [in-depth detections filtering](https://motuswts.github.io/motus/articles/filtering.html) and [A tool to identify probable false positive detections](https://motuswts.github.io/motus/articles/identifying-false-positives.html) for more details.
-
-```{r}
-# noise <- imap(dbs, \(x, y) {
-#   tbl(x, "runs") |> 
-#     select(runID, motusTagID, probability = motusFilter) |>
-#     filter(probability == 0) |>
-#     mutate(proj_id = y) |>
-#     collect()
-# })
-```
-
 ## Ambiguous detections
 
-TODO: Needs to be done post-filtering (as much as possible)
-
+Let's collect all runs where there is some ambiguity. We'll look at the `allruns` table for this.
 ```{r}
-# ambig <- map(dbs, \(x) tbl(x, "runs") |>
-#                select(ambigID, motusTagID) |>
-#                filter(!is.na(ambigID)) |>
-#                 distinct() |>
-#                 collect()) |>
-#   list_rbind(names_to = "proj_id")
+ambig_ids <- map(dbs, \(x) {
+  t <- tbl(x, "allruns") |>
+    filter(!is.na(ambigID)) |>
+    select("runID", "tagID" = "motusTagID", "ambigID") |>
+    distinct() |>
+    collect() |>
+    mutate(is_ambig = TRUE)
+  if(nrow(t) == 0) t <- NULL
+  t
+})|> 
+  list_rbind(names_to = "proj_id") |>
+  mutate(proj_id = as.integer(proj_id))
 ```
 
+Now let's see if any of these runs are even left in our data after filtering...
+```{r}
+runs |>
+  anti_join(noise_tags) |>
+  anti_join(noise_quality) |>
+  semi_join(ambig_ids) |>
+  collect()
+```
+
+There are no ambiguous runs left the data after we cleaned, so we'll just ignore them for now.
+
+
+## Looking at the filters
+```{r}
+noise_hits <- bind_rows(noise_tags, noise_quality) |>
+  select("runID", "tagDeployID", "recvDeployID") |>
+  distinct()
+
+noise_hits
+```
+
+Next we'll take a look at how this compares to the motusFilter
+
+With only the runs filtering
+```{r}
+count(runs, proj_id, motusFilter) |>
+  collect() |>
+  pivot_wider(names_from = motusFilter, values_from = n) |>
+  arrange(proj_id)
+```
+
+With both the runs and hit filtering
+```{r}
+anti_join(runs, noise_hits, by = c("runID", "tagDeployID", "recvDeployID")) |>
+  count(proj_id, motusFilter) |>
+  collect() |>
+  pivot_wider(names_from = motusFilter, values_from = n) |>
+  arrange(proj_id)
+```
+
+There are still many 'bad' data according to the motusFilter... but we are 
+definitely getting closer.
+
+
+## Saving filters
+
+We'll save the 'bad data' for use in the next steps.
+
+```{r}
+write_feather(noise_hits, sink = "Data/Datasets/noise_hits.feather")
+```
 
 ## Wrap up
 Disconnect from the databases
