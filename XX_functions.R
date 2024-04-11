@@ -73,30 +73,35 @@ custom_runs <- function(db) {
   
   # Get Receivers
   r <- tbl(db, "recvDeps") |> 
-    select("deviceID", "recvDeployID" = "deployID", "tsStartRecv" = "tsStart", "tsEndRecv" = "tsEnd") |>
+    select("deviceID" = "deviceID", "recvDeployID" = "deployID", "tsStartRecv" = "tsStart", "tsEndRecv" = "tsEnd",
+           "recvType" = "receiverType", "recvDeployLat" = "latitude", "recvDeployLon" = "longitude") |>
     mutate(tsEndRecv = if_else(is.na(tsEndRecv), max_ts, tsEndRecv))
   
   # Get tags
   t <- tbl(db, "tagDeps") |> 
-    select("tagID", "tagDeployID" = "deployID", "speciesID", "tsStartTag" = "tsStart", "tsEndTag" = "tsEnd") |>
+    select("tagID", "tagDeployID" = "deployID", "speciesID", "tsStartTag" = "tsStart", "tsEndTag" = "tsEnd", "test") |>
     mutate(tsEndTag = if_else(is.na(tsEndTag), max_ts, tsEndTag))
+  
+  # Get batches
+  b <- tbl(db, "batchRuns") |>
+    distinct()
   
   # Combine with runs
   tbl(db, "runs") |>
-    select("runID", "tsBegin", "tsEnd", "tagID" = "motusTagID", "motusFilter") |>
+    rename("tagID" = "motusTagID") |>
     # Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run
     left_join(t, by = join_by(tagID, between(tsBegin, tsStartTag, tsEndTag))) |>
+    slice_max(order_by = tsStartTag, by = "runID", with_ties = FALSE) |> # If multiple deps, take only the one with max start
     # Add in batchRuns by runID (to get the batchID)
-    left_join(tbl(db, "batchRuns"), by = "runID") |>
+    left_join(b, by = "runID") |>
+    slice_max(order_by = batchID, by = "runID", with_ties = FALSE) |> # If multiple batches, take only the latest one
     # Add in batches by batchID (to get the deviceID)
     left_join(tbl(db, "batches") |> select("batchID", "motusDeviceID"), by = "batchID") |>
     # Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run
     left_join(r, by = join_by(motusDeviceID == deviceID, between(tsBegin, tsStartRecv, tsEndRecv))) |>
-    # Keep only relevant data
-    select(runID, motusFilter, 
-           tagID, tagDeployID, speciesID, 
-           recvDeployID, recvDeviceID = motusDeviceID, 
-           tsBegin, tsEnd) |>
+    slice_max(order_by = tsStartRecv, by = "runID", with_ties = FALSE) |> # If multiple deps, take only the one with max start
+    rename("recvDeviceID" = "motusDeviceID") |>
+    select(-"batchIDbegin") |>
     distinct()
 }
 
@@ -123,10 +128,10 @@ custom_hits <- function(db) {
     left_join(tbl(db, "runs") |> select("runID", "motusFilter", "tagID" = "motusTagID"), by = "runID") |>
     # Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run
     left_join(t, by = join_by(tagID, between(ts, tsStartTag, tsEndTag))) |>
-    # Filter out "Bad runs" from previous step
-    left_join(tbl(db, "bad_data"), by = c("runID", "tagID")) |>
-    filter(is.na(BAD)) |>
-    select(-"BAD") |>
+    # # Filter out "Bad runs" from previous step
+    # left_join(tbl(db, "bad_data"), by = c("runID", "tagID")) |>
+    # filter(is.na(BAD)) |>
+    # select(-"BAD") |>
     # Add in batches by batchID (to get the deviceID)
     left_join(tbl(db, "batches") |> select("batchID", "motusDeviceID"), by = "batchID") |>
     # Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run

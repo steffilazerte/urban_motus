@@ -2,7 +2,8 @@
 # ---- packages ----
 # Motus data and data bases
 library(motus)
-library(DBI)  # Data bases
+library(DBI)   # Data bases
+library(arrow) # parquet files
 
 # Tidy data manipulation
 library(purrr)
@@ -56,6 +57,18 @@ sp <- tbl(dbs[[1]], "tagDeps") |>
   mutate(
     scientific_motus = scientific,
     scientific = str_replace(scientific, "Setophaga coronata coronata", "Setophaga coronata"))
+
+# ----- arrow ------
+arws <- tibble(file = list.files("Data/Datasets/hits/", recursive = TRUE, full.names = TRUE)) |>
+  mutate(proj_id = str_extract(file, "(?<=proj_id\\=)\\d+"),
+         species_id = str_extract(file, "(?<=speciesID\\=)\\d+"),
+         year = str_extract(file, "(?<=year\\=)\\d+")) |>
+  mutate(across(-file, as.integer))
+hits <- map(projects, \(x) {
+  f <- filter(arws, proj_id == x) |>
+    pull(file)
+  open_dataset(f, format = "feather")
+})
 
 # ---- functions ----
 source("XX_functions.R")

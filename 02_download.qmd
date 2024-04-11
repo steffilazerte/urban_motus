@@ -1,5 +1,5 @@
 ---
-title: Download/Update Data
+title: Download/Update Data & Transform
 freeze: auto
 ---
 
@@ -96,6 +96,135 @@ if(update) {
   })
 }
 ```
+
+## Save to Arrow/Feather
+
+Now we'll create some custom views and save to [feather](https://arrow.apache.org/)
+format (see also the [R4DS introduction to Apache Arrow](https://r4ds.hadley.nz/arrow#introduction)).
+
+Feather files are very fast to work with and I've found that they are a bit simpler
+to deal with when we're mostly concerned with the hits/runs tables.
+
+So we'll spend a bit of time converting them here so the following steps are faster.
+
+
+### Custom tables
+
+Normally, we would use the `allruns` view from our .motus data bases. 
+
+However, this view includes a lot of data that we don't need and I find it faster 
+to pull out the variables we're interested by hand using a custom function,
+`custom_runs()`. 
+
+:::{.callout-important title="Caution"}
+That being said, there are some complex joins going on in the `allruns` view.
+I have replicated the relevant ones here, and while I reasonably
+sure these yield the same data, if there are is any hint that they're not exactly
+the same, we should double check.
+:::
+
+
+```{r custom_runs}
+#| code-fold: true
+```
+
+This function is faster than collecting the `allruns` view
+```{r}
+system.time(tbl(dbs[["607"]], "allRuns") |> collect())
+system.time(custom_runs(dbs[["607"]]) |> collect())
+```
+
+Get the custom run tables for all databases
+```{r}
+runs <- map(dbs, custom_runs)
+```
+
+
+### Export
+
+Now save these as Arrow/Feather format (but first clear the original data, as we'll be 
+saving to Arrow by splitting the data across multiple files, so don't want any conflicts).
+
+On the way we'll also create some added date and time columns.
+
+This should run reasonably fast. 
+```{r}
+unlink("Data/Datasets/runs/*", recursive = TRUE)
+iwalk(runs, \(x, i) {
+  message(i)
+  x |>
+    mutate(proj_id = as.integer(i)) |>
+    collect() |>
+    mutate(timeBegin = as_datetime(tsBegin),
+           timeEnd = as_datetime(tsEnd),
+           dateBegin = as_date(timeBegin),
+           dateEnd = as_date(timeEnd),
+           monthBegin = month(timeBegin),
+           yearBegin = year(timeBegin),) |>
+    group_by(proj_id) |>
+    write_dataset(path = "Data/Datasets/runs/", format = "arrow") 
+})
+```
+
+
+
+The thing with splitting data across multiple files is that we don't want files to be
+<20MB or >2GB and we want to avoid too many files (< 10,000).
+
+So let's double check that we have reasonable file sizes and numbers.
+```{r}
+tibble(files = list.files("Data/Datasets/runs/", recursive = TRUE, full.names = TRUE)) |>
+  mutate(size_mb = file.size(files) * 1e-6) |>
+  summarize(n = n(),
+            min_mb = min(size_mb),
+            median_mb = median(size_mb),
+            max_mb = max(size_mb))
+```
+
+
+Next we'll save the hit-level data. 
+
+Get the basic hits table for all databases and join with the runs data, 
+and save as feather for future use.
+
+This may take a while (~2-5min per project, depending on the size). This also
+takes a fair amount of disk space (much more than the SQLite databases).
+
+```{r}
+#runs <- open_dataset("Data/Datasets/runs", format = "feather")
+hits <- map(dbs, \(x) tbl(x, "hits"))
+
+unlink("Data/Datasets/hits/*", recursive = TRUE)
+iwalk(hits, \(x, i) {
+  message(i) 
+  r <- select(runs[[i]], "runID", "speciesID", "tagDeployID", "tagID", 
+              "recvDeployID", "recvType", "motusFilter")
+  x |>
+    mutate(proj_id = as.integer(i)) |>
+    left_join(r, by = "runID") |>
+    collect() |>
+    mutate(time = as_datetime(ts),
+           date = as_date(time),
+           month = month(date),
+           year = year(date),) |> 
+    group_by(proj_id, speciesID, year) |>
+    write_dataset(path = "Data/Datasets/hits/", format = "arrow") 
+})
+```
+
+As with hits, we don't want files to be <20MB or >2GB and we want to avoid too many files (< 10,000).
+
+So let's double check that we have reasonable file sizes and numbers.
+```{r}
+tibble(files = list.files("Data/Datasets/hits/", recursive = TRUE, full.names = TRUE)) |>
+  mutate(size_mb = file.size(files) * 1e-6) |>
+  summarize(n = n(),
+            min_mb = min(size_mb),
+            median_mb = median(size_mb),
+            max_mb = max(size_mb))
+```
+
+
 
 ## Wrap up
 Disconnect from the databases
