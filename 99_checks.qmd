@@ -6,8 +6,38 @@ eval: false
 Check metadata for projects we have control over. 
 If we find any problems we have the **power** (`r emo::ji("strong")`) to fix them (`r emo::ji("grin")`).
 
+## Setup
+```{r}
+#| message: false
+#| cache: false
+source("XX_setup.R")
 
+runs <- open_dataset("Data/Datasets/runs", format = "feather")
+```
 
+## Duplications
+
+Why do we have duplicated batchIDs, tag deploments, receiver deployments?
+
+```{r}
+dups <- map(dbs, \(x) {
+  tbl(x, "batchRuns") |> 
+    distinct() |>
+    count(runID) |> 
+    filter(n > 1) |> 
+    pull(runID)
+}) |>
+  unlist() |>
+  unique()
+
+imap(dbs, \(x, i) {
+  tbl(x, "batchRuns") |> 
+    distinct() |>
+    filter(runID %in% dups) |> 
+    mutate(proj_id = i)
+})
+
+```
 
 
 ## Check tag details
