@@ -14,8 +14,11 @@ source("XX_setup.R")
 
 This step can take a lot of time and it may not be necessary to be constantly updating the data bases. Set `update <- TRUE` to update, `update <- FALSE` to just check the number of new observations.
 
+Note that in addition to downloading new data, `update` will also rerun all the 
+processing of this data into feather `hits` and `runs` (See [Save to Arrow/Feather](save-to-arrow-feather)].
+
 ```{r}
-update <- TRUE
+update <- FALSE
 ```
 
 ## Status
@@ -26,23 +29,24 @@ Get the status of each project (i.e. how much data left to download?)
   doesn't already exist (but will not download the data)
 
 ```{r}
-status <- data.frame(proj_id = projects, 
-                     file = paste0("Data/Raw/project-", projects, ".motus")) |>
-  mutate(status = map2(
-    proj_id, file, 
-    \(x, y) tellme(x, dir = "Data/Raw", new = !file.exists(y)))) |>
-  unnest(status) |>
-  mutate(currentMB = file.size(file)/1024/1024,
-         newMB = numBytes/1024/1024)
-
-select(status, -file, -numBytes) |>
-  relocate(currentMB, newMB, .after = proj_id) |>
-  arrange(proj_id) |>
-  gt() |>
-  fmt_number(decimals = 0) |>
-  tab_spanner(label = "New Data", columns = -c(proj_id, currentMB)) |>
-  gt_theme()
+if(update) {
+  status <- data.frame(proj_id = projects, 
+                       file = paste0("Data/Raw/project-", projects, ".motus")) |>
+    mutate(status = map2(
+      proj_id, file, 
+      \(x, y) tellme(x, dir = "Data/Raw", new = !file.exists(y)))) |>
+    unnest(status) |>
+    mutate(currentMB = file.size(file)/1024/1024,
+           newMB = numBytes/1024/1024)
   
+  select(status, -file, -numBytes) |>
+    relocate(currentMB, newMB, .after = proj_id) |>
+    arrange(proj_id) |>
+    gt() |>
+    fmt_number(decimals = 0) |>
+    tab_spanner(label = "New Data", columns = -c(proj_id, currentMB)) |>
+    gt_theme()
+}  
 ```
 
 ## Download data
@@ -136,7 +140,7 @@ system.time(custom_runs(dbs[["607"]]) |> collect())
 
 Get the custom run tables for all databases
 ```{r}
-runs <- map(dbs, custom_runs)
+if(update) runs <- map(dbs, custom_runs)
 ```
 
 
@@ -149,21 +153,23 @@ On the way we'll also create some added date and time columns.
 
 This should run reasonably fast. 
 ```{r}
-unlink("Data/Datasets/runs/*", recursive = TRUE)
-iwalk(runs, \(x, i) {
-  message(i)
-  x |>
-    mutate(proj_id = as.integer(i)) |>
-    collect() |>
-    mutate(timeBegin = as_datetime(tsBegin),
-           timeEnd = as_datetime(tsEnd),
-           dateBegin = as_date(timeBegin),
-           dateEnd = as_date(timeEnd),
-           monthBegin = month(timeBegin),
-           yearBegin = year(timeBegin),) |>
-    group_by(proj_id) |>
-    write_dataset(path = "Data/Datasets/runs/", format = "arrow") 
-})
+if(update) {
+  unlink("Data/Datasets/runs/*", recursive = TRUE)
+  iwalk(runs, \(x, i) {
+    message(i)
+    x |>
+      mutate(proj_id = as.integer(i)) |>
+      collect() |>
+      mutate(timeBegin = as_datetime(tsBegin),
+             timeEnd = as_datetime(tsEnd),
+             dateBegin = as_date(timeBegin),
+             dateEnd = as_date(timeEnd),
+             monthBegin = month(timeBegin),
+             yearBegin = year(timeBegin),) |>
+      group_by(proj_id) |>
+      write_dataset(path = "Data/Datasets/runs/", format = "arrow") 
+  })
+}
 ```
 
 
@@ -191,25 +197,26 @@ This may take a while (~2-5min per project, depending on the size). This also
 takes a fair amount of disk space (much more than the SQLite databases).
 
 ```{r}
-#runs <- open_dataset("Data/Datasets/runs", format = "feather")
-hits <- map(dbs, \(x) tbl(x, "hits"))
-
-unlink("Data/Datasets/hits/*", recursive = TRUE)
-iwalk(hits, \(x, i) {
-  message(i) 
-  r <- select(runs[[i]], "runID", "speciesID", "tagDeployID", "tagID", 
-              "recvDeployID", "recvType", "motusFilter")
-  x |>
-    mutate(proj_id = as.integer(i)) |>
-    left_join(r, by = "runID") |>
-    collect() |>
-    mutate(time = as_datetime(ts),
-           date = as_date(time),
-           month = month(date),
-           year = year(date),) |> 
-    group_by(proj_id, speciesID, year) |>
-    write_dataset(path = "Data/Datasets/hits/", format = "arrow") 
-})
+if(update) {
+  hits <- map(dbs, \(x) tbl(x, "hits"))
+  
+  unlink("Data/Datasets/hits/*", recursive = TRUE)
+  iwalk(hits, \(x, i) {
+    message(i) 
+    r <- select(runs[[i]], "runID", "speciesID", "tagDeployID", "tagID", 
+                "recvDeployID", "recvType", "motusFilter")
+    x |>
+      mutate(proj_id = as.integer(i)) |>
+      left_join(r, by = "runID") |>
+      collect() |>
+      mutate(time = as_datetime(ts),
+             date = as_date(time),
+             month = month(date),
+             year = year(date),) |> 
+      group_by(proj_id, speciesID, year) |>
+      write_dataset(path = "Data/Datasets/hits/", format = "arrow") 
+  })
+}
 ```
 
 As with hits, we don't want files to be <20MB or >2GB and we want to avoid too many files (< 10,000).

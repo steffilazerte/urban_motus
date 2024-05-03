@@ -18,10 +18,8 @@ noise_runs <- open_dataset("Data/Datasets/noise_runs.feather", format = "feather
 runs <- open_dataset("Data/Datasets/runs", format = "feather") |>
   anti_join(noise_runs)
 
-hits <- map(hits, \(x) {
-  anti_join(x, noise_runs, by = c("runID", "recvDeployID", "tagDeployID")) |>
-    left_join(select(runs, "runID", "recvType"), by = "runID")
-})
+hits <- load_hits() |>
+  map(\(x) anti_join(x, noise_runs, by = c("runID", "recvDeployID", "tagDeployID")))
   
 ```
 
