@@ -45,6 +45,20 @@ Additionally we're using open motus projects selected via
 ```{r projects}
 ```
 
+## Define contants
+
+Here we define any cutoffs or constants we will be using
+
+- `max_flight_speed` is the maximum speed of travel we think is possible (with a buffer)
+- `max_tower_dist` is the maximum distance between towers/receivers within which
+a bird could be detected at both towers (and thus flight speed has no bearing)
+- `bout_cutoff` is the maximum amount of time between two runs at a specific 
+station before those runs will be considered separate detection bouts.
+
+```{r constants}
+```
+
+
 ## Data
 
 Get species lists from naturecounts taxonomy and join this with the species

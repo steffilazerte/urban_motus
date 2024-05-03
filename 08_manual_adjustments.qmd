@@ -1,0 +1,190 @@
+---
+title: "Manual Adjustments"
+freeze: auto
+---
+
+Here we'll apply manual adjustments to the bouts and transitions we identified
+in the previous step. 
+
+## Setup
+```{r}
+#| message: false
+#| cache: false
+source("XX_setup.R")
+
+all_bad <- read_rds("Data/Datasets/bad_bouts.rds")
+bouts <- read_rds("Data/Datasets/bouts_initial.rds")
+dist <- read_rds("Data/Datasets/stn_dist.rds")
+```
+
+## Manual
+
+**Manually identified issues**
+
+```{r}
+#| code-fold: true
+fix <- tribble(
+  ~tagDeployID, ~stn_group, ~start, ~end, ~note,
+  17852, "4945", "2018", "", "",
+  17856, "4726-4790", "2018-09-18", "2018-10-15",  "Based on this group",
+  18548, "4726-4790", "2018-09-15", "2018-10-15", "",
+  18880, "4726-4790", "2018-09-22", "2018-10-15", "",  
+  # 18899 # Checked and probably good, despite reversal
+  18916, "4726-4790", "2018-09-15", "2018-10-15", "",
+  # 29770 # Checked and probably good, despite going north through BC
+  29919, "5418", "2020", "", "",
+  34266, "7908-7930-7934", "2021-09-11", "2021-09-15", "",
+  35290, "7624-8039", "2021-09-20", "2021-10-16", "",
+  35605, "7662", "2021", "",  "Maybe?",
+  35914, "7624-8039-8045-8194", "2021-09-15", "2021-10-20", "",
+  36310, "7624-8039-8045-8194", "2021-09-20", "2021-10-16",  "based on the above, but none look good",
+  39546, "8845", "2022", "", "",
+  39554, "9193", "2022", "", "",
+  39555, "8845", "2022", "", "",
+  39557, "8845-9036", "2022", "", "",
+  39557, "9194", "2022", "",  "Also not sure about the 8279 or 8950",
+  39570, "9192-9194", "2022", "",  "",
+  39585, "7905-7906-7930-7934-8760", "2022-09-19", "",   "Not sure about 8190, but 8283 looks good",
+  39609, "9150-9192", "2022", "", "",
+  39612, "3454", "2022", "", "",
+  39615, "9036", "2022", "", "",
+  39615, "9193", "2022", "",  "Also not really sure about 7662... 8593 is good though",
+  39618, "8769", "2022", "", "",
+  41242, "5511-8296-8415", "2022-10-01", "2022-12-01", "",
+  41657, "6115", "2022", "", "",
+  41674, "6115", "2022", "", "",
+  41700, "7624-8845-8857-9030-9036-9049", "2022-09-29", "", "",
+  41826, "8845-8847-9030-9036-9049", "2022-09-26", "", "",
+  42002, "7624-8845-8857-9030-9036-9049", "2022-10-01", "", "",
+  42474, "7624-8845-9021-9028-9030-9036-9049", "2022-09-23", "", "",
+  42476, "8845-9030-9036-9049", "2022-09-19", "", "",
+  42787, "8194-8845-9030-9036-9049", "2022-09-15 05:00:00", "2022-10-15", "",
+  42890, "8194-8845-9030-9036-9049", "2022-10-15", "2022-11-05", "",
+  42974, "8845-9030-9036-9049", "2022-09-29", "", "",
+  42996, "9193-9194", "2022", "", "",
+  43000, "8194-8845-9036-9049", "2022-10-15", "2022-11-01",   "Not sure about 8193",
+  43016, "8544", "2023", "",  "Probably not really all that bad, but just too far to be considered a group member, and only gets the odd ping", 
+  43065, "8194-8845-9030-9036-9049", "2022-10-02", "2022-10-10", "",
+  43258, "8194-8845-9030-9036-9049", "2022-10-19 02:00:00", "", "",
+  43351, "8194-8845-9030-9036-9049", "2022-10-15", "2022-11-01", "",
+  
+  43460, "5068", "2023", "", "Montreal to Indiana?",
+  43518, "5068", "2023", "", "Montreal to Indiana?",
+  43637, "5068", "2023", "", "Montreal to Indiana?",
+  43638, "5068", "2023", "", "Montreal to Indiana?",
+  43639, "5068", "2023", "", "Montreal to Indiana?",
+  43640, "5068", "2023", "", "Montreal to Indiana?",
+  43718, "5068", "2023", "", "Montreal to Indiana?",
+  43719, "5068", "2023", "", "Montreal to Indiana?",
+  43768, "5068", "2023", "", "Montreal to Indiana?",
+  43770, "5068", "2023", "", "Montreal to Indiana?",
+  43777, "5068", "2023", "", "Montreal to Indiana?",
+  43778, "5068", "2023", "", "Montreal to Indiana?",
+  43882, "5068", "2023", "", "Montreal to Indiana?",
+  43883, "5068", "2023", "", "Montreal to Indiana?",
+  43884, "5068", "2023", "", "Montreal to Indiana?",
+  43979, "5068", "2023", "", "Montreal to Indiana?",
+  43980, "5068", "2023", "", "Montreal to Indiana?",
+  
+  44752, "8415", "2023", "", "",
+  48765, "8831", "2023", "", "Possibly fine, but dups from overlapping stns (8834 a stronger match)",
+  48765, "8876", "2023", "", "Possibly fine, but dups from overlapping stns",
+  #49419 checked and good
+  #49421 checked and good
+  
+  50249, "8768-10128-10228", "2023-09-22", "2023-10-01", "",
+  50714, "10128-10228", "2023-10-23", "2023-11-01", "Possible but unlikely",
+  50715, "10128-10228", "2023-10-15", "2023-11-01", "Although 4206 not great either",
+  50718, "10128-10228-10299", "2023-10-16", "2023-11-01", "Although 8938 not great either",
+  50719, "10128-10228-10299", "2023-10-16", "2023-11-01", "",
+  50720, "10128-10228", "2023-10-16", "2023-11-01", "Although 7290 not great either",
+  50721, "10128-10228", "2023-10-16", "2023-11-01", "",
+  50722, "10128-10228", "2023-10-16", "2023-11-01", "Although 5146 not great either",
+  51213, "10128-10228-10299", "2023-10-30", "2023-11-05", "Although no others are great either",
+) |>
+  mutate(problem_manual = TRUE,
+         start = ymd_hms(start, truncated = 5),
+         end = ymd_hms(end, truncated = 5),
+         end = if_else(is.na(end), ceiling_date(start + seconds(1), unit = "year"), end))
+```
+
+```{r}
+select(fix, -problem_manual) |>
+  gt() |>
+  gt_theme()
+```
+
+- What's up with the bunch of ids ~ 43882 etc. which all go from Indiana to Montreal?
+
+## Remove 'bad bouts
+
+First remove manually defined 'bad' bouts, as well as previously identified
+"bad bouts" (these are those identified by super fast transitions).
+
+```{r}
+bouts <- anti_join(bouts, fix, 
+                   by = join_by("tagDeployID", "stn_group", within("timeBegin", "timeEnd", "start", "end"))) |>
+  filter(!id %in% all_bad)
+overlaps <- create_overlapping(bouts) 
+trans <- create_trans(bouts, overlaps, dist)
+```
+
+Now a quick check to make sure that the only remaining problems are those that
+we said were okay. If any on this list are not those, double check the manual
+fix list and adjust as needed.
+
+```{r}
+check_trans <- id_problems(trans)
+filter(check_trans, problem) |>
+  arrange(tagDeployID, b1) |>
+  select(tagDeployID, stn1, b1, e1, stn2, b2, e2, contains("problem")) |>
+  gt() |>
+  gt_theme()
+```
+
+All good! The only remaining stations match those we check out as good:
+
+- 18899
+- 29770
+- 49419
+- 49421
+
+## Final data
+
+At last! We have our final set of cleaned bouts and transitions
+
+```{r}
+write_rds(bouts, "Data/Datasets/bouts_cleaned.rds")
+write_rds(trans, "Data/Datasets/transitions_cleaned.rds")
+```
+
+
+## Final plots
+
+Here we'll re-plot the manually adjusted plots (note that we only plot ids with at least one transition).
+
+```{r save_plots}
+#| code-fold: true
+#| message: false
+#| warning: false
+ids <- trans |> 
+  semi_join(fix, by = "tagDeployID") |>
+  pull(tagDeployID) |>
+  unique()
+walk(ids, \(x) {
+  g <- plot_bouts(trans, bouts = bouts, tagDeployID = x)
+  ggsave(paste0("Figs/check2_", x, "_map.png"), g, width = 3840*1.5, height = 1920*1.5, units = "px")
+})
+```
+
+```{r plots}
+#| code-fold: true
+#| results: asis
+#| lightbox:
+#|   group: checks
+walk(ids, \(x) {
+  cat("\n\n#### ", x, " {#", x, "}\n\n", sep = "")
+  cat("\n![](Figs/check_", x, "_map.png){out-width=100%}\n\n", sep = "")
+  cat("\n\n", sep = "")
+})
+```

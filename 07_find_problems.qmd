@@ -1,0 +1,321 @@
+---
+title: "Finding Problems"
+freeze: auto
+---
+
+Now that we've created our bouts and transitions, we need to do some further 
+cleaning as there are definitely some erroneous observations which will need to be removed.
+
+## Setup
+```{r}
+#| message: false
+source("XX_setup.R")
+
+runs <- load_runs()
+hits <- load_hits()
+
+trans <- read_rds("Data/Datasets/transitions_initial.rds")
+bouts <- read_rds("Data/Datasets/bouts_initial.rds")
+dist <- read_rds("Data/Datasets/stn_dist.rds")
+```
+
+```{r}
+#| include: false
+# This allows us to define the functions in the XX_functions.R script, yet display 
+# them in the rendered qmd file
+knitr::read_chunk("XX_functions.R")
+```
+
+## Problems
+
+We can identify problematic transitions these in several ways. 
+
+1. **Transitions which are too fast** - We have a cutoff of `r max_flight_speed` `r units(max_flight_speed) |> as.character()`
+    - This reflects transitions which occurred over a distance greater than
+      the maximum tower distance (`r max_tower_dist` `r units(max_tower_dist) |> as.character()`), and which were either 
+      instantaneous (i.e. overlaps), or way too fast.
+    - These can be identified *and* fixed automatically
+
+2. **Transitions which are in the wrong direction**
+    - It's highly unlikely that a migrating bird will start migration and then 
+      backtrack hundreds of kilometres. So 'false' starts, are likely false positives.
+    - These can be identified automatically, but are prone to being overzealous so 
+      need to be assessed manually. 
+      
+3. **Transitions which include a suspiciously short bout**
+    - Transitions between stations where one of the end bouts is quite short
+    (e.g., all runs < 10 and perhaps only a few runs) are less likely to be
+    "true" transitions, as they may originate or end with a bout that is less
+    likely to be a true bout.
+    - However, there are many of these, resulting in over 300 individuals to check
+    so for now we will ignore these and see how the summaries go.
+
+### Identifying problems
+
+Now we'll pull out the problems we should address. These include problems which
+we can programatically fix, and those that we need to manually fix. 
+
+:::{.panel-tabset}
+#### Run
+```{r}
+trans <- id_problems(trans)
+```
+
+#### Function
+```{r id_problems}
+#| message: false
+```
+
+#### Output
+First 200 rows
+```{r}
+trans |>
+  slice(1:200) |>
+  gt() |>
+  gt_theme() |>
+  tab_options(container.height = px(600),
+              container.overflow.y = "auto")
+```
+:::
+
+### Removing problems
+
+We've identified problematic transitions in the `trans` data in the column
+`problem`. 
+
+However, while we can omit those transitions, we need to decide which *side* of
+that transition to keep (i.e. which detection bout at which station is to be omitted?).
+
+Here, we'll choose by exploring the direction of the transition as well as the 
+'popularity' of the station. 
+
+For example, if a bird spent all it's time at one station
+but blipped out to another one 500km away for a couple of minutes, we'll assume
+that the second station is no good.
+
+We'll keep track of *all* problems identified in `problems`, and will mark
+those we've been able to resolve with `selected`, marking the station to remove
+with `omit`. 
+
+We'll keep track of these bouts we've been able to resolve in `bad_bouts`.
+
+:::{.panel-tabset}
+#### Run
+```{r}
+problems <- resolve_stns(bouts, trans)
+bad_bouts <- filter(problems, resolved, omit) |>
+  pull(id)
+```
+
+#### Function
+```{r resolve_stns}
+```
+
+#### Output
+```{r}
+problems |>
+  gt() |>
+  gt_theme() |>
+  tab_options(container.height = px(600),
+              container.overflow.y = "auto")
+```
+:::
+
+Now we'll iterate over the bouts data by removing the `bad_bouts` and recreating
+the transitions. We'll identify any new bad bouts, remove them, and run the transitions again.
+We'll do this over and over until no new bad bouts are identified.
+```{r}
+i <- 0
+all_bad <- bad_bouts
+while(length(bad_bouts) > 0) {
+  message("Round ", i <- i + 1)
+  
+  # Only work with tags that have changed (all the others won't change any more)
+  b <- filter(bouts, !id %in% all_bad) |>
+    filter(tagDeployID %in% str_extract(bad_bouts, "^\\d+"))
+  
+  o <- create_overlapping(b)
+  t <- create_trans(b, o, dist) |>
+    id_problems()
+  p <- resolve_stns(b, t)
+  bad_bouts <- filter(p, resolved, omit) |> pull(id)
+  all_bad <- c(all_bad, bad_bouts)
+  message(paste0(bad_bouts, collapse = ", "))
+}
+```
+
+
+Finally we have a list of all our resolved `all_bad` bouts!
+
+## Full Data
+
+The last step is to create a full data set with both clean data *and* problematic data, so we can create figures illustrating how bouts have been removed, or which need to be assessed.
+
+First we create data with only good bouts, then we add the bad bouts in (this
+ensures we can see the correct transitions which will be used if problems like
+speed are automatically omitted). 
+
+```{r}
+bouts_clean <- filter(bouts, !id %in% all_bad)
+trans_clean <- create_trans(bouts_clean, create_overlapping(bouts_clean), dist) |>
+  id_problems() |>    # These are the remaining problems to be manually fixed
+  mutate(resolved = !problem)
+
+bouts_full <- mutate(bouts, bad = id %in% all_bad)
+trans_full <- trans_clean |>
+  # Add in the 'bad bouts' (make trans ids unique)
+  rows_upsert(
+    mutate(trans, 
+           resolved = id1 %in% all_bad | id2 %in% all_bad, 
+           problem = TRUE,
+           trans_id = trans_id + max(trans_clean$trans_id)) |> 
+      filter(resolved),
+    by = c("tagDeployID", "id1", "id2"))
+```
+
+We'll also keep track of the 'bad' bouts to be omitted in the next step
+
+```{r}
+write_rds(all_bad, "Data/Datasets/bad_bouts.rds")
+```
+
+
+## Sample Sizes
+
+From bouts, we can see how many birds and how many stations were seen in this data.
+
+```{r}
+bouts_full |>
+  summarize(n_tags = n_distinct(tagDeployID),
+            n_stn = n_distinct(recvDeployID))
+```
+
+
+From transitions we can see how many birds moved among stations at least one,
+how many moved far (> 500 km), how many moved more than once and how many
+were identified as having problematic movements.
+
+```{r}
+trans_full |>
+  summarize(any_problem = any(problem), 
+            n_stn_group = n_distinct(c(id1, id2)), 
+            max_dist = max(next_dist),
+            .by = "tagDeployID") |>
+  summarize(
+    n_birds_moved = n_distinct(tagDeployID),
+    n_birds_really_moved = n_distinct(tagDeployID[max_dist > set_units(500, "km")]),
+    n_birds_moved_more_than_once = n_distinct(tagDeployID[n_stn_group > 2]),
+    n_birds_problem = n_distinct(tagDeployID[any_problem]))
+            
+```
+
+
+## Manual Checks
+
+Here we will plot all bird movements for those with problematic transitions. 
+
+We'll do this to
+
+a) Confirm that the automatically fixed problems of speed are appropriate
+b) Determine which directional problems should be fixed
+
+Any manual adjustments will be defined in the next script 07_manual_adjustments.
+
+First we'll grab ids with identified problems and get the hits we'll need to 
+check.
+
+```{r}
+check_ids <- trans_full$tagDeployID[trans_full$problem] |> unique() |> sort() |> set_names()
+check_ids
+
+# Get all problems
+p <- trans_full |>
+  # Include before and after transitions for comparison
+  mutate(problem = lead(problem, default = FALSE) | problem | lag(problem, default = FALSE), .by = "tagDeployID") |>
+  filter(problem) |>
+  select(tagDeployID, b1, e1, overlap, b2, e2, trans_id) |>
+  mutate(shorter = if_else(overlap & ((e1 - b1) > (e2 - b2)), 2, 1)) |>
+  pivot_longer(cols = c(-tagDeployID, -overlap, -shorter, -trans_id), names_to = "time", 
+               values_to = "value") |>
+  filter((!overlap & time %in% c("e1", "b2")) | (overlap & str_detect(time, as.character(shorter))),
+         .by = c("tagDeployID", "trans_id")) |>
+  mutate(time = str_remove(time, "\\d"), 
+         b0 = if_else(str_detect(time, "e"), value - minutes(20), value), # Amount of previous bout to show
+         e0 = if_else(str_detect(time, "e"), value, value + minutes(20))) |> # amount of next bout to show
+  mutate(problem_pair = paste0(as_date(b0), " - ", c("start", "end")),
+         .by = c("tagDeployID", "trans_id")) |>
+  select(tagDeployID, trans_id, problem_pair, b0, e0)
+
+# Get runs for these problems
+rns <- runs |>
+  semi_join(p, join_by(tagDeployID, overlaps(timeBegin, timeEnd, b0, e0))) |>
+  left_join(p, join_by(tagDeployID, overlaps(timeBegin, timeEnd, b0, e0))) |>
+  select(tagDeployID, runID, trans_id) |>
+  distinct()
+
+r <- rns |>
+  unnest(runID) |>
+  pull(runID) |>
+  unique()
+
+# Get hits for these runs
+h <- map(hits, \(x) {
+  x |>
+    filter(runID %in% r) |>
+    collect() |>
+    left_join(select(runs, runID, len, ant), by = "runID")
+}) |>
+  list_rbind() |>
+  left_join(rns, by = c("tagDeployID", "runID"), relationship = "many-to-many") |>
+  semi_join(p, by = join_by(tagDeployID, trans_id, between(time, b0, e0))) |>
+  left_join(p, by = join_by(tagDeployID, trans_id, between(time, b0, e0)))
+```
+
+### Plots
+
+Now we'll plot the problematic individuals.
+
+- Grey lines show problematic transitions/bouts which *have been* removed.
+- Dotted lines show problematic transitions/bouts which *have yet to be* removed
+  and require manual evaluation -> **Make sure to note which station to deal with in the 08_manual_adjustments file**
+- The signal strengh plots show the hits around transitions, including the 
+  transitions before and after the problematic one.
+  
+**Note:** Plots are first created and saved to "Figs".
+
+```{r save_plots}
+#| code-fold: true
+#| message: false
+#| warning: false
+walk(check_ids, \(x) {
+  g <- plot_bouts(trans_full, trans_clean, bouts_full, tagDeployID = x)
+  ggsave(paste0("Figs/check_", x, "_map.png"), g, width = 3840*1.5, height = 1920*1.5, units = "px")
+  
+  g <- plot_check(h, tagDeployID = x)
+  nrows <- filter(h, tagDeployID == x) |>
+    pull(trans_id) |>
+    n_distinct()
+  nrows <-  ceiling(nrows / 2)
+  ncols <- 4
+    #filter(h, tagDeployID == x) |>
+    #summarize(n = n_distinct(time_block), .by = "trans_id") |>
+    #pull(n) |>
+    #max()
+
+  ggsave(paste0("Figs/check_", x, "_hits.png"), g, width = 900 * ncols, height = 1056 * nrows, units = "px", limitsize = FALSE)
+})
+```
+
+```{r plots}
+#| code-fold: true
+#| results: asis
+#| lightbox:
+#|   group: checks
+
+walk(check_ids, \(x) {
+  cat("\n\n#### ", x, " {#", x, "}\n\n", sep = "")
+  cat("\n![](Figs/check_", x, "_map.png){out-width=100%}\n\n", sep = "")
+  cat("\n![](Figs/check_", x, "_hits.png){out-width=100%}", sep = "")
+  cat("\n\n", sep = "")
+})
+```

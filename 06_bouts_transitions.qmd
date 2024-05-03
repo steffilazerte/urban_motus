@@ -1,49 +1,69 @@
 ---
 title: "Bouts and Transitions"
+freeze: auto
+cache: true
 ---
+
+Here we'll start collapsing the various runs into *bouts*. 
+Then we'll use these bouts to assess transitions among receivers. 
+
+However, there are some difficulties to consider:
+
+- runs can overlap each other at the same station (as well as at separate stations)
+- a run can be 4hrs long and overlap several other runs of shorter lengths
+- this means we cannot simply compare runs on sequential lines 
+- we'll need to iterate over runs until all runs have been collapsed as much as 
+  possible
 
 ## Setup
 ```{r}
 #| message: false
 #| cache: false
 source("XX_setup.R")
-library(ggspatial)
-library(patchwork)
-library(furrr)
-
-
-noise_runs <- open_dataset("Data/Datasets/noise_runs.feather", format = "feather")
-noise_hits <- open_dataset("Data/Datasets/noise_hits.feather", format = "feather")
-
-runs <- open_dataset("Data/Datasets/runs", format = "feather") |>
-  anti_join(noise_runs, by = c("runID")) |>
-  anti_join(noise_hits, by = c("runID")) |>
-  filter(len > 2) |>
-  select(runID, timeBegin, timeEnd, tagID, ant, len, motusFilter, tagDeployID, 
-         speciesID, starts_with("recvDeploy"), matches("date|month|year")) |>
-  arrange(timeBegin) |>
-  collect()
-
-#good_runs <- unique(runs$runID)
-
-#hits <- map(hits, \(x) filter(x, runID %in% good_runs))
 
 ```
 
+```{r}
+#| include: false
+# This allows us to define the functions in the XX_functions.R script, yet display 
+# them in the rendered qmd file
+knitr::read_chunk("XX_functions.R")
+```
+
+### Final filter application
+
+Although we may wish to revisit the filters, for now we will apply the filters
+collected in 04_basic_filters and 05_fine_filters. We will finish off with 
+omitting any run with a length of 2 or less (this is a partial application of the 
+`motusFilter`, so will likely still let false positives through).
+
+:::{.panel-tabset}
+#### Run
+```{r}
+runs <- load_runs()
+```
+
+#### Function
+```{r load_runs}
+```
+:::
+
 ## Assumptions
+
 In this script we'll be filtering out unlikely movements between stations (i.e. super fast birds).
 
-This involves setting a maximum allowable flight speed, but also the distance from a station 
-in which a bird could conceivably be detected (otherwise we might calculate super fast flight speeds
-simply because a bird was at the detection limit of two stations and moved back and forth across the 
-boundary).
+This involves setting a *maximum allowable flight speed*, but also the *distance
+from a station* in which a bird could conceivably be detected (otherwise we
+might calculate super fast flight speeds simply because a bird was at the
+detection limit of two stations and moved back and forth across the boundary).
 
-We will assume the following limits for `max_flight_speed` and `max_tower_radius` (defined in `XX_setup.R`).
+We will assume the following limits for `max_flight_speed` and `max_tower_dist` (defined in `XX_setup.R`).
 
-- Flight speed 72 m/s 
+- Flight speed 72 m/s (`max_flight_speed`)
     - from Amie via Anderson et al. (2019) and Gronroos et al. (2012))
-    - for shorebirds and with a buffer to avoid missing true flights, so may result in false positives for us
-- Tower radius 50 km
+    - for shorebirds and with a buffer to avoid missing true flights, 
+      so may be much faster than realistic for our birds (false positives)
+- Tower distance 50 km (`max_tower_dist`)
     - from Amie, based on a 25km radius at each tower (so 50 between the two)
     - generous as most towers have a smaller detection range, but possible
 
@@ -59,20 +79,19 @@ knitr::read_chunk("XX_setup.R")
 
 ## Get distances among stations
 
-We'll look at movements between stations and how quickly they occur.
+We'll be looking at movements between stations and how quickly they occur.
+So the first step is to calculate these distances and then our minimum 
+time to travel between those two towers.
 
 - Here we use the units package to handle the unit conversions for time (min) and distance (m)
   into speed (km/day)
 - Units can then be compared with the `max_flight_speed` in units of `m/s`
 
-
 We can't reliably assess speed over very small distances, because each tower
 could presumably detect birds up to 25km away.
 
 So we'll only consider fast birds when the distance between towers is greater than 
-our buffer `max_tower_radius` and the flight speed is more than `max_flight_speed`
-
-
+our buffer `max_tower_dist` and the flight speed is more than `max_flight_speed`
 
 ```{r}
 recvs <- runs |>
@@ -95,27 +114,108 @@ dist <- st_distance(recvs_sf) |>
   mutate(next_pair = paste0(recv_from, "_", recv_to),
          next_dist = set_units(next_dist, "km"),
          min_time = next_dist / max_flight_speed) |>
-  #filter(next_dist > max_tower_radius) |>
+  #filter(next_dist > max_tower_dist) |>
   mutate(min_time = as.duration(as.numeric(set_units(min_time, "s"))))
+
+write_rds(dist, "Data/Datasets/stn_dist.rds")
 ```
+
+## Defining Station Groups
+
+Some groups of stations are clustered very close to each other and birds will be
+detected on all or most stations at the same time. This creates situations where
+there are multiple simultaneous bouts on these stations and transitions between
+these stations and others.
+
+Here we identify station groups as groups of stations where each station in the
+group is within `r max_tower_dist` of the others. 
+
+Groups that are not completely inclusive (i.e. both stations Z and X are close
+to station Y but not to each other) are not included (they would remain station
+X, Y, Z, ungrouped).
+
+:::{.panel-tabset}
+
+### Run
+```{r}
+#| message: FALSE
+plan(multisession, workers = 6) # Setup parallel
+
+groups <- nest(runs, .by = c("tagDeployID")) |>
+  mutate(data = future_map(data, \(x) {
+    
+    g <- dist |>
+      filter(recv_from %in% unique(x$recvDeployID), 
+             recv_to %in% unique(x$recvDeployID)) |>
+      filter(recv_from != recv_to) |>
+      summarize(
+        stn_grouped_with = list(recv_to[next_dist < max_tower_dist]), 
+        stn_group = paste0(sort(unique(c(recv_from, recv_to[next_dist < max_tower_dist]))), 
+                           collapse = "-"),
+        .by = "recv_from") |>
+      # Only keep groups which are common across stations
+      mutate(stn_group = if_else(n() > 1, stn_group[1], as.character(recv_from)[1]), 
+             .by = "stn_group")
+    
+    left_join(x, g, by = c("recvDeployID" = "recv_from")) |>
+      mutate(stn_group = if_else(is.na(stn_group), as.character(recvDeployID), stn_group))
+  }, .progress = interactive())
+  ) |>
+  unnest(data)
+```
+
+### Output
+
+```{r}
+groups |>
+  select(tagDeployID, recvDeployID, stn_group) |>
+  distinct() |>
+  slice(1:200) |>
+  gt() |>
+  gt_theme() |>
+  tab_options(container.height = px(600),
+              container.overflow.y = "auto") |>
+  data_color(columns = stn_group, palette = "magma")
+```
+
+:::
 
 ## Summarize Bouts
 
+Now we'll summarize the runs into detection bouts for each receiver for each 
+individual. 
+
+For example, if a bird was detected around a station for a total of 6 hours over
+the course of 10 runs, we would collapse this down into one detection bout of
+6 hours. 
+
+We'll use a `bout_cutoff` of `r bout_cutoff` defined in `XX_setup.R`. So if
+two runs at the same station are more than `r bout_cutoff` apart, we'll consider
+those runs to belong to separate bouts.
+
+Because there are overlapping runs we need to run the bout collapsing function
+several times, first sorting by the run start time `timeBegin`, next by the 
+run end time `timeEnd`. Then we try collapsing the bouts again, if we end up with
+fewer rows of data (i.e. more runs were collapsed), we continue.
+
+We stop once we cannot collapse any more runs together.
+
+This step using the `furrr` package to run the iterations in parallel over
+each `tagDeployID` and `recvDeployID`
+
+
 ```{r}
-plan(multisession, workers = 6)
-#x <- filter(runs, tagDeployID == 35306, recvDeployID == 7624) |>
-#  select(runID, timeBegin, timeEnd, recvDeployID, len, ant, motusFilter)
-cutoff <- set_units(30, "min")
+plan(multisession, workers = 6) # Setup parallel
 
-bouts <- nest(runs, .by = c("tagDeployID", "recvDeployID")) |>
-  mutate(bouts = future_map(data, \(x) {
-    x1 <- create_bouts(arrange(x, timeBegin), cutoff)
-    x2 <- create_bouts(arrange(x1, timeEnd), cutoff)
+bouts <- nest(groups, .by = c("tagDeployID", "stn_group")) |>
+  mutate(data = future_map(data, \(x) {
+    x1 <- create_bouts(arrange(x, timeBegin), bout_cutoff)
+    x2 <- create_bouts(arrange(x1, timeEnd), bout_cutoff)
 
-    # Keep running until no more overlaps hve been resolved    
+    # Keep running until no more overlaps to resolved    
     while(nrow(x1) != nrow(x2)) {
-      x1 <- create_bouts(arrange(x2, timeBegin), cutoff)
-      x2 <- create_bouts(arrange(x1, timeEnd), cutoff)
+      x1 <- create_bouts(arrange(x2, timeBegin), bout_cutoff)
+      x2 <- create_bouts(arrange(x1, timeEnd), bout_cutoff)
     }
     
     x2 |>
@@ -123,159 +223,85 @@ bouts <- nest(runs, .by = c("tagDeployID", "recvDeployID")) |>
              len_min = map_dbl(len, min),
              len_max = map_dbl(len, max),
              n_ant = map_dbl(ant, n_distinct))
-  }, .progress = TRUE, .options = furrr_options(seed = 123)))
-
-bouts_all <- bouts |>
-  select(-data) |>
-  unnest(bouts) |>
+  }, .progress = interactive(), .options = furrr_options(seed = 123))) |>
+  unnest(data) |>
   mutate(dateBegin = as_date(timeBegin),
-         id = paste0(tagDeployID, "_", recvDeployID, "_", bout)) |>
+         # Use first station in a group to define recvDeployID
+         recvDeployID = as.numeric(str_split_i(stn_group, "-", i = 1)), 
+         id = paste0(tagDeployID, "_", stn_group, "_", bout)) |>
   arrange(tagDeployID, timeBegin) |>
   left_join(recvs, by = "recvDeployID")
-
 ```
 
 ## Transitions
 
-We'll identify transitions as movements between stations for an individual
+We'll identify transitions as movements between stations for an individual. 
+As with collapsing bouts, we need to remember that bouts can overlap each other
+at different stations. So if we compare line by line, we may miss overlaping 
+bouts. 
 
+To deal with this, we'll first identify all overlapping bouts.
+
+:::{.panel-tabset}
+### Run
 ```{r}
-o <- nest(bouts_all, data = -tagDeployID) |>
-  mutate(overlaps = map(data, \(x) find_overlaps(x, "df"), .progress = TRUE)) |>
-  select(-"data") |>
-  unnest("overlaps") |>
-  mutate(id1 = paste0(tagDeployID, "_", id1),
-         id2 = paste0(tagDeployID, "_", id2))
-
-
-trans1 <- bouts_all |> 
-  arrange(timeBegin) |>
-  calc_trans()
-
-trans2 <- bouts_all |> 
-  arrange(timeEnd) |>
-  calc_trans()
-
-b <- select(bouts_all, "stn1" = "recvDeployID", "id1" = "id", "b1" = "timeBegin", "e1" = "timeEnd")
-
-trans <- bind_rows(trans1, trans2) |>
-  distinct() |>
-  full_join(o, by = c("tagDeployID", "id1", "id2")) |>
-  left_join(b, by = "id1") |>
-  left_join(rename(b, "stn2"= 1, "id2" = 2, "b2" = 3, "e2" = 4), by = "id2") |>
-  left_join(rename(recvs, "stn1" = 1, "lat1" = 2, "lon1" = 3), by = "stn1") |>
-  left_join(rename(recvs, "stn2" = 1, "lat2" = 2, "lon2" = 3), by = "stn2") |>
-  mutate(stn_pair = paste0(stn1, "_", stn2),
-         overlap = replace_na(overlap, FALSE),
-         lag1 = as_units(difftime(b2, e1, units = "min")),
-         lag2 = as_units(difftime(e2, e1, units = "min")),
-         time_diff = pmin(lag1, lag2),
-         time_diff = as.duration(as.numeric(set_units(time_diff, "s"))),
-         time_diff = if_else(overlap, duration(0), time_diff),
-         date = as_date(e1)) |>
-  left_join(select(dist, "stn_pair" = "next_pair", next_dist, min_time),
-            by = "stn_pair") |>
-  mutate(problem = next_dist >= max_tower_radius & (time_diff < min_time | overlap))
-
-g1 <- plot_map(t, b)
-  
-t <- filter(trans, tagDeployID == 35306) |>
-  arrange(e2) 
-
-b <- filter(bouts_all, tagDeployID == 35306)
-
-plot_bouts(trans, bouts_all, tagDeployID = 35306)
+overlapping_bouts <- create_overlapping(bouts)
 ```
 
-
-```{r}
-g <- plot_bouts(trans, bouts_all, tagDeployID = 35306, runs, hits)
-ggsave(plot = g, filename = "temp3.pdf", width = 20, height = 12)
-
-g <- plot_bouts(trans, bouts_all, tagDeployID = 13847, runs, hits)
-ggsave(plot = g, filename = "temp_13847.pdf", width = 20, height = 12)
-
-g <- plot_bouts(trans, bouts_all, tagDeployID = 13854, runs, hits)
-ggsave(plot = g, filename = "temp_13854.pdf", width = 20, height = 12)
-
-g <- plot_bouts(trans, bouts_all, tagDeployID = 17695, runs, hits)
-ggsave(plot = g, filename = "temp_17695.pdf", width = 20, height = 12)
-
-# PROGRAMATICALLY CATCH WRONG DIRECTION?
-g <- plot_bouts(trans, bouts_all, tagDeployID = 18548, runs, hits)
-ggsave(plot = g, filename = "temp_18548.pdf", width = 20, height = 12)
-
-g <- plot_bouts(trans, bouts_all, tagDeployID = 18880, runs, hits)
-ggsave(plot = g, filename = "temp_18880.pdf", width = 20, height = 12)
-
-
-g <- plot_bouts(trans, bouts_all, tagDeployID = 35476, runs, hits)
-ggsave(plot = g, filename = "temp_35476.pdf", width = 20, height = 12)
-
+### Function
+```{r create_overlapping}
 ```
 
-## Arrival Patterns
-
+### Output
 ```{r}
-arrange(bouts_all, tagDeployID, timeBegin)
-
-test <- filter(hits[["364"]], 
-               tagDeployID == 2661, 
-               time >= "2014-10-24 13:03:45", 
-               time <= "2014-10-25 10:45:58") |>
-    collect()
-
-
-ggplot(data = test, aes(x = time, y = sig)) +
-  geom_point() +
-  stat_smooth()
-
+gt(overlapping_bouts) |>
+  gt_theme() |>
+  tab_options(container.height = px(600),
+              container.overflow.y = "auto")
 ```
 
+:::
 
-## Noise
+Now we'll identify all transitions between stations (or groups of stations),
+first looking for sequential transitions by the start time (`timeBegin`) then by
+the end time (`timeEnd`). This ensures we don't miss transitions hidden by
+overlapping bouts. (We'll omit the duplicates that this creates).
 
-### Tags
+Finally we combine all these transitions (overlaps, plus `trans1` and `trans2`) and
+add in the details regarding the start and end points.
 
-There are two broad classes of tags, Lotek and CTT. 
-These tags [have different properties and are processed differently](https://motuswts.github.io/motus/articles/identifying-false-positives.html?q=Lotek%20nanotags#introduction), so 
-care should be taken to treat them differently. 
-
-Let's first take a look a see how many tags of each type we have
-
+:::{.panel-tabset}
+### Run
 ```{r}
-# tbl(dbs[[1]], "tags") |>
-#   filter(projectID %in% projects) |>
-#   select(projectID, manufacturer, tagID) |>
-#   distinct() |>
-#   count(projectID, manufacturer) |>
-#   collect() |>
-#   gt()
+trans <- create_trans(bouts, overlapping_bouts, dist)
 ```
 
-So we mostly have Lotek tags (which much of the filtering suggestions have been based on),
-but we do have two projects with CTT tags to consider.
-
-### Motus Filter etc.
-
-TODO: use a custom noise filter?
-
-Here is the first and simplest filter, we'll gather all the run/tag combinations
-with a `motusFilter` value of 0.
-
-See [in-depth detections filtering](https://motuswts.github.io/motus/articles/filtering.html) and [A tool to identify probable false positive detections](https://motuswts.github.io/motus/articles/identifying-false-positives.html) for more details.
-
-```{r}
-# noise <- imap(dbs, \(x, y) {
-#   tbl(x, "runs") |> 
-#     select(runID, motusTagID, probability = motusFilter) |>
-#     filter(probability == 0) |>
-#     mutate(proj_id = y) |>
-#     collect()
-# })
+### Function
+```{r create_trans}
 ```
 
+### Output
+First 200 rows
+```{r}
+trans |>
+  slice(1:200) |>
+  gt() |>
+  gt_theme() |>
+  tab_options(container.height = px(600),
+              container.overflow.y = "auto")
+```
+:::
 
+## Save Data
 
+Now that we have our first set of bouts and transitions, we'll save this data
+for use in the next step, finding and fixing problems. 
 
+We'll use the RDS format (an R-format) to keep the units related to our distance
+and speed columns.
+
+```{r}
+write_rds(trans, "Data/Datasets/transitions_initial.rds")
+write_rds(bouts, "Data/Datasets/bouts_initial.rds")
+```
 
