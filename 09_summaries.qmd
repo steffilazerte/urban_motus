@@ -144,18 +144,20 @@ stn_time |>
   filter(stn_group != stn_group[1], 
          month(date) %in% c(10, 11, 12, 1, 2, 3, 4), .by = "tagDeployID") |>
   arrange(desc(time)) |>
+  filter(time > 2) |>
   gt() |>
   gt_theme()
 ```
 
-Possibly yes!
+Possibly yes! (but not many)
+
 ```{r}
 plot_map(trans, 34474) + labs(title = "White-throated Sparrow")
 plot_map(trans, 45363) + labs(title = "Purple Finch")
 plot_map(trans, 51150)+ labs(title = "Hermit Thrush")
 ```
 
-## Overall look at the migration
+## Maps of migration by species
 
 ```{r}
 #| fig-height: 16
