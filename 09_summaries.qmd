@@ -1,0 +1,226 @@
+---
+title: "Summaries"
+---
+
+## Questions
+
+- How many samples per species do we need?
+- How many stations detected do we need? (may depend on how many stations in the area?)
+
+**Ideas**
+
+- Assess how many local station along the path were **not** used (but were active). 
+- Convert to local time to assess when birds arriving
+  - Use timing as indicator of passing through or stopping over? (i.e early morning?)
+  - Amie et al. use hit patterns and timing to determine if stopping in. 
+  
+
+## Setup
+```{r}
+#| message: false
+#| cache: false
+source("XX_setup.R")
+runs <- load_runs()
+meta <- runs |>
+  select(tagDeployID, speciesID) |>
+  distinct() |>
+  left_join(tbl(dbs[[1]], "species") |> select(english, id) |> collect(), 
+            by = c("speciesID" = "id"))
+
+bouts <- read_rds("Data/Datasets/bouts_cleaned.rds") |>
+  left_join(meta, by = "tagDeployID")
+trans <- read_rds("Data/Datasets/transitions_cleaned.rds") |>
+  left_join(meta, by = "tagDeployID")
+
+```
+
+## Time at stations
+
+```{r}
+plan(multisession, workers = 6) # Setup parallel
+
+stn_time <- bouts |>
+  mutate(
+    date = future_map2(timeBegin, timeEnd, \(x, y) {
+      if(as_date(x) != as_date(y)) {
+        d <- seq(as_date(x), as_date(y), by = "1 day") 
+        d <- d[d >= x & d <= y]
+      } else d <- c()
+      unique(c(x, d, y))
+    }, .progress = interactive()),
+    t1 = map(date, \(x) x[-length(x)]),
+    t2 = map(date, \(x) x[-1]),
+  ) |>
+  unnest(cols = c(t1, t2)) |>
+  #select(tagDeployID, stn_group, timeBegin, timeEnd, t1, t2)
+  mutate(date = as_date(t1)) |>
+  summarize(time = sum(difftime(t2, t1, units = "hours")), 
+            .by = c("english", "tagDeployID", "stn_group", "date"))
+```
+
+
+## Overall Samples
+
+```{r}
+trans_dist <- trans |>
+  summarize(total_dist = sum(next_dist), 
+            travelled = total_dist > set_units(100, "km"),
+            migrated = (max(lat1) - min(lat2)) > 1,
+            migrated_far = (max(lat1) - min(lat2)) > 5,
+            .by = c("english", "tagDeployID"))
+
+sum_time <- stn_time |> 
+  left_join(trans_dist, by = c("english", "tagDeployID")) |>
+  mutate(total_dist = replace_na(total_dist, set_units(0, "km")),
+         travelled = replace_na(travelled, FALSE),
+         migrated = replace_na(migrated, FALSE),
+         migrated_far = replace_na(migrated_far, FALSE)) |>
+  arrange(tagDeployID, date) |>
+  summarize(n_stn = n_distinct(stn_group), 
+            min_date = min(date),
+            mean_date = mean(date),
+            max_date = max(date),
+            total_time = sum(time),
+            mean_time = mean(time),
+            res_stn = stn_group[1],
+            mean_time_no_resident = mean(time[stn_group != stn_group[1]]),
+            first_time = sum(time[stn_group == stn_group[1]]),
+            last_time = sum(time[stn_group == stn_group[n()]]),
+            .by = c("english", "tagDeployID", "travelled", "migrated", "migrated_far")
+  ) |>
+  mutate(mean_time_no_resident = replace_na(mean_time_no_resident, duration(0, "hours")))
+```
+
+Looking at birds who `travelled` (moved at least 100 km), 
+`migrated` (moved at least 1 latitude), or
+`migrated_far` (moved at least 5 latitudes). 
+
+- `n` - Number of tags (individuals)
+- `n_species` - Number of species
+- `n_stn` - Average number of stations *groups* visited by each bird
+- `min_date` - Average first date across birds
+- `mean_date` - Average mean date across birds
+- `max_date` - Average last date across birds
+- `total_time` - Average total amount of hours detected by stations across birds
+- `mean_time` - Average mean amount of hours detected by stations across birds
+- `mean_time_no_resident` - Average mean amount of hours detected by stations **not including the first stations they were detected at** across birds
+- `first_time` - Average total amount of hours detected at the first station across birds
+- `last_time` - Average total amount of hours detected at the final station across birds
+
+
+```{r}
+sum_time |>
+  summarize(n = n(),
+            n_species = n_distinct(english),
+            across(-c("tagDeployID", "res_stn", "english"), mean), 
+            .by = c("travelled", "migrated", "migrated_far")) |>
+  arrange(travelled, migrated, migrated_far) |>
+  gt() |>
+  gt_theme()
+```
+
+Roughly same metrics as above, but this time not broken up by travelled, migrant, etc.
+Now travelled, migrated and migrated_far represent proportions of the data.
+
+```{r}
+sum_time |>
+  summarize(n = n(),
+            n_species = n_distinct(english),
+            across(-c("tagDeployID", "res_stn", "english"), mean)) |>
+  gt() |>
+  gt_theme()
+```
+
+
+## Looking for stopovers
+
+Are there any individuals that actually hang out around the receiver?
+
+Here we see different individuals spending time (in hours) around receivers during
+migration.
+```{r}
+stn_time |>
+  arrange(tagDeployID, date) |>
+  filter(stn_group != stn_group[1], 
+         month(date) %in% c(10, 11, 12, 1, 2, 3, 4), .by = "tagDeployID") |>
+  arrange(desc(time)) |>
+  gt() |>
+  gt_theme()
+```
+
+Possibly yes!
+```{r}
+plot_map(trans, 34474) + labs(title = "White-throated Sparrow")
+plot_map(trans, 45363) + labs(title = "Purple Finch")
+plot_map(trans, 51150)+ labs(title = "Hermit Thrush")
+```
+
+## Overall look at the migration
+
+```{r}
+#| fig-height: 16
+#| fig-asp: 1.5
+#| message: false
+
+migrants <-  trans_dist$tagDeployID[trans_dist$migrated_far] |> unique()
+t <- filter(trans, tagDeployID %in% migrants) |>
+  mutate(month = month(mid_date)) |>
+  mutate(n = n_distinct(tagDeployID), .by = "english") |>
+  arrange(desc(n))
+b <- filter(bouts, tagDeployID %in% migrants)
+
+#t1 <- filter(t, english %in% c("Song Sparrow", "Gray Catbird")) |>
+  
+
+walk(unique(t$speciesID), \(x) {
+  t1 <- filter(t, speciesID == x)
+  g <- ggplot(t1, aes(x = lon1, y = lat1)) +
+    annotation_map_tile(type = "cartolight", zoomin = 0) +
+    geom_spatial_segment(
+      aes(xend = lon2, yend = lat2, colour = month),
+      arrow = arrow(length = unit(10, "pt"), type = "closed"), crs = 4326, na.rm = TRUE) +
+    scale_colour_viridis_c(option = "inferno", 
+                           begin = 0.20, end = 0.85) +
+    guides(colour = guide_colourbar(reverse = TRUE)) +
+    labs(title = t1$english[1], 
+         subtitle = paste0("n = ", n_distinct(t1$tagDeployID), "; ", as_date(min(t1$b1)), " to ", as_date(max(t1$e2))))
+  print(g)
+})
+
+```
+
+
+## Other
+
+Bout level details
+```{r}
+#| eval: false
+from <- select(trans, "tagDeployID", "e1", "next_stn" = "stn2", "next_dist",
+               "next_time" = "time_diff", "next_speed" = "speed", "next_trans_id" = "trans_id")
+to <- select(trans, "tagDeployID", "b2", "prev_stn" = "stn1", "prev_dist" = "next_dist",
+               "prev_time" = "time_diff", "prev_speed" = "speed", "prev_trans_id" = "trans_id")
+
+b <- bouts |>
+  filter(tagDeployID %in% ids) |>
+  #slice(1:400) |>
+  left_join(select(from, "tagDeployID", "e1", "next_trans_id"), 
+            by = join_by(tagDeployID, timeEnd <= e1), multiple = "first") |>
+  left_join(select(to, "tagDeployID", "b2", "prev_trans_id"), 
+            by = join_by(tagDeployID, timeBegin >= b2), multiple = "last") |>
+  #select(tagDeployID, stn_group, timeBegin, timeEnd, contains("next"), contains("prev"))
+  #mutate(trans_id = if_else(is.na(trans_id_next), max(trans_id, na.rm = TRUE) + 1, trans_id), .by = "tagDeployID") |>
+  summarize(
+    arrival = min(timeBegin), 
+    departure = max(timeEnd),
+    duration = difftime(departure, arrival, units = "hours"), 
+    active_time = sum(total_time),
+    n_runs = sum(n_runs), 
+    .by = c("tagDeployID", "next_trans_id", "stn_group")) |>
+  left_join(from, by = c("tagDeployID", "next_trans_id"))
+    
+ggplot(data = b, aes(x = next_speed, y = as.numeric(duration))) + 
+  geom_point()
+
+
+```
+
