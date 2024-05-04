@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-02-16">
+<meta name="dcterms.date" content="2024-05-03">
 
 <title>Motus tracking of urban migration stopovers - Setup</title>
 <style>
@@ -169,7 +169,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./02_download.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Download/Update Data</span></a>
+ <span class="menu-text">Download/Update Data &amp; Transform</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -188,6 +188,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./05_fine_filters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Fine-scale Filtering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06_bouts_transitions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bouts and Transitions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07_find_problems.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Finding Problems</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08_manual_adjustments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Manual Adjustments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09_summaries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Summaries</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -240,6 +264,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#packages" id="toc-packages" class="nav-link active" data-scroll-target="#packages">Packages</a></li>
   <li><a href="#motus-credentials" id="toc-motus-credentials" class="nav-link" data-scroll-target="#motus-credentials">Motus credentials</a></li>
   <li><a href="#define-projects" id="toc-define-projects" class="nav-link" data-scroll-target="#define-projects">Define projects</a></li>
+  <li><a href="#define-contants" id="toc-define-contants" class="nav-link" data-scroll-target="#define-contants">Define contants</a></li>
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
   <ul class="collapse">
   <li><a href="#species" id="toc-species" class="nav-link" data-scroll-target="#species">Species</a></li>
@@ -271,7 +296,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 16, 2024</p>
+      <p class="date">May 3, 2024</p>
     </div>
   </div>
   
@@ -289,27 +314,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Motus data and data bases</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(motus)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DBI)  <span class="co"># Data bases</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Tidy data manipulation</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(assertr) <span class="co"># Check data quality</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Data display</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Spatial data</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ebirdst) <span class="co"># Species ranges</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(units)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DBI)   <span class="co"># Data bases</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arrow) <span class="co"># parquet files</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Tidy data manipulation</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(assertr) <span class="co"># Check data quality</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(forcats)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Data display</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Spatial data</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ebirdst) <span class="co"># Species ranges</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(units)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggspatial)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="motus-credentials" class="level2">
@@ -341,6 +372,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>projects <span class="ot">&lt;-</span> <span class="fu">setNames</span>(projects, projects)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
+<section id="define-contants" class="level2">
+<h2 class="anchored" data-anchor-id="define-contants">Define contants</h2>
+<p>Here we define any cutoffs or constants we will be using</p>
+<ul>
+<li><code>max_flight_speed</code> is the maximum speed of travel we think is possible (with a buffer)</li>
+<li><code>max_tower_dist</code> is the maximum distance between towers/receivers within which a bird could be detected at both towers (and thus flight speed has no bearing)</li>
+<li><code>bout_cutoff</code> is the maximum amount of time between two runs at a specific station before those runs will be considered separate detection bouts.</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>max_flight_speed <span class="ot">&lt;-</span> <span class="fu">set_units</span>(<span class="dv">72</span>, <span class="st">"m/s"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>max_tower_dist <span class="ot">&lt;-</span> <span class="fu">set_units</span>(<span class="dv">50</span>, <span class="st">"km"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>bout_cutoff <span class="ot">&lt;-</span> <span class="fu">set_units</span>(<span class="dv">30</span>, <span class="st">"min"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <p>Get species lists from naturecounts taxonomy and join this with the species metadata from the motus data bases.</p>
@@ -353,7 +398,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="load-existing-databases" class="level4">
 <h4 class="anchored" data-anchor-id="load-existing-databases">Load existing databases</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dbs <span class="ot">&lt;-</span> <span class="fu">map</span>(projects, \(x) <span class="fu">tagme</span>(x, <span class="at">dir =</span> <span class="st">"Data/Raw"</span>, <span class="at">update =</span> <span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs <span class="ot">&lt;-</span> <span class="fu">map</span>(projects, \(x) <span class="fu">tagme</span>(x, <span class="at">dir =</span> <span class="st">"Data/Raw"</span>, <span class="at">update =</span> <span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="establish-included-species" class="level4">
@@ -363,25 +408,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>We rename scientific names to omit subspecies (e.g., myrtle yellow-rumped warbler) [required for later eBird range steps]</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># naturecounts::nc_metadata() # Update naturecounts taxonomy lists</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>species_list <span class="ot">&lt;-</span> naturecounts<span class="sc">::</span><span class="fu">meta_species_taxonomy</span>() <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(order_taxon <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Passeriformes"</span>, <span class="st">"Piciformes"</span>))</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>sp <span class="ot">&lt;-</span> <span class="fu">tbl</span>(dbs[[<span class="dv">1</span>]], <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Only get species which are in our specific projects</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(projectID <span class="sc">%in%</span> projects) <span class="sc">|&gt;</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(<span class="at">x =</span> <span class="fu">tbl</span>(dbs[[<span class="dv">1</span>]], <span class="st">"species"</span>), <span class="at">y =</span> _,</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"speciesID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">"group"</span>, <span class="sc">-</span><span class="st">"sort"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Keep only chosen species</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id <span class="sc">%in%</span> species_list<span class="sc">$</span>species_id) <span class="sc">|&gt;</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(id) <span class="sc">|&gt;</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fix subspecies names for joining with eBird (e.g., myrtle yellow-rumped warbler)</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">scientific_motus =</span> scientific,</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">scientific =</span> <span class="fu">str_replace</span>(scientific, <span class="st">"Setophaga coronata coronata"</span>, <span class="st">"Setophaga coronata"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># naturecounts::nc_metadata() # Update naturecounts taxonomy lists</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>species_list <span class="ot">&lt;-</span> naturecounts<span class="sc">::</span><span class="fu">meta_species_taxonomy</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(order_taxon <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Passeriformes"</span>, <span class="st">"Piciformes"</span>))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>sp <span class="ot">&lt;-</span> <span class="fu">tbl</span>(dbs[[<span class="dv">1</span>]], <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Only get species which are in our specific projects</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(projectID <span class="sc">%in%</span> projects) <span class="sc">|&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(<span class="at">x =</span> <span class="fu">tbl</span>(dbs[[<span class="dv">1</span>]], <span class="st">"species"</span>), <span class="at">y =</span> _,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"speciesID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">"group"</span>, <span class="sc">-</span><span class="st">"sort"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Keep only chosen species</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id <span class="sc">%in%</span> species_list<span class="sc">$</span>species_id) <span class="sc">|&gt;</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(id) <span class="sc">|&gt;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fix subspecies names for joining with eBird (e.g., myrtle yellow-rumped warbler)</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">scientific_motus =</span> scientific,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">scientific =</span> <span class="fu">str_replace</span>(scientific, <span class="st">"Setophaga coronata coronata"</span>, <span class="st">"Setophaga coronata"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -390,143 +435,639 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
 <p>These functions are sourced from <code>XX_functions.R</code></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>remove_by_ID <span class="ot">&lt;-</span> <span class="cf">function</span>(src, t, <span class="at">id_type =</span> <span class="st">"batchID"</span>, ids) {</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(ids) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t <span class="sc">%in%</span> DBI<span class="sc">::</span><span class="fu">dbListTables</span>(src)) {</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>      n <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbExecute</span>(</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        src, </span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"DELETE FROM {`t`} WHERE {`id_type`} IN ("</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                   glue<span class="sc">::</span><span class="fu">glue_collapse</span>(ids, <span class="at">sep =</span> <span class="st">', '</span>), </span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">")"</span>))</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>(n <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="fu">message</span>(<span class="fu">msg_fmt</span>(<span class="st">"  {n} rows deleted from {t}"</span>))</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>filter_count <span class="ot">&lt;-</span> <span class="cf">function</span>(dbs, filter) {</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  before <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_before"</span>) <span class="sc">|&gt;</span> <span class="fu">collect</span>()) <span class="sc">|&gt;</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  after <span class="ot">&lt;-</span> <span class="fu">imap</span>(dbs, \(x, y) {</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    remove <span class="ot">&lt;-</span> <span class="fu">getRunsFilters</span>(x, filter, y)</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">anti_join</span>(remove, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"motusTagID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_after"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">collect</span>()</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>()</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(before, after) <span class="sc">|&gt;</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_reduced =</span> (n_before <span class="sc">-</span> n_after) <span class="sc">/</span> n_before <span class="sc">*</span> <span class="dv">100</span>)</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>gt_theme <span class="ot">&lt;-</span> <span class="cf">function</span>(data, ...) {</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  data <span class="sc">|&gt;</span></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_options</span>(</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">table.border.top.width =</span> <span class="fu">px</span>(<span class="dv">3</span>), </span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">column_labels.font.weight =</span> <span class="st">"bold"</span>,</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">column_labels.border.bottom.width =</span> <span class="fu">px</span>(<span class="dv">3</span>),</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">data_row.padding =</span> <span class="fu">px</span>(<span class="dv">7</span>),</span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>      ...</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect and transform ts values to date/times </span></span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>collect_ts <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>  db <span class="sc">|&gt;</span></span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">contains</span>(<span class="st">"ts"</span>, <span class="at">ignore.case =</span> <span class="cn">FALSE</span>), as_datetime))</span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect run/tag information for filters</span></span>
-<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>collect_filter <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
-<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>  db <span class="sc">|&gt;</span></span>
-<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename_with</span>(<span class="sc">~</span><span class="st">"motusTagID"</span>, <span class="at">.cols =</span> <span class="fu">any_of</span>(<span class="st">"tagID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, motusTagID) <span class="sc">|&gt;</span></span>
-<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">probability =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
-<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>anti_join_quick <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, <span class="at">by =</span> <span class="cn">NULL</span>, <span class="at">copy =</span> <span class="cn">FALSE</span>, <span class="at">motus_filter =</span> <span class="cn">TRUE</span>) {</span>
-<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(motus_filter) {</span>
-<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">select</span>(y, <span class="st">"runID"</span>, <span class="st">"tagID"</span>)</span>
-<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">is.null</span>(by)) by <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>)</span>
-<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">mutate</span>(y, <span class="at">ANTI =</span> <span class="dv">1</span>) </span>
-<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(x, y, <span class="at">by =</span> by, <span class="at">copy =</span> copy) <span class="sc">|&gt;</span></span>
-<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">is.na</span>(ANTI)) <span class="sc">|&gt;</span></span>
-<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"ANTI"</span>)</span>
-<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- custom_runs ----</span></span>
-<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>custom_runs <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
-<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Replacement for NULL tsEnd values (i.e. today plus change)</span></span>
-<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>  max_ts <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">Sys.time</span>()) <span class="sc">+</span> <span class="dv">1000</span>)</span>
-<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Receivers</span></span>
-<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"deviceID"</span>, <span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"tsStartRecv"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndRecv"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndRecv =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndRecv), max_ts, tsEndRecv))</span>
-<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get tags</span></span>
-<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"speciesID"</span>, <span class="st">"tsStartTag"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndTag"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndTag =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndTag), max_ts, tsEndTag))</span>
-<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine with runs</span></span>
-<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(db, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tsBegin"</span>, <span class="st">"tsEnd"</span>, <span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>, <span class="st">"motusFilter"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run</span></span>
-<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(t, <span class="at">by =</span> <span class="fu">join_by</span>(tagID, <span class="fu">between</span>(tsBegin, tsStartTag, tsEndTag))) <span class="sc">|&gt;</span></span>
-<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batchRuns by runID (to get the batchID)</span></span>
-<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batchRuns"</span>), <span class="at">by =</span> <span class="st">"runID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batches by batchID (to get the deviceID)</span></span>
-<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batches"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"batchID"</span>, <span class="st">"motusDeviceID"</span>), <span class="at">by =</span> <span class="st">"batchID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run</span></span>
-<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(r, <span class="at">by =</span> <span class="fu">join_by</span>(motusDeviceID <span class="sc">==</span> deviceID, <span class="fu">between</span>(tsBegin, tsStartRecv, tsEndRecv))) <span class="sc">|&gt;</span></span>
-<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only relevant data</span></span>
-<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, motusFilter, </span>
-<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>           tagID, tagDeployID, speciesID, </span>
-<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a>           recvDeployID, <span class="at">recvDeviceID =</span> motusDeviceID, </span>
-<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>           tsBegin, tsEnd) <span class="sc">|&gt;</span></span>
-<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
-<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-102"><a href="#cb6-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-103"><a href="#cb6-103" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- custom_hits ----</span></span>
-<span id="cb6-104"><a href="#cb6-104" aria-hidden="true" tabindex="-1"></a>custom_hits <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
-<span id="cb6-105"><a href="#cb6-105" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Replacement for NULL tsEnd values (i.e. today plus change)</span></span>
-<span id="cb6-106"><a href="#cb6-106" aria-hidden="true" tabindex="-1"></a>  max_ts <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">Sys.time</span>()) <span class="sc">+</span> <span class="dv">1000</span>)</span>
-<span id="cb6-107"><a href="#cb6-107" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb6-108"><a href="#cb6-108" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Receivers</span></span>
-<span id="cb6-109"><a href="#cb6-109" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb6-110"><a href="#cb6-110" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"deviceID"</span>, <span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"tsStartRecv"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndRecv"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>,</span>
-<span id="cb6-111"><a href="#cb6-111" aria-hidden="true" tabindex="-1"></a>           <span class="st">"recvType"</span> <span class="ot">=</span> <span class="st">"receiverType"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-112"><a href="#cb6-112" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndRecv =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndRecv), max_ts, tsEndRecv))</span>
-<span id="cb6-113"><a href="#cb6-113" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb6-114"><a href="#cb6-114" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get tags</span></span>
-<span id="cb6-115"><a href="#cb6-115" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb6-116"><a href="#cb6-116" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"speciesID"</span>, <span class="st">"tsStartTag"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndTag"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-117"><a href="#cb6-117" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndTag =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndTag), max_ts, tsEndTag))  </span>
-<span id="cb6-118"><a href="#cb6-118" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb6-119"><a href="#cb6-119" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine with the rest - And OMIT BAD filtered observations from previous step</span></span>
-<span id="cb6-120"><a href="#cb6-120" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(db, <span class="st">"hits"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-121"><a href="#cb6-121" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"validated"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-122"><a href="#cb6-122" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in runs and motusFilters</span></span>
-<span id="cb6-123"><a href="#cb6-123" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"motusFilter"</span>, <span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>), <span class="at">by =</span> <span class="st">"runID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-124"><a href="#cb6-124" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run</span></span>
-<span id="cb6-125"><a href="#cb6-125" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(t, <span class="at">by =</span> <span class="fu">join_by</span>(tagID, <span class="fu">between</span>(ts, tsStartTag, tsEndTag))) <span class="sc">|&gt;</span></span>
-<span id="cb6-126"><a href="#cb6-126" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Filter out "Bad runs" from previous step</span></span>
-<span id="cb6-127"><a href="#cb6-127" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"bad_data"</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb6-128"><a href="#cb6-128" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">is.na</span>(BAD)) <span class="sc">|&gt;</span></span>
-<span id="cb6-129"><a href="#cb6-129" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"BAD"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-130"><a href="#cb6-130" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batches by batchID (to get the deviceID)</span></span>
-<span id="cb6-131"><a href="#cb6-131" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batches"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"batchID"</span>, <span class="st">"motusDeviceID"</span>), <span class="at">by =</span> <span class="st">"batchID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-132"><a href="#cb6-132" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run</span></span>
-<span id="cb6-133"><a href="#cb6-133" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(r, <span class="at">by =</span> <span class="fu">join_by</span>(motusDeviceID <span class="sc">==</span> deviceID, <span class="fu">between</span>(ts, tsStartRecv, tsEndRecv))) <span class="sc">|&gt;</span></span>
-<span id="cb6-134"><a href="#cb6-134" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only relevant data</span></span>
-<span id="cb6-135"><a href="#cb6-135" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"batchID"</span>, <span class="sc">-</span><span class="st">"tsStartRecv"</span>, <span class="sc">-</span><span class="st">"tsEndRecv"</span>, <span class="sc">-</span><span class="st">"tsStartTag"</span>, <span class="sc">-</span><span class="st">"tsEndTag"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-136"><a href="#cb6-136" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">"recvDeciveID"</span> <span class="ot">=</span> <span class="st">"motusDeviceID"</span>)</span>
-<span id="cb6-137"><a href="#cb6-137" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>remove_by_ID <span class="ot">&lt;-</span> <span class="cf">function</span>(src, t, <span class="at">id_type =</span> <span class="st">"batchID"</span>, ids) {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(ids) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(t <span class="sc">%in%</span> DBI<span class="sc">::</span><span class="fu">dbListTables</span>(src)) {</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>      n <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbExecute</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        src, </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"DELETE FROM {`t`} WHERE {`id_type`} IN ("</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                   glue<span class="sc">::</span><span class="fu">glue_collapse</span>(ids, <span class="at">sep =</span> <span class="st">', '</span>), </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">")"</span>))</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>(n <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="fu">message</span>(<span class="fu">msg_fmt</span>(<span class="st">"  {n} rows deleted from {t}"</span>))</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>filter_count <span class="ot">&lt;-</span> <span class="cf">function</span>(dbs, filter) {</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  before <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_before"</span>) <span class="sc">|&gt;</span> <span class="fu">collect</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  after <span class="ot">&lt;-</span> <span class="fu">imap</span>(dbs, \(x, y) {</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    remove <span class="ot">&lt;-</span> <span class="fu">getRunsFilters</span>(x, filter, y)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">anti_join</span>(remove, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"motusTagID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"n_after"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">collect</span>()</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>()</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(before, after) <span class="sc">|&gt;</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_reduced =</span> (n_before <span class="sc">-</span> n_after) <span class="sc">/</span> n_before <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>gt_theme <span class="ot">&lt;-</span> <span class="cf">function</span>(data, ...) {</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  data <span class="sc">|&gt;</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_options</span>(</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">table.border.top.width =</span> <span class="fu">px</span>(<span class="dv">3</span>), </span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">column_labels.font.weight =</span> <span class="st">"bold"</span>,</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">column_labels.border.bottom.width =</span> <span class="fu">px</span>(<span class="dv">3</span>),</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">data_row.padding =</span> <span class="fu">px</span>(<span class="dv">7</span>),</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>      ...</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect and transform ts values to date/times </span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>collect_ts <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>  db <span class="sc">|&gt;</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">contains</span>(<span class="st">"ts"</span>, <span class="at">ignore.case =</span> <span class="cn">FALSE</span>), as_datetime))</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Collect run/tag information for filters</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>collect_filter <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>  db <span class="sc">|&gt;</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename_with</span>(<span class="sc">~</span><span class="st">"motusTagID"</span>, <span class="at">.cols =</span> <span class="fu">any_of</span>(<span class="st">"tagID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, motusTagID) <span class="sc">|&gt;</span></span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">probability =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>anti_join_quick <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, <span class="at">by =</span> <span class="cn">NULL</span>, <span class="at">copy =</span> <span class="cn">FALSE</span>, <span class="at">motus_filter =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(motus_filter) {</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">select</span>(y, <span class="st">"runID"</span>, <span class="st">"tagID"</span>)</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">is.null</span>(by)) by <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>)</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">mutate</span>(y, <span class="at">ANTI =</span> <span class="dv">1</span>) </span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(x, y, <span class="at">by =</span> by, <span class="at">copy =</span> copy) <span class="sc">|&gt;</span></span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">is.na</span>(ANTI)) <span class="sc">|&gt;</span></span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"ANTI"</span>)</span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- custom_runs ----</span></span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a>custom_runs <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Replacement for NULL tsEnd values (i.e. today plus change)</span></span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a>  max_ts <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">Sys.time</span>()) <span class="sc">+</span> <span class="dv">1000</span>)</span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Receivers</span></span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"deviceID"</span> <span class="ot">=</span> <span class="st">"deviceID"</span>, <span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"tsStartRecv"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndRecv"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>,</span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>           <span class="st">"recvType"</span> <span class="ot">=</span> <span class="st">"receiverType"</span>, <span class="st">"recvDeployLat"</span> <span class="ot">=</span> <span class="st">"latitude"</span>, <span class="st">"recvDeployLon"</span> <span class="ot">=</span> <span class="st">"longitude"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndRecv =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndRecv), max_ts, tsEndRecv))</span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get tags</span></span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"speciesID"</span>, <span class="st">"tsStartTag"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndTag"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>, <span class="st">"test"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndTag =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndTag), max_ts, tsEndTag))</span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get batches</span></span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"batchRuns"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine with runs</span></span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(db, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run</span></span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(t, <span class="at">by =</span> <span class="fu">join_by</span>(tagID, <span class="fu">between</span>(tsBegin, tsStartTag, tsEndTag))) <span class="sc">|&gt;</span></span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice_max</span>(<span class="at">order_by =</span> tsStartTag, <span class="at">by =</span> <span class="st">"runID"</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> <span class="co"># If multiple deps, take only the one with max start</span></span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batchRuns by runID (to get the batchID)</span></span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(b, <span class="at">by =</span> <span class="st">"runID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice_max</span>(<span class="at">order_by =</span> batchID, <span class="at">by =</span> <span class="st">"runID"</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> <span class="co"># If multiple batches, take only the latest one</span></span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batches by batchID (to get the deviceID)</span></span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batches"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"batchID"</span>, <span class="st">"motusDeviceID"</span>), <span class="at">by =</span> <span class="st">"batchID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run</span></span>
+<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(r, <span class="at">by =</span> <span class="fu">join_by</span>(motusDeviceID <span class="sc">==</span> deviceID, <span class="fu">between</span>(tsBegin, tsStartRecv, tsEndRecv))) <span class="sc">|&gt;</span></span>
+<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice_max</span>(<span class="at">order_by =</span> tsStartRecv, <span class="at">by =</span> <span class="st">"runID"</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> <span class="co"># If multiple deps, take only the one with max start</span></span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">"recvDeviceID"</span> <span class="ot">=</span> <span class="st">"motusDeviceID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"batchIDbegin"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- custom_hits ----</span></span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a>custom_hits <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Replacement for NULL tsEnd values (i.e. today plus change)</span></span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a>  max_ts <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">Sys.time</span>()) <span class="sc">+</span> <span class="dv">1000</span>)</span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Receivers</span></span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"deviceID"</span>, <span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"tsStartRecv"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndRecv"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>,</span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a>           <span class="st">"recvType"</span> <span class="ot">=</span> <span class="st">"receiverType"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndRecv =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndRecv), max_ts, tsEndRecv))</span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get tags</span></span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"speciesID"</span>, <span class="st">"tsStartTag"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndTag"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndTag =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndTag), max_ts, tsEndTag))  </span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine with the rest - And OMIT BAD filtered observations from previous step</span></span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(db, <span class="st">"hits"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"validated"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in runs and motusFilters</span></span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"motusFilter"</span>, <span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>), <span class="at">by =</span> <span class="st">"runID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run</span></span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(t, <span class="at">by =</span> <span class="fu">join_by</span>(tagID, <span class="fu">between</span>(ts, tsStartTag, tsEndTag))) <span class="sc">|&gt;</span></span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a>    <span class="co"># # Filter out "Bad runs" from previous step</span></span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a>    <span class="co"># left_join(tbl(db, "bad_data"), by = c("runID", "tagID")) |&gt;</span></span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a>    <span class="co"># filter(is.na(BAD)) |&gt;</span></span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a>    <span class="co"># select(-"BAD") |&gt;</span></span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batches by batchID (to get the deviceID)</span></span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batches"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"batchID"</span>, <span class="st">"motusDeviceID"</span>), <span class="at">by =</span> <span class="st">"batchID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run</span></span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(r, <span class="at">by =</span> <span class="fu">join_by</span>(motusDeviceID <span class="sc">==</span> deviceID, <span class="fu">between</span>(ts, tsStartRecv, tsEndRecv))) <span class="sc">|&gt;</span></span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only relevant data</span></span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"batchID"</span>, <span class="sc">-</span><span class="st">"tsStartRecv"</span>, <span class="sc">-</span><span class="st">"tsEndRecv"</span>, <span class="sc">-</span><span class="st">"tsStartTag"</span>, <span class="sc">-</span><span class="st">"tsEndTag"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">"recvDeciveID"</span> <span class="ot">=</span> <span class="st">"motusDeviceID"</span>)</span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>load_hits <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(projects, \(x) {</span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> <span class="fu">filter</span>(arws, proj_id <span class="sc">==</span> x) <span class="sc">|&gt;</span></span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a>      <span class="fu">pull</span>(file)</span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a>    <span class="fu">open_dataset</span>(f, <span class="at">format =</span> <span class="st">"feather"</span>)</span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a>plot_bouts <span class="ot">&lt;-</span> <span class="cf">function</span>(trans, <span class="at">trans_clean =</span> <span class="cn">NULL</span>, bouts, tagDeployID, <span class="at">save =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a>  trans <span class="ot">&lt;-</span> <span class="fu">filter</span>(trans, tagDeployID <span class="sc">==</span> .env<span class="sc">$</span>tagDeployID)</span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">is.null</span>(trans_clean)) trans_clean <span class="ot">&lt;-</span> trans</span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a>  trans_clean <span class="ot">&lt;-</span> <span class="fu">filter</span>(trans_clean, tagDeployID <span class="sc">==</span> .env<span class="sc">$</span>tagDeployID)</span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a>  bouts <span class="ot">&lt;-</span> <span class="fu">filter</span>(bouts, tagDeployID <span class="sc">==</span> .env<span class="sc">$</span>tagDeployID)</span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a>  g1 <span class="ot">&lt;-</span> <span class="fu">plot_map</span>(trans)</span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a>  lon <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(trans<span class="sc">$</span>lon1, trans<span class="sc">$</span>lon2)) <span class="sc">|&gt;</span> <span class="fu">diff</span>()</span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a>  lat <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(trans<span class="sc">$</span>lat1, trans<span class="sc">$</span>lat2)) <span class="sc">|&gt;</span> <span class="fu">diff</span>()</span>
+<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a>  ratio <span class="ot">&lt;-</span> <span class="fu">abs</span>(lat) <span class="sc">/</span> <span class="fu">abs</span>(lon)</span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a>  g2 <span class="ot">&lt;-</span> <span class="fu">plot_coord</span>(trans, trans_clean, bouts, <span class="st">"lat"</span>)</span>
+<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a>  g3 <span class="ot">&lt;-</span> <span class="fu">plot_coord</span>(trans, trans_clean, bouts, <span class="st">"lon"</span>)</span>
+<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a>  <span class="co">#if(ratio &lt; 2) g_coord &lt;- g2 + g3 else g_coord &lt;- g2 / g3</span></span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a>  g_coord <span class="ot">&lt;-</span> g2 <span class="sc">/</span> g3</span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a>  g_coord <span class="ot">&lt;-</span> g_coord <span class="sc">+</span> <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">"collect"</span>)</span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a>  <span class="co">#if(ratio &gt; 1) g &lt;- g1 + g_coord else g &lt;- g1 / g_coord</span></span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> g1 <span class="sc">+</span> g_coord</span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> g <span class="sc">+</span> </span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste0</span>(<span class="st">"tagDeployID: "</span>, tagDeployID, <span class="st">" ("</span>, </span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">as_date</span>(<span class="fu">min</span>(bouts<span class="sc">$</span>timeBegin)), <span class="st">" to "</span>, </span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">as_date</span>(<span class="fu">max</span>(bouts<span class="sc">$</span>timeEnd)), <span class="st">")"</span>))</span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(save) {</span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggsave</span>(<span class="at">plot =</span> g, <span class="at">filename =</span> <span class="fu">paste0</span>(<span class="st">"check_"</span>, tagDeployID, <span class="st">".pdf"</span>), <span class="at">width =</span> <span class="dv">20</span>, <span class="at">height =</span> <span class="dv">12</span>)</span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a>  g</span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a>plot_map <span class="ot">&lt;-</span> <span class="cf">function</span>(trans, <span class="at">tagDeployID =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(tagDeployID)) trans <span class="ot">&lt;-</span> <span class="fu">filter</span>(trans, tagDeployID <span class="sc">==</span> .env[[<span class="st">"tagDeployID"</span>]])</span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="st">"problem"</span> <span class="sc">%in%</span> <span class="fu">names</span>(trans)) {</span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a>    trans<span class="sc">$</span>problem <span class="ot">&lt;-</span> trans<span class="sc">$</span>problem_fast <span class="ot">&lt;-</span> trans<span class="sc">$</span>problem_manual <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a>    trans<span class="sc">$</span>resolved <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a>  recvs <span class="ot">&lt;-</span> <span class="fu">select</span>(trans, stn1, lat1, lon1, stn2, lat2, lon2) <span class="sc">|&gt;</span></span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(<span class="st">"stn1"</span>, <span class="st">"stn2"</span>, <span class="st">"lat1"</span>, <span class="st">"lat2"</span>, <span class="st">"lon1"</span>, <span class="st">"lon2"</span>), </span>
+<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a>                 <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">".value"</span>, <span class="st">"pair"</span>), </span>
+<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a>                 <span class="at">names_pattern =</span> <span class="st">"([a-z]{2,3})(</span><span class="sc">\\</span><span class="st">d+)"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"pair"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
+<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a>  bb <span class="ot">&lt;-</span> trans <span class="sc">|&gt;</span></span>
+<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">xmin =</span> <span class="fu">min</span>(<span class="fu">c</span>(lon1, lon2)), <span class="at">xmax =</span> <span class="fu">max</span>(<span class="fu">c</span>(lon1, lon2)),</span>
+<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a>              <span class="at">ymin =</span> <span class="fu">min</span>(<span class="fu">c</span>(lat1, lat2)), <span class="at">ymax =</span> <span class="fu">max</span>(<span class="fu">c</span>(lat1, lat2)))</span>
+<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a>  ry <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">range</span>(bb[<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>]))</span>
+<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a>  rx <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">range</span>(bb[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]))</span>
+<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(rx <span class="sc">&gt;</span> <span class="dv">31</span> <span class="sc">&amp;</span> <span class="fu">any</span>(<span class="sc">!</span>trans<span class="sc">$</span>problem)) {</span>
+<span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a>    bb <span class="ot">&lt;-</span> <span class="fu">filter</span>(trans, <span class="sc">!</span>problem) <span class="sc">|&gt;</span></span>
+<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarize</span>(<span class="at">xmin =</span> <span class="fu">min</span>(<span class="fu">c</span>(lon1, lon2)), <span class="at">xmax =</span> <span class="fu">max</span>(<span class="fu">c</span>(lon1, lon2)),</span>
+<span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a>                <span class="at">ymin =</span> <span class="fu">min</span>(<span class="fu">c</span>(lat1, lat2)), <span class="at">ymax =</span> <span class="fu">max</span>(<span class="fu">c</span>(lat1, lat2)))</span>
+<span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-212"><a href="#cb7-212" aria-hidden="true" tabindex="-1"></a>    ry <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">range</span>(bb[<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>]))</span>
+<span id="cb7-213"><a href="#cb7-213" aria-hidden="true" tabindex="-1"></a>    rx <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">range</span>(bb[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]))</span>
+<span id="cb7-214"><a href="#cb7-214" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-215"><a href="#cb7-215" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-216"><a href="#cb7-216" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(rx <span class="sc">&lt;</span> <span class="fl">0.5</span>) {</span>
+<span id="cb7-217"><a href="#cb7-217" aria-hidden="true" tabindex="-1"></a>    add <span class="ot">&lt;-</span> (<span class="fl">0.5</span> <span class="sc">-</span> rx)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb7-218"><a href="#cb7-218" aria-hidden="true" tabindex="-1"></a>    bb[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="ot">&lt;-</span> bb[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">+</span> (<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> add)</span>
+<span id="cb7-219"><a href="#cb7-219" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-220"><a href="#cb7-220" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(ry <span class="sc">&lt;</span> <span class="dv">2</span>) {</span>
+<span id="cb7-221"><a href="#cb7-221" aria-hidden="true" tabindex="-1"></a>    add <span class="ot">&lt;-</span> (<span class="dv">2</span> <span class="sc">-</span> ry)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb7-222"><a href="#cb7-222" aria-hidden="true" tabindex="-1"></a>    bb[<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>] <span class="ot">&lt;-</span> bb[<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>] <span class="sc">+</span> (<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> add)</span>
+<span id="cb7-223"><a href="#cb7-223" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-224"><a href="#cb7-224" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-225"><a href="#cb7-225" aria-hidden="true" tabindex="-1"></a>  ry <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">range</span>(bb[<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>]))</span>
+<span id="cb7-226"><a href="#cb7-226" aria-hidden="true" tabindex="-1"></a>  rx <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">range</span>(bb[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]))</span>
+<span id="cb7-227"><a href="#cb7-227" aria-hidden="true" tabindex="-1"></a>  ratio <span class="ot">&lt;-</span> ry<span class="sc">/</span>rx</span>
+<span id="cb7-228"><a href="#cb7-228" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-229"><a href="#cb7-229" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(ratio <span class="sc">&gt;</span> <span class="dv">2</span>) {</span>
+<span id="cb7-230"><a href="#cb7-230" aria-hidden="true" tabindex="-1"></a>    rx1 <span class="ot">&lt;-</span> ry<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb7-231"><a href="#cb7-231" aria-hidden="true" tabindex="-1"></a>    add <span class="ot">&lt;-</span> (rx1 <span class="sc">-</span> rx)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb7-232"><a href="#cb7-232" aria-hidden="true" tabindex="-1"></a>    bb[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="ot">&lt;-</span> bb[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">+</span> (<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> add)</span>
+<span id="cb7-233"><a href="#cb7-233" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (ratio <span class="sc">&lt;</span> <span class="dv">2</span>) {</span>
+<span id="cb7-234"><a href="#cb7-234" aria-hidden="true" tabindex="-1"></a>    ry1 <span class="ot">&lt;-</span> rx <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb7-235"><a href="#cb7-235" aria-hidden="true" tabindex="-1"></a>    add <span class="ot">&lt;-</span> (ry1 <span class="sc">-</span> ry)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb7-236"><a href="#cb7-236" aria-hidden="true" tabindex="-1"></a>    bb[<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>] <span class="ot">&lt;-</span> bb[<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>] <span class="sc">+</span> (<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> add)</span>
+<span id="cb7-237"><a href="#cb7-237" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-238"><a href="#cb7-238" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-239"><a href="#cb7-239" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">any</span>(trans<span class="sc">$</span>problem_fast <span class="sc">|</span> trans<span class="sc">$</span>problem_manual)) {</span>
+<span id="cb7-240"><a href="#cb7-240" aria-hidden="true" tabindex="-1"></a>    labs <span class="ot">&lt;-</span> trans <span class="sc">|&gt;</span></span>
+<span id="cb7-241"><a href="#cb7-241" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(problem_fast <span class="sc">|</span> problem_manual) <span class="sc">|&gt;</span></span>
+<span id="cb7-242"><a href="#cb7-242" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarize</span>(</span>
+<span id="cb7-243"><a href="#cb7-243" aria-hidden="true" tabindex="-1"></a>        <span class="at">lon =</span> lon1, </span>
+<span id="cb7-244"><a href="#cb7-244" aria-hidden="true" tabindex="-1"></a>        <span class="at">lat =</span> lat1,</span>
+<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a>        <span class="at">stn_pair =</span> stn_pair[<span class="dv">1</span>],</span>
+<span id="cb7-246"><a href="#cb7-246" aria-hidden="true" tabindex="-1"></a>        <span class="at">problem_chr =</span> <span class="fu">pmap_chr</span>(<span class="fu">list</span>(problem_fast, problem_manual),</span>
+<span id="cb7-247"><a href="#cb7-247" aria-hidden="true" tabindex="-1"></a>                               \(x, y) <span class="fu">paste0</span>(<span class="fu">c</span>(<span class="st">"too fast"</span>, <span class="st">"manual"</span>)[<span class="fu">c</span>(x, y)], <span class="at">collapse =</span> <span class="st">", "</span>)),</span>
+<span id="cb7-248"><a href="#cb7-248" aria-hidden="true" tabindex="-1"></a>        <span class="at">nudge_x =</span> <span class="fu">sign</span>(lon2 <span class="sc">-</span> lon1) <span class="sc">*</span> ((bb[[<span class="dv">2</span>]] <span class="sc">-</span> bb[[<span class="dv">1</span>]]) <span class="sc">*</span> <span class="fl">0.1</span>),</span>
+<span id="cb7-249"><a href="#cb7-249" aria-hidden="true" tabindex="-1"></a>        <span class="at">nudge_y =</span> <span class="fu">sign</span>(lat1 <span class="sc">-</span> lat2) <span class="sc">*</span> ((bb[[<span class="dv">4</span>]] <span class="sc">-</span> bb[[<span class="dv">3</span>]]) <span class="sc">*</span> <span class="fl">0.05</span>), </span>
+<span id="cb7-250"><a href="#cb7-250" aria-hidden="true" tabindex="-1"></a>        <span class="at">.by =</span> trans_id) <span class="sc">|&gt;</span></span>
+<span id="cb7-251"><a href="#cb7-251" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(<span class="sc">-</span>trans_id) <span class="sc">|&gt;</span></span>
+<span id="cb7-252"><a href="#cb7-252" aria-hidden="true" tabindex="-1"></a>      <span class="fu">distinct</span>()</span>
+<span id="cb7-253"><a href="#cb7-253" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> labs <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb7-254"><a href="#cb7-254" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-255"><a href="#cb7-255" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(trans, <span class="fu">aes</span>(<span class="at">x =</span> lon1, <span class="at">y =</span> lat1)) <span class="sc">+</span></span>
+<span id="cb7-256"><a href="#cb7-256" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotation_map_tile</span>(<span class="at">type =</span> <span class="st">"cartolight"</span>, <span class="at">zoomin =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb7-257"><a href="#cb7-257" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_spatial_segment</span>(</span>
+<span id="cb7-258"><a href="#cb7-258" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">filter</span>(trans, resolved, problem),</span>
+<span id="cb7-259"><a href="#cb7-259" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(<span class="at">xend =</span> lon2, <span class="at">yend =</span> lat2), <span class="at">colour =</span> <span class="st">"grey"</span>, <span class="at">linewidth =</span> <span class="dv">2</span>,</span>
+<span id="cb7-260"><a href="#cb7-260" aria-hidden="true" tabindex="-1"></a>      <span class="at">arrow =</span> <span class="fu">arrow</span>(<span class="at">length =</span> <span class="fu">unit</span>(<span class="dv">10</span>, <span class="st">"pt"</span>), <span class="at">type =</span> <span class="st">"closed"</span>), <span class="at">crs =</span> <span class="dv">4326</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb7-261"><a href="#cb7-261" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">unlist</span>(bb[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]), <span class="at">ylim =</span> <span class="fu">unlist</span>(bb[<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>]), <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb7-262"><a href="#cb7-262" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-263"><a href="#cb7-263" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">nrow</span>(labs) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb7-264"><a href="#cb7-264" aria-hidden="true" tabindex="-1"></a>    g <span class="ot">&lt;-</span> g <span class="sc">+</span> <span class="fu">geom_spatial_label</span>(<span class="at">data =</span> labs, </span>
+<span id="cb7-265"><a href="#cb7-265" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">aes</span>(<span class="at">x =</span> lon, <span class="at">y =</span> lat, <span class="at">label =</span> problem_chr), </span>
+<span id="cb7-266"><a href="#cb7-266" aria-hidden="true" tabindex="-1"></a>                               <span class="at">nudge_x =</span> labs<span class="sc">$</span>nudge_x, <span class="at">nudge_y =</span> labs<span class="sc">$</span>nudge_y, </span>
+<span id="cb7-267"><a href="#cb7-267" aria-hidden="true" tabindex="-1"></a>                               <span class="at">colour =</span> <span class="st">"grey"</span>, <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb7-268"><a href="#cb7-268" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-269"><a href="#cb7-269" aria-hidden="true" tabindex="-1"></a>  g <span class="sc">+</span></span>
+<span id="cb7-270"><a href="#cb7-270" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_spatial_segment</span>(</span>
+<span id="cb7-271"><a href="#cb7-271" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">filter</span>(trans, (resolved <span class="sc">&amp;</span> <span class="sc">!</span>problem) <span class="sc">|</span> (<span class="sc">!</span>resolved)),</span>
+<span id="cb7-272"><a href="#cb7-272" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(<span class="at">xend =</span> lon2, <span class="at">yend =</span> lat2, <span class="at">colour =</span> mid_date, <span class="at">linetype =</span> problem),</span>
+<span id="cb7-273"><a href="#cb7-273" aria-hidden="true" tabindex="-1"></a>      <span class="at">arrow =</span> <span class="fu">arrow</span>(<span class="at">length =</span> <span class="fu">unit</span>(<span class="dv">10</span>, <span class="st">"pt"</span>), <span class="at">type =</span> <span class="st">"closed"</span>), <span class="at">crs =</span> <span class="dv">4326</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb7-274"><a href="#cb7-274" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_spatial_label_repel</span>(<span class="at">data =</span> recvs, <span class="fu">aes</span>(<span class="at">label =</span> stn, <span class="at">x =</span> lon, <span class="at">y =</span> lat), </span>
+<span id="cb7-275"><a href="#cb7-275" aria-hidden="true" tabindex="-1"></a>                             <span class="at">crs =</span> <span class="dv">4326</span>) <span class="sc">+</span></span>
+<span id="cb7-276"><a href="#cb7-276" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-277"><a href="#cb7-277" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_size_date</span>(<span class="at">range =</span> <span class="fu">c</span>(<span class="dv">6</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb7-278"><a href="#cb7-278" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_linetype_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"FALSE"</span> <span class="ot">=</span> <span class="st">"solid"</span>, <span class="st">"TRUE"</span> <span class="ot">=</span> <span class="st">"dotted"</span>),</span>
+<span id="cb7-279"><a href="#cb7-279" aria-hidden="true" tabindex="-1"></a>                          <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb7-280"><a href="#cb7-280" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_linewidth_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"FALSE"</span> <span class="ot">=</span> <span class="fl">0.75</span>, <span class="st">"TRUE"</span> <span class="ot">=</span> <span class="fl">1.55</span>),</span>
+<span id="cb7-281"><a href="#cb7-281" aria-hidden="true" tabindex="-1"></a>                           <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb7-282"><a href="#cb7-282" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_colour_viridis_c</span>(<span class="at">option =</span> <span class="st">"inferno"</span>, <span class="at">transform =</span> <span class="st">"date"</span>, </span>
+<span id="cb7-283"><a href="#cb7-283" aria-hidden="true" tabindex="-1"></a>                           <span class="at">begin =</span> <span class="fl">0.20</span>, <span class="at">end =</span> <span class="fl">0.85</span>) <span class="sc">+</span></span>
+<span id="cb7-284"><a href="#cb7-284" aria-hidden="true" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">colour =</span> <span class="fu">guide_colourbar</span>(<span class="at">reverse =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb7-285"><a href="#cb7-285" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-286"><a href="#cb7-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-287"><a href="#cb7-287" aria-hidden="true" tabindex="-1"></a>plot_coord <span class="ot">&lt;-</span> <span class="cf">function</span>(trans, trans_clean, bouts, coord) {</span>
+<span id="cb7-288"><a href="#cb7-288" aria-hidden="true" tabindex="-1"></a>  lim <span class="ot">&lt;-</span> <span class="fu">range</span>(bouts<span class="sc">$</span>dateBegin)</span>
+<span id="cb7-289"><a href="#cb7-289" aria-hidden="true" tabindex="-1"></a>  lim[<span class="dv">2</span>] <span class="ot">&lt;-</span> lim[<span class="dv">2</span>] <span class="sc">+</span> <span class="fu">difftime</span>(lim[<span class="dv">2</span>], lim[<span class="dv">1</span>], <span class="at">units =</span> <span class="st">"days"</span>) <span class="sc">*</span> <span class="fl">0.1</span></span>
+<span id="cb7-290"><a href="#cb7-290" aria-hidden="true" tabindex="-1"></a>  lim <span class="ot">&lt;-</span> <span class="fu">as_datetime</span>(lim)</span>
+<span id="cb7-291"><a href="#cb7-291" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-292"><a href="#cb7-292" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="st">"bad"</span> <span class="sc">%in%</span> <span class="fu">names</span>(trans)) trans<span class="sc">$</span>bad <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb7-293"><a href="#cb7-293" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="st">"bad"</span> <span class="sc">%in%</span> <span class="fu">names</span>(trans_clean)) trans_clean<span class="sc">$</span>bad <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb7-294"><a href="#cb7-294" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="st">"bad"</span> <span class="sc">%in%</span> <span class="fu">names</span>(bouts)) bouts<span class="sc">$</span>bad <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb7-295"><a href="#cb7-295" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="st">"problem"</span> <span class="sc">%in%</span> <span class="fu">names</span>(trans)) trans<span class="sc">$</span>problem <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb7-296"><a href="#cb7-296" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="st">"problem"</span> <span class="sc">%in%</span> <span class="fu">names</span>(trans_clean)) trans_clean<span class="sc">$</span>problem <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb7-297"><a href="#cb7-297" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-298"><a href="#cb7-298" aria-hidden="true" tabindex="-1"></a>  bouts <span class="ot">&lt;-</span> <span class="fu">mutate</span>(bouts, <span class="at">stn_group =</span> <span class="fu">factor</span>(stn_group))</span>
+<span id="cb7-299"><a href="#cb7-299" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-300"><a href="#cb7-300" aria-hidden="true" tabindex="-1"></a>  recvs <span class="ot">&lt;-</span> <span class="fu">select</span>(bouts, recvDeployLat, recvDeployLon, stn_group) <span class="sc">|&gt;</span></span>
+<span id="cb7-301"><a href="#cb7-301" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
+<span id="cb7-302"><a href="#cb7-302" aria-hidden="true" tabindex="-1"></a>  pal <span class="ot">&lt;-</span> viridis<span class="sc">::</span><span class="fu">magma</span>(<span class="at">n =</span> <span class="fu">length</span>(recvs<span class="sc">$</span>stn_group), <span class="at">begin =</span> <span class="fl">0.10</span>, <span class="at">end =</span> <span class="fl">0.9</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-303"><a href="#cb7-303" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_names</span>(<span class="fu">levels</span>(recvs<span class="sc">$</span>stn_group))</span>
+<span id="cb7-304"><a href="#cb7-304" aria-hidden="true" tabindex="-1"></a>  pal_txt <span class="ot">&lt;-</span> farver<span class="sc">::</span><span class="fu">decode_colour</span>(pal, <span class="st">"rgb"</span>, <span class="st">"hcl"</span>)</span>
+<span id="cb7-305"><a href="#cb7-305" aria-hidden="true" tabindex="-1"></a>  pal_txt <span class="ot">&lt;-</span> <span class="fu">if_else</span>(pal_txt[, <span class="st">"l"</span>] <span class="sc">&gt;</span> <span class="dv">50</span>, <span class="st">"black"</span>, <span class="st">"white"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-306"><a href="#cb7-306" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_names</span>(<span class="fu">levels</span>(recvs<span class="sc">$</span>stn_group))</span>
+<span id="cb7-307"><a href="#cb7-307" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-308"><a href="#cb7-308" aria-hidden="true" tabindex="-1"></a>  c1 <span class="ot">&lt;-</span> <span class="fu">str_subset</span>(<span class="fu">names</span>(bouts), <span class="fu">regex</span>(coord, <span class="at">ignore_case =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb7-309"><a href="#cb7-309" aria-hidden="true" tabindex="-1"></a>  c2 <span class="ot">&lt;-</span> <span class="fu">paste0</span>(coord, <span class="dv">1</span>)</span>
+<span id="cb7-310"><a href="#cb7-310" aria-hidden="true" tabindex="-1"></a>  c3 <span class="ot">&lt;-</span> <span class="fu">paste0</span>(coord, <span class="dv">2</span>)</span>
+<span id="cb7-311"><a href="#cb7-311" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-312"><a href="#cb7-312" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">filter</span>(bouts, <span class="sc">!</span>bad)</span>
+<span id="cb7-313"><a href="#cb7-313" aria-hidden="true" tabindex="-1"></a>  b_bad <span class="ot">&lt;-</span> <span class="fu">filter</span>(bouts, bad)</span>
+<span id="cb7-314"><a href="#cb7-314" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-315"><a href="#cb7-315" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> trans_clean <span class="co">#filter(trans, !problem | (problem &amp; !resolved))</span></span>
+<span id="cb7-316"><a href="#cb7-316" aria-hidden="true" tabindex="-1"></a>  t_bad <span class="ot">&lt;-</span> <span class="fu">anti_join</span>(trans, trans_clean, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id1"</span>, <span class="st">"id2"</span>))</span>
+<span id="cb7-317"><a href="#cb7-317" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-318"><a href="#cb7-318" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(b, <span class="fu">aes</span>(<span class="at">x =</span> timeBegin, <span class="at">y =</span> .data[[c1]])) <span class="sc">+</span></span>
+<span id="cb7-319"><a href="#cb7-319" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb7-320"><a href="#cb7-320" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-321"><a href="#cb7-321" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Good bouts (or unresolved)</span></span>
+<span id="cb7-322"><a href="#cb7-322" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> timeEnd, <span class="at">colour =</span> stn_group), <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">linewidth =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb7-323"><a href="#cb7-323" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">arrange</span>(b, <span class="fu">desc</span>(stn_group)), <span class="fu">aes</span>(<span class="at">colour =</span> stn_group), <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-324"><a href="#cb7-324" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-325"><a href="#cb7-325" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Bad bouts (resolved)</span></span>
+<span id="cb7-326"><a href="#cb7-326" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="at">data =</span> b_bad, <span class="fu">aes</span>(<span class="at">xend =</span> timeEnd), <span class="at">colour =</span> <span class="st">"grey"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">linewidth =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb7-327"><a href="#cb7-327" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">arrange</span>(b_bad, <span class="fu">desc</span>(stn_group)), <span class="at">colour =</span> <span class="st">"grey"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-328"><a href="#cb7-328" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-329"><a href="#cb7-329" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Good trans (or unresolved)</span></span>
+<span id="cb7-330"><a href="#cb7-330" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="at">data =</span> t, <span class="fu">aes</span>(</span>
+<span id="cb7-331"><a href="#cb7-331" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> e1, <span class="at">xend =</span> b2, <span class="at">y =</span> .data[[c2]], <span class="at">yend =</span> .data[[c3]], <span class="at">linetype =</span> problem), <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb7-332"><a href="#cb7-332" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-333"><a href="#cb7-333" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Bad trans (resolved)</span></span>
+<span id="cb7-334"><a href="#cb7-334" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="at">data =</span> t_bad, <span class="fu">aes</span>(</span>
+<span id="cb7-335"><a href="#cb7-335" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> e1, <span class="at">xend =</span> b2, <span class="at">y =</span> .data[[c2]], <span class="at">yend =</span> .data[[c3]], <span class="at">linetype =</span> problem), </span>
+<span id="cb7-336"><a href="#cb7-336" aria-hidden="true" tabindex="-1"></a>      <span class="at">colour =</span> <span class="st">"grey"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb7-337"><a href="#cb7-337" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-338"><a href="#cb7-338" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_label_repel</span>(<span class="at">data =</span> recvs, <span class="fu">aes</span>(<span class="at">label =</span> stn_group, <span class="at">y =</span> .data[[c1]], <span class="at">x =</span> lim[<span class="dv">2</span>], </span>
+<span id="cb7-339"><a href="#cb7-339" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">fill =</span> stn_group, <span class="at">colour =</span> stn_group),</span>
+<span id="cb7-340"><a href="#cb7-340" aria-hidden="true" tabindex="-1"></a>               <span class="at">size =</span> <span class="fl">2.5</span>, <span class="at">direction =</span> <span class="st">"y"</span>, <span class="at">point.size =</span> <span class="cn">NA</span>, <span class="at">box.padding =</span> <span class="dv">0</span>, <span class="at">label.padding =</span> <span class="fl">0.15</span>,</span>
+<span id="cb7-341"><a href="#cb7-341" aria-hidden="true" tabindex="-1"></a>               <span class="at">colour =</span> pal_txt[recvs<span class="sc">$</span>stn_group]) <span class="sc">+</span></span>
+<span id="cb7-342"><a href="#cb7-342" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> pal) <span class="sc">+</span></span>
+<span id="cb7-343"><a href="#cb7-343" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> pal) <span class="sc">+</span></span>
+<span id="cb7-344"><a href="#cb7-344" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_datetime</span>(<span class="at">limits =</span> lim)</span>
+<span id="cb7-345"><a href="#cb7-345" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-346"><a href="#cb7-346" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-347"><a href="#cb7-347" aria-hidden="true" tabindex="-1"></a>plot_check <span class="ot">&lt;-</span> <span class="cf">function</span>(hits, tagDeployID) {</span>
+<span id="cb7-348"><a href="#cb7-348" aria-hidden="true" tabindex="-1"></a>  h <span class="ot">&lt;-</span> <span class="fu">filter</span>(h, tagDeployID <span class="sc">==</span> .env[[<span class="st">"tagDeployID"</span>]]) <span class="sc">|&gt;</span></span>
+<span id="cb7-349"><a href="#cb7-349" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(time)</span>
+<span id="cb7-350"><a href="#cb7-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-351"><a href="#cb7-351" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">nrow</span>(h) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb7-352"><a href="#cb7-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-353"><a href="#cb7-353" aria-hidden="true" tabindex="-1"></a>    sig_range <span class="ot">&lt;-</span> <span class="cf">function</span>(limits) {</span>
+<span id="cb7-354"><a href="#cb7-354" aria-hidden="true" tabindex="-1"></a>      diff <span class="ot">&lt;-</span> <span class="fu">abs</span>(<span class="fu">diff</span>(limits))</span>
+<span id="cb7-355"><a href="#cb7-355" aria-hidden="true" tabindex="-1"></a>      <span class="fu">case_when</span>(</span>
+<span id="cb7-356"><a href="#cb7-356" aria-hidden="true" tabindex="-1"></a>        diff <span class="sc">&lt;</span> <span class="dv">5</span> <span class="sc">~</span> limits <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">7.5</span>, <span class="fl">7.5</span>),</span>
+<span id="cb7-357"><a href="#cb7-357" aria-hidden="true" tabindex="-1"></a>        diff <span class="sc">&lt;</span> <span class="dv">10</span> <span class="sc">~</span> limits <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">5</span>, <span class="dv">5</span>),</span>
+<span id="cb7-358"><a href="#cb7-358" aria-hidden="true" tabindex="-1"></a>        diff <span class="sc">&lt;</span> <span class="dv">15</span> <span class="sc">~</span> limits <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="fl">2.5</span>),</span>
+<span id="cb7-359"><a href="#cb7-359" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> limits)</span>
+<span id="cb7-360"><a href="#cb7-360" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-361"><a href="#cb7-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-362"><a href="#cb7-362" aria-hidden="true" tabindex="-1"></a>    g <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb7-363"><a href="#cb7-363" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">unique</span>(h<span class="sc">$</span>trans_id)) {</span>
+<span id="cb7-364"><a href="#cb7-364" aria-hidden="true" tabindex="-1"></a>      hh <span class="ot">&lt;-</span> <span class="fu">filter</span>(h, trans_id <span class="sc">==</span> i) <span class="sc">|&gt;</span></span>
+<span id="cb7-365"><a href="#cb7-365" aria-hidden="true" tabindex="-1"></a>        <span class="fu">arrange</span>(time) <span class="sc">|&gt;</span></span>
+<span id="cb7-366"><a href="#cb7-366" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">problem_pair =</span> <span class="fu">factor</span>(problem_pair, <span class="at">levels =</span> <span class="fu">unique</span>(problem_pair)))</span>
+<span id="cb7-367"><a href="#cb7-367" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb7-368"><a href="#cb7-368" aria-hidden="true" tabindex="-1"></a>      h_lab <span class="ot">&lt;-</span> hh <span class="sc">|&gt;</span></span>
+<span id="cb7-369"><a href="#cb7-369" aria-hidden="true" tabindex="-1"></a>        <span class="fu">summarize</span>(<span class="at">time =</span> <span class="fu">min</span>(time), <span class="at">sig =</span> <span class="fu">median</span>(sig), </span>
+<span id="cb7-370"><a href="#cb7-370" aria-hidden="true" tabindex="-1"></a>                  <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"recvDeployID"</span>, <span class="st">"problem_pair"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-371"><a href="#cb7-371" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">recvDeployID =</span> <span class="fu">as.factor</span>(recvDeployID))</span>
+<span id="cb7-372"><a href="#cb7-372" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-373"><a href="#cb7-373" aria-hidden="true" tabindex="-1"></a>      g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> hh, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> sig, <span class="at">colour =</span> <span class="fu">factor</span>(recvDeployID),</span>
+<span id="cb7-374"><a href="#cb7-374" aria-hidden="true" tabindex="-1"></a>                                <span class="at">shape =</span> ant)) <span class="sc">+</span></span>
+<span id="cb7-375"><a href="#cb7-375" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb7-376"><a href="#cb7-376" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>, <span class="at">aspect.ratio =</span> <span class="dv">1</span>, <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb7-377"><a href="#cb7-377" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb7-378"><a href="#cb7-378" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_line</span>(<span class="at">stat =</span> <span class="st">"smooth"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">method =</span> <span class="st">"gam"</span>, <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">s</span>(x, <span class="at">k =</span> <span class="dv">10</span>, <span class="at">bs =</span> <span class="st">"cs"</span>)) <span class="sc">+</span></span>
+<span id="cb7-379"><a href="#cb7-379" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_label</span>(<span class="at">data =</span> h_lab, <span class="fu">aes</span>(<span class="at">label =</span> recvDeployID, <span class="at">shape =</span> <span class="cn">NULL</span>), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb7-380"><a href="#cb7-380" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_colour_viridis_d</span>(<span class="at">option =</span> <span class="st">"magma"</span>, <span class="at">end =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb7-381"><a href="#cb7-381" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> sig_range) <span class="sc">+</span></span>
+<span id="cb7-382"><a href="#cb7-382" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_x_datetime</span>(<span class="at">date_labels =</span> <span class="st">"%H:%M"</span>) <span class="sc">+</span></span>
+<span id="cb7-383"><a href="#cb7-383" aria-hidden="true" tabindex="-1"></a>        <span class="fu">facet_wrap</span>(<span class="sc">~</span> problem_pair, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">axes =</span> <span class="st">"all"</span>) <span class="sc">+</span></span>
+<span id="cb7-384"><a href="#cb7-384" aria-hidden="true" tabindex="-1"></a>        <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste0</span>(<span class="st">"Transition "</span>, i))</span>
+<span id="cb7-385"><a href="#cb7-385" aria-hidden="true" tabindex="-1"></a>      g[[<span class="fu">length</span>(g) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> g1</span>
+<span id="cb7-386"><a href="#cb7-386" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-387"><a href="#cb7-387" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-388"><a href="#cb7-388" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">length</span>(g) <span class="sc">&gt;</span> <span class="dv">1</span>) ncol <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="cf">else</span> ncol <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb7-389"><a href="#cb7-389" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-390"><a href="#cb7-390" aria-hidden="true" tabindex="-1"></a>    g <span class="ot">&lt;-</span> <span class="fu">wrap_plots</span>(g, <span class="at">ncol =</span> ncol) <span class="sc">+</span></span>
+<span id="cb7-391"><a href="#cb7-391" aria-hidden="true" tabindex="-1"></a>      <span class="fu">plot_layout</span>(<span class="at">heights =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb7-392"><a href="#cb7-392" aria-hidden="true" tabindex="-1"></a>      <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste0</span>(<span class="st">"tagDeployID: "</span>, tagDeployID)) <span class="sc">&amp;</span></span>
+<span id="cb7-393"><a href="#cb7-393" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">plot.margin =</span> <span class="fu">unit</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span>), <span class="at">units =</span> <span class="st">"pt"</span>))</span>
+<span id="cb7-394"><a href="#cb7-394" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> g <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb7-395"><a href="#cb7-395" aria-hidden="true" tabindex="-1"></a>  g</span>
+<span id="cb7-396"><a href="#cb7-396" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-397"><a href="#cb7-397" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-398"><a href="#cb7-398" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-399"><a href="#cb7-399" aria-hidden="true" tabindex="-1"></a><span class="co"># Create bouts from runs by adding them together and then resorting.</span></span>
+<span id="cb7-400"><a href="#cb7-400" aria-hidden="true" tabindex="-1"></a><span class="co"># The resorting helps to get at bouts that overlap each other.</span></span>
+<span id="cb7-401"><a href="#cb7-401" aria-hidden="true" tabindex="-1"></a>create_bouts <span class="ot">&lt;-</span> <span class="cf">function</span>(x, cutoff) {</span>
+<span id="cb7-402"><a href="#cb7-402" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span> </span>
+<span id="cb7-403"><a href="#cb7-403" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb7-404"><a href="#cb7-404" aria-hidden="true" tabindex="-1"></a>      <span class="at">lag1 =</span> <span class="fu">as_units</span>(<span class="fu">difftime</span>(<span class="fu">lead</span>(timeBegin), timeEnd, <span class="at">units =</span> <span class="st">"min"</span>)),</span>
+<span id="cb7-405"><a href="#cb7-405" aria-hidden="true" tabindex="-1"></a>      <span class="at">lag2 =</span> <span class="fu">as_units</span>(<span class="fu">difftime</span>(<span class="fu">lead</span>(timeEnd), timeEnd, <span class="at">units =</span> <span class="st">"min"</span>)),</span>
+<span id="cb7-406"><a href="#cb7-406" aria-hidden="true" tabindex="-1"></a>      <span class="at">lag =</span> <span class="fu">pmin</span>(lag1, lag2),</span>
+<span id="cb7-407"><a href="#cb7-407" aria-hidden="true" tabindex="-1"></a>      <span class="at">prev_lag =</span> <span class="fu">lag</span>(lag, <span class="at">default =</span> <span class="fu">set_units</span>(<span class="cn">Inf</span>, <span class="st">"min"</span>)),</span>
+<span id="cb7-408"><a href="#cb7-408" aria-hidden="true" tabindex="-1"></a>      <span class="at">start =</span> prev_lag <span class="sc">&gt;=</span> .env<span class="sc">$</span>cutoff,</span>
+<span id="cb7-409"><a href="#cb7-409" aria-hidden="true" tabindex="-1"></a>      <span class="at">bout =</span> <span class="fu">cumsum</span>(start))</span>
+<span id="cb7-410"><a href="#cb7-410" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-411"><a href="#cb7-411" aria-hidden="true" tabindex="-1"></a>  x1 <span class="sc">|&gt;</span></span>
+<span id="cb7-412"><a href="#cb7-412" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(bout) <span class="sc">|&gt;</span></span>
+<span id="cb7-413"><a href="#cb7-413" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">timeBegin =</span> <span class="fu">min</span>(timeBegin), <span class="at">timeEnd =</span> <span class="fu">max</span>(timeEnd), </span>
+<span id="cb7-414"><a href="#cb7-414" aria-hidden="true" tabindex="-1"></a>              <span class="at">runID =</span> <span class="fu">list</span>(<span class="fu">unlist</span>(runID)),</span>
+<span id="cb7-415"><a href="#cb7-415" aria-hidden="true" tabindex="-1"></a>              <span class="at">n_runs =</span> <span class="fu">n</span>(), </span>
+<span id="cb7-416"><a href="#cb7-416" aria-hidden="true" tabindex="-1"></a>              <span class="at">len =</span> <span class="fu">list</span>(<span class="fu">unlist</span>(len)),</span>
+<span id="cb7-417"><a href="#cb7-417" aria-hidden="true" tabindex="-1"></a>              <span class="at">ant =</span> <span class="fu">list</span>(<span class="fu">unlist</span>(ant)),</span>
+<span id="cb7-418"><a href="#cb7-418" aria-hidden="true" tabindex="-1"></a>              <span class="at">total_time =</span> <span class="fu">sum</span>(<span class="fu">difftime</span>(timeEnd, timeBegin, <span class="at">units =</span> <span class="st">"min"</span>)),</span>
+<span id="cb7-419"><a href="#cb7-419" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb7-420"><a href="#cb7-420" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-421"><a href="#cb7-421" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-422"><a href="#cb7-422" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-423"><a href="#cb7-423" aria-hidden="true" tabindex="-1"></a>find_overlaps <span class="ot">&lt;-</span> <span class="cf">function</span>(x2, <span class="at">type =</span> <span class="st">"logical"</span>) {</span>
+<span id="cb7-424"><a href="#cb7-424" aria-hidden="true" tabindex="-1"></a>  <span class="co">#if(3551 %in% x2$stn_group) browser()</span></span>
+<span id="cb7-425"><a href="#cb7-425" aria-hidden="true" tabindex="-1"></a>  <span class="co">#           comp B/E2  vs. B/E1</span></span>
+<span id="cb7-426"><a href="#cb7-426" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-427"><a href="#cb7-427" aria-hidden="true" tabindex="-1"></a>  m1 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeBegin, x2<span class="sc">$</span>timeBegin, <span class="st">'&gt;='</span>)</span>
+<span id="cb7-428"><a href="#cb7-428" aria-hidden="true" tabindex="-1"></a>  m2 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeEnd, x2<span class="sc">$</span>timeEnd, <span class="st">'&lt;='</span>)</span>
+<span id="cb7-429"><a href="#cb7-429" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-430"><a href="#cb7-430" aria-hidden="true" tabindex="-1"></a>  m3 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeBegin, x2<span class="sc">$</span>timeEnd, <span class="st">'&lt;='</span>)</span>
+<span id="cb7-431"><a href="#cb7-431" aria-hidden="true" tabindex="-1"></a>  m4 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeEnd, x2<span class="sc">$</span>timeBegin, <span class="st">'&gt;='</span>)</span>
+<span id="cb7-432"><a href="#cb7-432" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-433"><a href="#cb7-433" aria-hidden="true" tabindex="-1"></a>  ovlps <span class="ot">&lt;-</span> (m1 <span class="sc">&amp;</span> m3) <span class="sc">|</span> (m2 <span class="sc">&amp;</span> m4)</span>
+<span id="cb7-434"><a href="#cb7-434" aria-hidden="true" tabindex="-1"></a>  ovlps <span class="ot">&lt;-</span> ovlps <span class="sc">|</span> <span class="fu">t</span>(ovlps) <span class="co"># either id1/id2 or id2/id1</span></span>
+<span id="cb7-435"><a href="#cb7-435" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-436"><a href="#cb7-436" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(type <span class="sc">==</span> <span class="st">"df"</span>) {</span>
+<span id="cb7-437"><a href="#cb7-437" aria-hidden="true" tabindex="-1"></a>    nms <span class="ot">&lt;-</span> <span class="fu">paste0</span>(x2<span class="sc">$</span>stn_group, <span class="st">"_"</span>, x2<span class="sc">$</span>bout)</span>
+<span id="cb7-438"><a href="#cb7-438" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dimnames</span>(ovlps) <span class="ot">&lt;-</span> <span class="fu">list</span>(nms, nms)</span>
+<span id="cb7-439"><a href="#cb7-439" aria-hidden="true" tabindex="-1"></a>    r <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">id1 =</span> nms, <span class="at">id2 =</span> nms) <span class="sc">|&gt;</span></span>
+<span id="cb7-440"><a href="#cb7-440" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">overlap =</span> <span class="fu">as.vector</span>(ovlps)) <span class="sc">|&gt;</span></span>
+<span id="cb7-441"><a href="#cb7-441" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(overlap, id1 <span class="sc">!=</span> id2)</span>
+<span id="cb7-442"><a href="#cb7-442" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span>(type <span class="sc">==</span> <span class="st">"logical"</span>) {</span>
+<span id="cb7-443"><a href="#cb7-443" aria-hidden="true" tabindex="-1"></a>    r <span class="ot">&lt;-</span> <span class="fu">any</span>(<span class="fu">colSums</span>(ovlps) <span class="sc">&gt;</span> <span class="dv">1</span>)</span>
+<span id="cb7-444"><a href="#cb7-444" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-445"><a href="#cb7-445" aria-hidden="true" tabindex="-1"></a>  r</span>
+<span id="cb7-446"><a href="#cb7-446" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-447"><a href="#cb7-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-448"><a href="#cb7-448" aria-hidden="true" tabindex="-1"></a>calc_trans <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb7-449"><a href="#cb7-449" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
+<span id="cb7-450"><a href="#cb7-450" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">id1 =</span> id) <span class="sc">|&gt;</span></span>
+<span id="cb7-451"><a href="#cb7-451" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">next_stn =</span> <span class="fu">lead</span>(stn_group), </span>
+<span id="cb7-452"><a href="#cb7-452" aria-hidden="true" tabindex="-1"></a>           <span class="at">id2 =</span> <span class="fu">lead</span>(id1), <span class="at">.by =</span> <span class="st">"tagDeployID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-453"><a href="#cb7-453" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(stn_group <span class="sc">!=</span> next_stn) <span class="sc">|&gt;</span></span>
+<span id="cb7-454"><a href="#cb7-454" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(tagDeployID, id1, id2)</span>
+<span id="cb7-455"><a href="#cb7-455" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-456"><a href="#cb7-456" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-457"><a href="#cb7-457" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- load_runs ----</span></span>
+<span id="cb7-458"><a href="#cb7-458" aria-hidden="true" tabindex="-1"></a>load_runs <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb7-459"><a href="#cb7-459" aria-hidden="true" tabindex="-1"></a>  noise_runs <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/noise_runs.feather"</span>, <span class="at">format =</span> <span class="st">"feather"</span>)</span>
+<span id="cb7-460"><a href="#cb7-460" aria-hidden="true" tabindex="-1"></a>  noise_hits <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/noise_hits.feather"</span>, <span class="at">format =</span> <span class="st">"feather"</span>)</span>
+<span id="cb7-461"><a href="#cb7-461" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-462"><a href="#cb7-462" aria-hidden="true" tabindex="-1"></a>  <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/runs"</span>, <span class="at">format =</span> <span class="st">"feather"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-463"><a href="#cb7-463" aria-hidden="true" tabindex="-1"></a>    <span class="fu">anti_join</span>(noise_runs, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-464"><a href="#cb7-464" aria-hidden="true" tabindex="-1"></a>    <span class="fu">anti_join</span>(noise_hits, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-465"><a href="#cb7-465" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(len <span class="sc">&gt;</span> <span class="dv">2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-466"><a href="#cb7-466" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, timeBegin, timeEnd, tagID, ant, len, motusFilter, tagDeployID, </span>
+<span id="cb7-467"><a href="#cb7-467" aria-hidden="true" tabindex="-1"></a>           speciesID, <span class="fu">starts_with</span>(<span class="st">"recvDeploy"</span>), <span class="fu">matches</span>(<span class="st">"date|month|year"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-468"><a href="#cb7-468" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(timeBegin) <span class="sc">|&gt;</span></span>
+<span id="cb7-469"><a href="#cb7-469" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
+<span id="cb7-470"><a href="#cb7-470" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-471"><a href="#cb7-471" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-472"><a href="#cb7-472" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- create_overlapping ----</span></span>
+<span id="cb7-473"><a href="#cb7-473" aria-hidden="true" tabindex="-1"></a>create_overlapping <span class="ot">&lt;-</span> <span class="cf">function</span>(bouts) {</span>
+<span id="cb7-474"><a href="#cb7-474" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(bouts, <span class="at">data =</span> <span class="sc">-</span>tagDeployID) <span class="sc">|&gt;</span></span>
+<span id="cb7-475"><a href="#cb7-475" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">overlaps =</span> <span class="fu">map</span>(data, \(x) <span class="fu">find_overlaps</span>(x, <span class="st">"df"</span>), <span class="at">.progress =</span> <span class="fu">interactive</span>())) <span class="sc">|&gt;</span></span>
+<span id="cb7-476"><a href="#cb7-476" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"data"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-477"><a href="#cb7-477" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unnest</span>(<span class="st">"overlaps"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-478"><a href="#cb7-478" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">id1 =</span> <span class="fu">paste0</span>(tagDeployID, <span class="st">"_"</span>, id1),</span>
+<span id="cb7-479"><a href="#cb7-479" aria-hidden="true" tabindex="-1"></a>           <span class="at">id2 =</span> <span class="fu">paste0</span>(tagDeployID, <span class="st">"_"</span>, id2))</span>
+<span id="cb7-480"><a href="#cb7-480" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-481"><a href="#cb7-481" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-482"><a href="#cb7-482" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- create_trans ----</span></span>
+<span id="cb7-483"><a href="#cb7-483" aria-hidden="true" tabindex="-1"></a>create_trans <span class="ot">&lt;-</span> <span class="cf">function</span>(bouts, overlapping_bouts, dist) {</span>
+<span id="cb7-484"><a href="#cb7-484" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-485"><a href="#cb7-485" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get transitions between stations</span></span>
+<span id="cb7-486"><a href="#cb7-486" aria-hidden="true" tabindex="-1"></a>  trans <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb7-487"><a href="#cb7-487" aria-hidden="true" tabindex="-1"></a>    bouts <span class="sc">|&gt;</span> </span>
+<span id="cb7-488"><a href="#cb7-488" aria-hidden="true" tabindex="-1"></a>      <span class="fu">arrange</span>(timeBegin) <span class="sc">|&gt;</span></span>
+<span id="cb7-489"><a href="#cb7-489" aria-hidden="true" tabindex="-1"></a>      <span class="fu">calc_trans</span>(),</span>
+<span id="cb7-490"><a href="#cb7-490" aria-hidden="true" tabindex="-1"></a>    bouts <span class="sc">|&gt;</span> </span>
+<span id="cb7-491"><a href="#cb7-491" aria-hidden="true" tabindex="-1"></a>      <span class="fu">arrange</span>(timeEnd) <span class="sc">|&gt;</span></span>
+<span id="cb7-492"><a href="#cb7-492" aria-hidden="true" tabindex="-1"></a>      <span class="fu">calc_trans</span>()</span>
+<span id="cb7-493"><a href="#cb7-493" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb7-494"><a href="#cb7-494" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-495"><a href="#cb7-495" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-496"><a href="#cb7-496" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in any missing transitions with overlapping bouts</span></span>
+<span id="cb7-497"><a href="#cb7-497" aria-hidden="true" tabindex="-1"></a>    <span class="fu">full_join</span>(overlapping_bouts, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"id1"</span>, <span class="st">"id2"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-498"><a href="#cb7-498" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in data related to the first station</span></span>
+<span id="cb7-499"><a href="#cb7-499" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">select</span>(bouts, <span class="st">"stn1"</span> <span class="ot">=</span> <span class="st">"stn_group"</span>, <span class="st">"id1"</span> <span class="ot">=</span> <span class="st">"id"</span>, </span>
+<span id="cb7-500"><a href="#cb7-500" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"b1"</span> <span class="ot">=</span> <span class="st">"timeBegin"</span>, <span class="st">"e1"</span> <span class="ot">=</span> <span class="st">"timeEnd"</span>, </span>
+<span id="cb7-501"><a href="#cb7-501" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"recv1"</span> <span class="ot">=</span> <span class="st">"recvDeployID"</span>, <span class="st">"lat1"</span> <span class="ot">=</span> <span class="st">"recvDeployLat"</span>, <span class="st">"lon1"</span> <span class="ot">=</span> <span class="st">"recvDeployLon"</span>), </span>
+<span id="cb7-502"><a href="#cb7-502" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> <span class="st">"id1"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-503"><a href="#cb7-503" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in data related to the second station</span></span>
+<span id="cb7-504"><a href="#cb7-504" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">select</span>(bouts, <span class="st">"stn2"</span> <span class="ot">=</span> <span class="st">"stn_group"</span>, <span class="st">"id2"</span> <span class="ot">=</span> <span class="st">"id"</span>, </span>
+<span id="cb7-505"><a href="#cb7-505" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"b2"</span> <span class="ot">=</span> <span class="st">"timeBegin"</span>, <span class="st">"e2"</span> <span class="ot">=</span> <span class="st">"timeEnd"</span>, </span>
+<span id="cb7-506"><a href="#cb7-506" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"recv2"</span> <span class="ot">=</span> <span class="st">"recvDeployID"</span>, <span class="st">"lat2"</span> <span class="ot">=</span> <span class="st">"recvDeployLat"</span>, <span class="st">"lon2"</span> <span class="ot">=</span> <span class="st">"recvDeployLon"</span>), </span>
+<span id="cb7-507"><a href="#cb7-507" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> <span class="st">"id2"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-508"><a href="#cb7-508" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-509"><a href="#cb7-509" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Identify transition pairs</span></span>
+<span id="cb7-510"><a href="#cb7-510" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">stn_pair =</span> <span class="fu">paste0</span>(recv1, <span class="st">"_"</span>, recv2)) <span class="sc">|&gt;</span></span>
+<span id="cb7-511"><a href="#cb7-511" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-512"><a href="#cb7-512" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in distance between stations</span></span>
+<span id="cb7-513"><a href="#cb7-513" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">select</span>(dist, <span class="st">"stn_pair"</span> <span class="ot">=</span> <span class="st">"next_pair"</span>, <span class="st">"next_dist"</span>, <span class="st">"min_time"</span>),</span>
+<span id="cb7-514"><a href="#cb7-514" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> <span class="st">"stn_pair"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-515"><a href="#cb7-515" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-516"><a href="#cb7-516" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the time and speed taken to move between stations</span></span>
+<span id="cb7-517"><a href="#cb7-517" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">trans_id =</span> <span class="fu">row_number</span>(),</span>
+<span id="cb7-518"><a href="#cb7-518" aria-hidden="true" tabindex="-1"></a>           <span class="at">overlap =</span> <span class="fu">replace_na</span>(overlap, <span class="cn">FALSE</span>),</span>
+<span id="cb7-519"><a href="#cb7-519" aria-hidden="true" tabindex="-1"></a>           <span class="at">lag1 =</span> <span class="fu">as_units</span>(<span class="fu">difftime</span>(b2, e1, <span class="at">units =</span> <span class="st">"min"</span>)),</span>
+<span id="cb7-520"><a href="#cb7-520" aria-hidden="true" tabindex="-1"></a>           <span class="at">lag2 =</span> <span class="fu">as_units</span>(<span class="fu">difftime</span>(e2, e1, <span class="at">units =</span> <span class="st">"min"</span>)),</span>
+<span id="cb7-521"><a href="#cb7-521" aria-hidden="true" tabindex="-1"></a>           <span class="at">time_diff =</span> <span class="fu">pmin</span>(lag1, lag2),</span>
+<span id="cb7-522"><a href="#cb7-522" aria-hidden="true" tabindex="-1"></a>           <span class="at">time_diff =</span> <span class="fu">set_units</span>(time_diff, <span class="st">"s"</span>),</span>
+<span id="cb7-523"><a href="#cb7-523" aria-hidden="true" tabindex="-1"></a>           <span class="at">speed =</span> <span class="fu">set_units</span>(next_dist, <span class="st">"m"</span>) <span class="sc">/</span> time_diff,</span>
+<span id="cb7-524"><a href="#cb7-524" aria-hidden="true" tabindex="-1"></a>           <span class="at">time_diff =</span> <span class="fu">as.duration</span>(<span class="fu">as.numeric</span>(time_diff)),</span>
+<span id="cb7-525"><a href="#cb7-525" aria-hidden="true" tabindex="-1"></a>           <span class="at">time_diff =</span> <span class="fu">if_else</span>(overlap, <span class="fu">duration</span>(<span class="dv">0</span>), time_diff),</span>
+<span id="cb7-526"><a href="#cb7-526" aria-hidden="true" tabindex="-1"></a>           <span class="co"># Mid-point date</span></span>
+<span id="cb7-527"><a href="#cb7-527" aria-hidden="true" tabindex="-1"></a>           <span class="at">mid_date =</span> <span class="fu">as_date</span>(e1 <span class="sc">+</span> (b2 <span class="sc">-</span> e1)<span class="sc">/</span><span class="dv">2</span>))</span>
+<span id="cb7-528"><a href="#cb7-528" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-529"><a href="#cb7-529" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">nrow</span>(trans) <span class="sc">&gt;</span> <span class="dv">1</span>) {</span>
+<span id="cb7-530"><a href="#cb7-530" aria-hidden="true" tabindex="-1"></a>    trans <span class="ot">&lt;-</span> trans <span class="sc">|&gt;</span></span>
+<span id="cb7-531"><a href="#cb7-531" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Get rid of duplicate transitions when have overlapping pairs</span></span>
+<span id="cb7-532"><a href="#cb7-532" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">id_pair =</span> <span class="fu">map2_chr</span>(id1, id2, \(x, y) <span class="fu">paste0</span>(<span class="fu">sort</span>(<span class="fu">c</span>(x, y)), <span class="at">collapse =</span> <span class="st">" - "</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb7-533"><a href="#cb7-533" aria-hidden="true" tabindex="-1"></a>      <span class="fu">arrange</span>(b1) <span class="sc">|&gt;</span></span>
+<span id="cb7-534"><a href="#cb7-534" aria-hidden="true" tabindex="-1"></a>      <span class="fu">slice</span>(<span class="dv">1</span>, <span class="at">.by =</span> <span class="st">"id_pair"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-535"><a href="#cb7-535" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(<span class="sc">-</span><span class="st">"id_pair"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-536"><a href="#cb7-536" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Seasonal details</span></span>
+<span id="cb7-537"><a href="#cb7-537" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">migration =</span> <span class="fu">case_when</span>(<span class="fu">year</span>(e1) <span class="sc">!=</span> <span class="fu">year</span>(b2) <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb7-538"><a href="#cb7-538" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">month</span>(e1) <span class="sc">%in%</span> <span class="dv">8</span><span class="sc">:</span><span class="dv">12</span> <span class="sc">&amp;</span> <span class="fu">month</span>(b2) <span class="sc">%in%</span> <span class="dv">8</span><span class="sc">:</span><span class="dv">12</span> <span class="sc">~</span> <span class="st">"south"</span>,</span>
+<span id="cb7-539"><a href="#cb7-539" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">month</span>(e1) <span class="sc">%in%</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">7</span> <span class="sc">&amp;</span> <span class="fu">month</span>(b2) <span class="sc">%in%</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">7</span> <span class="sc">~</span> <span class="st">"north"</span>,</span>
+<span id="cb7-540"><a href="#cb7-540" aria-hidden="true" tabindex="-1"></a>                                   <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA</span>),</span>
+<span id="cb7-541"><a href="#cb7-541" aria-hidden="true" tabindex="-1"></a>             <span class="at">connected =</span> speed <span class="sc">&gt;</span> <span class="fu">set_units</span>(<span class="dv">5</span>, <span class="st">"m/s"</span>))</span>
+<span id="cb7-542"><a href="#cb7-542" aria-hidden="true" tabindex="-1"></a>  }  <span class="cf">else</span> trans <span class="ot">&lt;-</span> <span class="fu">mutate</span>(trans, <span class="at">migration =</span> <span class="cn">NA_character_</span>, <span class="at">connected =</span> <span class="cn">NA</span>)</span>
+<span id="cb7-543"><a href="#cb7-543" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-544"><a href="#cb7-544" aria-hidden="true" tabindex="-1"></a>  trans</span>
+<span id="cb7-545"><a href="#cb7-545" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-546"><a href="#cb7-546" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-547"><a href="#cb7-547" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- id_problems ----</span></span>
+<span id="cb7-548"><a href="#cb7-548" aria-hidden="true" tabindex="-1"></a>id_problems <span class="ot">&lt;-</span> <span class="cf">function</span>(trans, <span class="at">problems_manual =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb7-549"><a href="#cb7-549" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-550"><a href="#cb7-550" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Identify suspiciously short bouts related to transitions</span></span>
+<span id="cb7-551"><a href="#cb7-551" aria-hidden="true" tabindex="-1"></a>  <span class="co">#b &lt;- filter(bouts, n_runs &lt; 5, len_max &lt; 10) |&gt;</span></span>
+<span id="cb7-552"><a href="#cb7-552" aria-hidden="true" tabindex="-1"></a>  <span class="co"># pull(id)  </span></span>
+<span id="cb7-553"><a href="#cb7-553" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-554"><a href="#cb7-554" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add manual problems</span></span>
+<span id="cb7-555"><a href="#cb7-555" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(problems_manual)) {</span>
+<span id="cb7-556"><a href="#cb7-556" aria-hidden="true" tabindex="-1"></a>    trans_fix1 <span class="ot">&lt;-</span> <span class="fu">semi_join</span>(trans, <span class="fu">rename</span>(problems_manual, <span class="st">"stn1"</span> <span class="ot">=</span> <span class="st">"stn_group"</span>),</span>
+<span id="cb7-557"><a href="#cb7-557" aria-hidden="true" tabindex="-1"></a>                           <span class="at">by =</span> <span class="fu">join_by</span>(<span class="st">"tagDeployID"</span>, <span class="st">"stn1"</span>, <span class="fu">within</span>(<span class="st">"b1"</span>, <span class="st">"e1"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb7-558"><a href="#cb7-558" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">problem_manual =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-559"><a href="#cb7-559" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-560"><a href="#cb7-560" aria-hidden="true" tabindex="-1"></a>    trans_fix2 <span class="ot">&lt;-</span> <span class="fu">semi_join</span>(trans, <span class="fu">rename</span>(problems_manual, <span class="st">"stn2"</span> <span class="ot">=</span> <span class="st">"stn_group"</span>),</span>
+<span id="cb7-561"><a href="#cb7-561" aria-hidden="true" tabindex="-1"></a>                            <span class="at">by =</span> <span class="fu">join_by</span>(<span class="st">"tagDeployID"</span>, <span class="st">"stn2"</span>, <span class="fu">within</span>(<span class="st">"b2"</span>, <span class="st">"e2"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb7-562"><a href="#cb7-562" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">problem_manual =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-563"><a href="#cb7-563" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-564"><a href="#cb7-564" aria-hidden="true" tabindex="-1"></a>    trans <span class="ot">&lt;-</span> trans <span class="sc">|&gt;</span></span>
+<span id="cb7-565"><a href="#cb7-565" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">problem_manual =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-566"><a href="#cb7-566" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rows_update</span>(trans_fix1, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"stn1"</span>, <span class="st">"trans_id"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-567"><a href="#cb7-567" aria-hidden="true" tabindex="-1"></a>      <span class="fu">rows_update</span>(trans_fix2, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"stn2"</span>, <span class="st">"trans_id"</span>))</span>
+<span id="cb7-568"><a href="#cb7-568" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-569"><a href="#cb7-569" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> trans<span class="sc">$</span>problem_manual <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb7-570"><a href="#cb7-570" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-571"><a href="#cb7-571" aria-hidden="true" tabindex="-1"></a>  trans <span class="sc">|&gt;</span></span>
+<span id="cb7-572"><a href="#cb7-572" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb7-573"><a href="#cb7-573" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Identify problematic transitions (overlaps or too fast)</span></span>
+<span id="cb7-574"><a href="#cb7-574" aria-hidden="true" tabindex="-1"></a>      <span class="at">problem_fast =</span> next_dist <span class="sc">&gt;=</span> max_tower_dist <span class="sc">&amp;</span> (time_diff <span class="sc">&lt;</span> min_time <span class="sc">|</span> overlap),</span>
+<span id="cb7-575"><a href="#cb7-575" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-576"><a href="#cb7-576" aria-hidden="true" tabindex="-1"></a>      <span class="co"># </span><span class="al">TODO</span><span class="co">: Results in 300+ ids to check... leave for now</span></span>
+<span id="cb7-577"><a href="#cb7-577" aria-hidden="true" tabindex="-1"></a>      <span class="at">problem_short_bout =</span> <span class="cn">FALSE</span>, <span class="co"># </span><span class="al">TODO</span><span class="co">: if using, replace with id1 %in% b | id2 %in% b, (add bouts in as arg)</span></span>
+<span id="cb7-578"><a href="#cb7-578" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-579"><a href="#cb7-579" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Direction</span></span>
+<span id="cb7-580"><a href="#cb7-580" aria-hidden="true" tabindex="-1"></a>      <span class="at">lat_diff =</span> lat2 <span class="sc">-</span> lat1, </span>
+<span id="cb7-581"><a href="#cb7-581" aria-hidden="true" tabindex="-1"></a>      <span class="at">problem_direction =</span> (migration <span class="sc">==</span> <span class="st">"south"</span> <span class="sc">&amp;</span> lat_diff <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">|</span></span>
+<span id="cb7-582"><a href="#cb7-582" aria-hidden="true" tabindex="-1"></a>        (migration <span class="sc">==</span> <span class="st">"north"</span> <span class="sc">&amp;</span> lat_diff <span class="sc">&lt;</span> <span class="sc">-</span><span class="dv">1</span>),</span>
+<span id="cb7-583"><a href="#cb7-583" aria-hidden="true" tabindex="-1"></a>      <span class="at">problem_direction =</span> <span class="fu">replace_na</span>(problem_direction, <span class="cn">FALSE</span>),</span>
+<span id="cb7-584"><a href="#cb7-584" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb7-585"><a href="#cb7-585" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Overall</span></span>
+<span id="cb7-586"><a href="#cb7-586" aria-hidden="true" tabindex="-1"></a>      <span class="at">problem =</span> problem_fast <span class="sc">|</span> problem_short_bout <span class="sc">|</span> problem_manual <span class="sc">|</span> problem_direction) <span class="sc">|&gt;</span></span>
+<span id="cb7-587"><a href="#cb7-587" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="fu">matches</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">.(x|y)$"</span>))</span>
+<span id="cb7-588"><a href="#cb7-588" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-589"><a href="#cb7-589" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-590"><a href="#cb7-590" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- resolve_stns ----</span></span>
+<span id="cb7-591"><a href="#cb7-591" aria-hidden="true" tabindex="-1"></a>resolve_stns <span class="ot">&lt;-</span> <span class="cf">function</span>(bouts, trans, <span class="at">problems_manual =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb7-592"><a href="#cb7-592" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-593"><a href="#cb7-593" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">summarize</span>(</span>
+<span id="cb7-594"><a href="#cb7-594" aria-hidden="true" tabindex="-1"></a>    bouts,</span>
+<span id="cb7-595"><a href="#cb7-595" aria-hidden="true" tabindex="-1"></a>    <span class="at">len_max =</span> <span class="fu">max</span>(len_max),</span>
+<span id="cb7-596"><a href="#cb7-596" aria-hidden="true" tabindex="-1"></a>    <span class="co">#n_bouts = n(),</span></span>
+<span id="cb7-597"><a href="#cb7-597" aria-hidden="true" tabindex="-1"></a>    <span class="co">#n_runs = sum(n_runs),</span></span>
+<span id="cb7-598"><a href="#cb7-598" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_time =</span> <span class="fu">sum</span>(total_time),</span>
+<span id="cb7-599"><a href="#cb7-599" aria-hidden="true" tabindex="-1"></a>    <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"stn_group"</span>))</span>
+<span id="cb7-600"><a href="#cb7-600" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-601"><a href="#cb7-601" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">filter</span>(trans, problem) <span class="sc">|&gt;</span></span>
+<span id="cb7-602"><a href="#cb7-602" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(tagDeployID, trans_id, stn1, stn2, id1, id2, b1, e1, b2, e2, lat_diff, <span class="fu">contains</span>(<span class="st">"problem"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-603"><a href="#cb7-603" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(<span class="st">"stn1"</span>, <span class="st">"stn2"</span>, <span class="st">"id1"</span>, <span class="st">"id2"</span>, <span class="st">"b1"</span>, <span class="st">"e1"</span>, <span class="st">"b2"</span>, <span class="st">"e2"</span>), </span>
+<span id="cb7-604"><a href="#cb7-604" aria-hidden="true" tabindex="-1"></a>                 <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">".value"</span>, <span class="st">"pair"</span>), </span>
+<span id="cb7-605"><a href="#cb7-605" aria-hidden="true" tabindex="-1"></a>                 <span class="at">names_pattern =</span> <span class="st">"([a-z]{1,3})(</span><span class="sc">\\</span><span class="st">d+)"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-606"><a href="#cb7-606" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">"stn_group"</span> <span class="ot">=</span> <span class="st">"stn"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-607"><a href="#cb7-607" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(b, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"stn_group"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-608"><a href="#cb7-608" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(tagDeployID, trans_id, total_time) <span class="sc">|&gt;</span></span>
+<span id="cb7-609"><a href="#cb7-609" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(tagDeployID, trans_id, <span class="fu">contains</span>(<span class="st">"problem"</span>), stn_group, id, </span>
+<span id="cb7-610"><a href="#cb7-610" aria-hidden="true" tabindex="-1"></a>           b, e,</span>
+<span id="cb7-611"><a href="#cb7-611" aria-hidden="true" tabindex="-1"></a>           len_max, total_time)</span>
+<span id="cb7-612"><a href="#cb7-612" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-613"><a href="#cb7-613" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Mark the station to omit within a group that was able to have a (resolved) station</span></span>
+<span id="cb7-614"><a href="#cb7-614" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-615"><a href="#cb7-615" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Mark manually identified problems</span></span>
+<span id="cb7-616"><a href="#cb7-616" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(problems_manual)) {</span>
+<span id="cb7-617"><a href="#cb7-617" aria-hidden="true" tabindex="-1"></a>    t <span class="ot">&lt;-</span> <span class="fu">left_join</span>(t, <span class="fu">select</span>(problems_manual, <span class="st">"tagDeployID"</span>, <span class="st">"stn_group"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>, <span class="st">"omit"</span> <span class="ot">=</span> <span class="st">"problem_manual"</span>), </span>
+<span id="cb7-618"><a href="#cb7-618" aria-hidden="true" tabindex="-1"></a>                   <span class="at">by =</span> <span class="fu">join_by</span>(<span class="st">"tagDeployID"</span>, <span class="st">"stn_group"</span>, <span class="fu">within</span>(<span class="st">"b"</span>, <span class="st">"e"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb7-619"><a href="#cb7-619" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(<span class="sc">-</span><span class="st">"b"</span>, <span class="sc">-</span><span class="st">"e"</span>, <span class="sc">-</span><span class="st">"start"</span>, <span class="sc">-</span><span class="st">"end"</span>)</span>
+<span id="cb7-620"><a href="#cb7-620" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> t<span class="sc">$</span>omit <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb7-621"><a href="#cb7-621" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-622"><a href="#cb7-622" aria-hidden="true" tabindex="-1"></a>  t <span class="sc">|&gt;</span></span>
+<span id="cb7-623"><a href="#cb7-623" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb7-624"><a href="#cb7-624" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Mark directional and short bout problems as FALSE (need to be manually checked)</span></span>
+<span id="cb7-625"><a href="#cb7-625" aria-hidden="true" tabindex="-1"></a>      <span class="at">omit =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(omit) <span class="sc">&amp;</span> (problem_direction <span class="sc">|</span> problem_short_bout), <span class="cn">FALSE</span>, <span class="cn">NA</span>),</span>
+<span id="cb7-626"><a href="#cb7-626" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Choose station to omit otherwise</span></span>
+<span id="cb7-627"><a href="#cb7-627" aria-hidden="true" tabindex="-1"></a>      <span class="at">omit =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(omit), </span>
+<span id="cb7-628"><a href="#cb7-628" aria-hidden="true" tabindex="-1"></a>                     total_time <span class="sc">&lt;=</span> (<span class="fu">suppressWarnings</span>(<span class="fu">max</span>(total_time)) <span class="sc">/</span> <span class="dv">10</span>) <span class="sc">|</span> </span>
+<span id="cb7-629"><a href="#cb7-629" aria-hidden="true" tabindex="-1"></a>                       len_max <span class="sc">&lt;=</span> (<span class="fu">suppressWarnings</span>(<span class="fu">max</span>(len_max)) <span class="sc">/</span> <span class="dv">10</span>), </span>
+<span id="cb7-630"><a href="#cb7-630" aria-hidden="true" tabindex="-1"></a>                     omit), </span>
+<span id="cb7-631"><a href="#cb7-631" aria-hidden="true" tabindex="-1"></a>      <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"trans_id"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-632"><a href="#cb7-632" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">resolved =</span> <span class="fu">any</span>(omit), <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"trans_id"</span>))</span>
+<span id="cb7-633"><a href="#cb7-633" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

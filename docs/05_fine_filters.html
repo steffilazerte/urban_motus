@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-02-16">
+<meta name="dcterms.date" content="2024-05-03">
 
 <title>Motus tracking of urban migration stopovers - Fine-scale Filtering</title>
 <style>
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./99_checks.html" rel="next">
+<link href="./06_bouts_transitions.html" rel="next">
 <link href="./04_basic_filters.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -169,7 +169,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./02_download.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Download/Update Data</span></a>
+ <span class="menu-text">Download/Update Data &amp; Transform</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -188,6 +188,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./05_fine_filters.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Fine-scale Filtering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06_bouts_transitions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bouts and Transitions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07_find_problems.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Finding Problems</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08_manual_adjustments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Manual Adjustments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09_summaries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Summaries</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -237,18 +261,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a>
-  <ul class="collapse">
-  <li><a href="#custom-tables" id="toc-custom-tables" class="nav-link" data-scroll-target="#custom-tables">Custom tables</a></li>
-  </ul></li>
-  <li><a href="#hit-based-filtering" id="toc-hit-based-filtering" class="nav-link" data-scroll-target="#hit-based-filtering">Hit based filtering</a></li>
-  <li><a href="#collect-to-csv" id="toc-collect-to-csv" class="nav-link" data-scroll-target="#collect-to-csv">Collect to CSV</a></li>
-  <li><a href="#noise" id="toc-noise" class="nav-link" data-scroll-target="#noise">Noise</a>
-  <ul class="collapse">
-  <li><a href="#tags" id="toc-tags" class="nav-link" data-scroll-target="#tags">Tags</a></li>
-  <li><a href="#motus-filter-etc." id="toc-motus-filter-etc." class="nav-link" data-scroll-target="#motus-filter-etc.">Motus Filter etc.</a></li>
-  </ul></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#bad-tags1" id="toc-bad-tags1" class="nav-link" data-scroll-target="#bad-tags1">Bad Tags</a></li>
+  <li><a href="#bad-runs1" id="toc-bad-runs1" class="nav-link" data-scroll-target="#bad-runs1">Bad Runs</a></li>
   <li><a href="#ambiguous-detections" id="toc-ambiguous-detections" class="nav-link" data-scroll-target="#ambiguous-detections">Ambiguous detections</a></li>
+  <li><a href="#looking-at-the-filters" id="toc-looking-at-the-filters" class="nav-link" data-scroll-target="#looking-at-the-filters">Looking at the filters</a></li>
+  <li><a href="#saving-filters" id="toc-saving-filters" class="nav-link" data-scroll-target="#saving-filters">Saving filters</a></li>
   <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap up</a></li>
   <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
   </ul>
@@ -276,7 +294,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 16, 2024</p>
+      <p class="date">May 3, 2024</p>
     </div>
   </div>
   
@@ -289,137 +307,187 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>Here we perform fine-scale filtering which involves more assessments of potential issues.</p>
+<p>Many of these steps rely on hit-level data, as opposed to run-level data from the previous steps.</p>
 <section id="setup" class="level2">
 <h2 class="anchored" data-anchor-id="setup">Setup</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"XX_setup.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"XX_setup.R"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>noise_runs <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/noise_runs.feather"</span>, <span class="at">format =</span> <span class="st">"feather"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>runs <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/runs"</span>, <span class="at">format =</span> <span class="st">"feather"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(noise_runs)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">&lt;-</span> <span class="fu">load_hits</span>() <span class="sc">|&gt;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(\(x) <span class="fu">anti_join</span>(x, noise_runs, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"recvDeployID"</span>, <span class="st">"tagDeployID"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="custom-tables" class="level3">
-<h3 class="anchored" data-anchor-id="custom-tables">Custom tables</h3>
-<p>Get the custom hit tables for all databases (filtered to omit ‘bad’ data from previous step)</p>
+<p>We’ll also use a modified version of the motusFilter<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>, such that hits from SENSORGNOME stations with a <code>freqSD &gt; 0.1</code> will be considered ‘bad’ data (i.e., we’ll set the motusFilter value to 0 for these hits).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, custom_hits)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>hits_df <span class="ot">&lt;-</span> <span class="fu">imap</span>(hits, \(x, y) {</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">collect</span>(x)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_csv</span>(d, <span class="fu">paste0</span>(<span class="st">"Data/Datasets/hits_"</span>, y, <span class="st">".csv"</span>))</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  d</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(hits_df, <span class="st">"Data/Datasets/hits_full.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">&lt;-</span> <span class="fu">map</span>(hits, \(x) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(x, <span class="at">motusFilter =</span> <span class="fu">if_else</span>(recvType <span class="sc">==</span> <span class="st">"SENSORGNOME"</span> <span class="sc">&amp;</span> freqSD <span class="sc">&gt;</span> <span class="fl">0.1</span>, <span class="dv">0</span>, motusFilter))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-</section>
-<section id="hit-based-filtering" class="level2">
-<h2 class="anchored" data-anchor-id="hit-based-filtering">Hit based filtering</h2>
-<p>These are based on notes from Amie MacDonald’s scripts</p>
-<p>Here we’ll use a modified version of the motusFilter</p>
-<ul>
-<li>Hits from SENSORGNOME stations with a freqSD &gt; 0.1 will be considered ‘bad’ data</li>
-</ul>
-<p>Then we’ll</p>
-<ul>
-<li>Omit individual tags with only bad data using a modified version of the motusFilter</li>
-<li>Calculate the proportion of good/bad data per tag, per receiver, per day, omit those where less than half are ‘good’</li>
-</ul>
-<p>Collect all runs relating to tag deployments with <em>only</em> bad motusFilter data (i.e.&nbsp;all 0)</p>
+<section id="bad-tags1" class="level2">
+<h2 class="anchored" data-anchor-id="bad-tags1">Bad Tags<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></h2>
+<p>First, we’ll collect individual tags which have <em>only</em> bad data (i.e.&nbsp;all 0)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>noise_tags <span class="ot">&lt;-</span> <span class="fu">map</span>(hits, \(x) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">motusFilter =</span> <span class="fu">if_else</span>(recvType <span class="sc">==</span> <span class="st">"SENSORGNOME"</span> <span class="sc">&amp;</span> freqSD <span class="sc">&gt;</span> <span class="fl">0.1</span>, <span class="dv">0</span>, motusFilter)) <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  noise <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"motusFilter"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">motusFilter =</span> <span class="fu">sum</span>(motusFilter, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(motusFilter <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(motusFilter <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(x, noise, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"recvDeployID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span> <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Use a ts date for now (60 * 60 * 24) seconds in a day, so we can categorize ts by numeric UTC date.</p>
+</section>
+<section id="bad-runs1" class="level2">
+<h2 class="anchored" data-anchor-id="bad-runs1">Bad Runs<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></h2>
+<p>Now we’ll calculate the proportion of good/bad data per tag, per receiver, per day.</p>
+<ul>
+<li>We’ll omit all runs on a day for this tag/receiver combo where less than half are ‘good’</li>
+</ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>noise_quality <span class="ot">&lt;-</span> <span class="fu">map</span>(hits, \(x) {</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">motusFilter =</span> <span class="fu">if_else</span>(recvType <span class="sc">==</span> <span class="st">"SENSORGNOME"</span> <span class="sc">&amp;</span> freqSD <span class="sc">&gt;</span> <span class="fl">0.1</span>, </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="dv">0</span>, motusFilter),</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">ts_date =</span> <span class="fu">floor</span>(ts <span class="sc">/</span> (<span class="dv">60</span> <span class="sc">*</span> <span class="dv">60</span> <span class="sc">*</span> <span class="dv">24</span>))) <span class="sc">|&gt;</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, tagID, tagDeployID, recvDeployID, ts_date, motusFilter) <span class="sc">|&gt;</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(tagID, tagDeployID, recvDeployID, ts_date) <span class="sc">|&gt;</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_good =</span> <span class="fu">sum</span>(motusFilter, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(p_good <span class="sc">&lt;=</span> <span class="fl">0.5</span>) <span class="sc">|&gt;</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  noise <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"date"</span>, <span class="st">"runID"</span>, <span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"recvDeployID"</span>, <span class="st">"motusFilter"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">p_good =</span> <span class="fu">sum</span>(motusFilter, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">n</span>(),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"recvDeployID"</span>, <span class="st">"date"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(p_good <span class="sc">&lt;=</span> <span class="fl">0.5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(x, noise, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"recvDeployID"</span>, <span class="st">"date"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"recvDeployID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span> <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> <span class="fu">map2</span>(hits, noise_quality, \(x, y) <span class="fu">anti_join_quick</span>(x, y))</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> <span class="fu">map2</span>(final, noise_tags, \(x, y) {</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">left_join</span>(x, <span class="fu">select</span>(y, <span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">bad =</span> <span class="cn">TRUE</span>), </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.n</span>(bad)) <span class="sc">|&gt;</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"bad"</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="collect-to-csv" class="level2">
-<h2 class="anchored" data-anchor-id="collect-to-csv">Collect to CSV</h2>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>full <span class="ot">&lt;-</span> <span class="fu">imap</span>(final, \(x, y) {</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">collect</span>(x)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_csv</span>(d, <span class="fu">paste0</span>(<span class="st">"Datasets/hits_"</span>, y, <span class="st">".csv"</span>))</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  d</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(full, <span class="st">"hits_full.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="noise" class="level2">
-<h2 class="anchored" data-anchor-id="noise">Noise</h2>
-<section id="tags" class="level3">
-<h3 class="anchored" data-anchor-id="tags">Tags</h3>
-<p>There are two broad classes of tags, Lotek and CTT. These tags <a href="https://motuswts.github.io/motus/articles/identifying-false-positives.html?q=Lotek%20nanotags#introduction">have different properties and are processed differently</a>, so care should be taken to treat them differently.</p>
-<p>Let’s first take a look a see how many tags of each type we have</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tbl(dbs[[1]], "tags") |&gt;</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   filter(projectID %in% projects) |&gt;</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   select(projectID, manufacturer, tagID) |&gt;</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   distinct() |&gt;</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   count(projectID, manufacturer) |&gt;</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   collect() |&gt;</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#   gt()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>So we mostly have Lotek tags (which much of the filtering suggestions have been based on), but we do have two projects with CTT tags to consider.</p>
-</section>
-<section id="motus-filter-etc." class="level3">
-<h3 class="anchored" data-anchor-id="motus-filter-etc.">Motus Filter etc.</h3>
-<p>TODO: use a custom noise filter?</p>
-<p>Here is the first and simplest filter, we’ll gather all the run/tag combinations with a <code>motusFilter</code> value of 0.</p>
-<p>See <a href="https://motuswts.github.io/motus/articles/filtering.html">in-depth detections filtering</a> and <a href="https://motuswts.github.io/motus/articles/identifying-false-positives.html">A tool to identify probable false positive detections</a> for more details.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># noise &lt;- imap(dbs, \(x, y) {</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   tbl(x, "runs") |&gt; </span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     select(runID, motusTagID, probability = motusFilter) |&gt;</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     filter(probability == 0) |&gt;</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     mutate(proj_id = y) |&gt;</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     collect()</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># })</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
 </section>
 <section id="ambiguous-detections" class="level2">
 <h2 class="anchored" data-anchor-id="ambiguous-detections">Ambiguous detections</h2>
-<p>TODO: Needs to be done post-filtering (as much as possible)</p>
+<p>Let’s collect all runs where there is some ambiguity. We’ll look at the <code>allruns</code> table for this.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ambig &lt;- map(dbs, \(x) tbl(x, "runs") |&gt;</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#                select(ambigID, motusTagID) |&gt;</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#                filter(!is.na(ambigID)) |&gt;</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#                 distinct() |&gt;</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#                 collect()) |&gt;</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   list_rbind(names_to = "proj_id")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ambig_ids <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, \(x) {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(x, <span class="st">"allruns"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ambigID)) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>, <span class="st">"ambigID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">is_ambig =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">nrow</span>(t) <span class="sc">==</span> <span class="dv">0</span>) t <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  t</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>})<span class="sc">|&gt;</span> </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">proj_id =</span> <span class="fu">as.integer</span>(proj_id))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now let’s see if any of these runs are even left in our data after filtering…</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>runs <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(noise_tags) <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(noise_quality) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(ambig_ids) <span class="sc">|&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 29
+# ℹ 29 variables: runID &lt;int&gt;, tsBegin &lt;dbl&gt;, tsEnd &lt;dbl&gt;, done &lt;int&gt;,
+#   tagID &lt;int&gt;, ant &lt;chr&gt;, len &lt;int&gt;, nodeNum &lt;chr&gt;, motusFilter &lt;dbl&gt;,
+#   tagDeployID &lt;int&gt;, speciesID &lt;int&gt;, tsStartTag &lt;dbl&gt;, tsEndTag &lt;dbl&gt;,
+#   test &lt;int&gt;, batchID &lt;int&gt;, recvDeviceID &lt;int&gt;, recvDeployID &lt;int&gt;,
+#   tsStartRecv &lt;dbl&gt;, tsEndRecv &lt;dbl&gt;, recvType &lt;chr&gt;, recvDeployLat &lt;dbl&gt;,
+#   recvDeployLon &lt;dbl&gt;, timeBegin &lt;dttm&gt;, timeEnd &lt;dttm&gt;, dateBegin &lt;date&gt;,
+#   dateEnd &lt;date&gt;, monthBegin &lt;dbl&gt;, yearBegin &lt;dbl&gt;, proj_id &lt;int&gt;</code></pre>
+</div>
+</div>
+<p>There are no ambiguous runs left the data after we cleaned, so we’ll just ignore them for now.</p>
+</section>
+<section id="looking-at-the-filters" class="level2">
+<h2 class="anchored" data-anchor-id="looking-at-the-filters">Looking at the filters</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>noise_hits <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(noise_tags, noise_quality) <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"recvDeployID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>noise_hits</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 338,272 × 3
+       runID tagDeployID recvDeployID
+       &lt;int&gt;       &lt;int&gt;        &lt;int&gt;
+ 1 491015464       41214         8415
+ 2 491016044       41214         8415
+ 3 491016057       41214         8415
+ 4 491221057       44340         8415
+ 5 491221058       44339         8415
+ 6 491221059       44339         8415
+ 7 491221071       44340         8415
+ 8 491221093       44339         8415
+ 9 491221094       44339         8415
+10 491221102       44340         8415
+# ℹ 338,262 more rows</code></pre>
+</div>
+</div>
+<p>Next we’ll take a look at how this compares to the motusFilter</p>
+<p>With only the runs filtering</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(runs, proj_id, motusFilter) <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> motusFilter, <span class="at">values_from =</span> n) <span class="sc">|&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(proj_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11 × 3
+   proj_id    `0`    `1`
+     &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
+ 1     168 148857 267523
+ 2     352 267425 766855
+ 3     364  14453   1617
+ 4     373 292145 477672
+ 5     393  49839  25294
+ 6     417 354220 604562
+ 7     464  31519    556
+ 8     484 492931 601907
+ 9     515 153426  29846
+10     551 641404 625166
+11     607    427      4</code></pre>
+</div>
+</div>
+<p>With both the runs and hit filtering</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anti_join</span>(runs, noise_hits, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"recvDeployID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(proj_id, motusFilter) <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> motusFilter, <span class="at">values_from =</span> n) <span class="sc">|&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(proj_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11 × 3
+   proj_id    `0`    `1`
+     &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
+ 1     168 118672 267235
+ 2     352 229604 765764
+ 3     364   7799   1584
+ 4     373 267387 476839
+ 5     393  42674  25021
+ 6     417 315663 603126
+ 7     464  16293    472
+ 8     484 483676 601017
+ 9     515 149450  29753
+10     551 489385 619025
+11     607    172      4</code></pre>
+</div>
+</div>
+<p>There are still many ‘bad’ data according to the motusFilter… but we are definitely getting closer.</p>
+</section>
+<section id="saving-filters" class="level2">
+<h2 class="anchored" data-anchor-id="saving-filters">Saving filters</h2>
+<p>We’ll save the ‘bad data’ for use in the next steps.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_feather</span>(noise_hits, <span class="at">sink =</span> <span class="st">"Data/Datasets/noise_hits.feather"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="wrap-up" class="level2">
 <h2 class="anchored" data-anchor-id="wrap-up">Wrap up</h2>
 <p>Disconnect from the databases</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk</span>(dbs, dbDisconnect)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk</span>(dbs, dbDisconnect)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="reproducibility" class="level2">
@@ -437,7 +505,119 @@ Session Info
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>─ Session info ───────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.3.3 (2024-02-29)
+ os       Ubuntu 22.04.4 LTS
+ system   x86_64, linux-gnu
+ ui       X11
+ language en_CA:en
+ collate  en_CA.UTF-8
+ ctype    en_CA.UTF-8
+ tz       America/Winnipeg
+ date     2024-04-24
+ pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ package       * version  date (UTC) lib source
+ arrow         * 13.0.0.1 2023-09-22 [1] CRAN (R 4.3.1)
+ assertr       * 3.0.0    2022-11-05 [1] CRAN (R 4.3.0)
+ assertthat      0.2.1    2019-03-21 [1] CRAN (R 4.3.0)
+ bit             4.0.5    2022-11-15 [1] CRAN (R 4.3.0)
+ bit64           4.0.5    2020-08-30 [1] CRAN (R 4.3.0)
+ blob            1.2.4    2023-03-17 [1] CRAN (R 4.3.0)
+ cachem          1.0.8    2023-05-01 [1] CRAN (R 4.3.0)
+ class           7.3-22   2023-05-03 [4] CRAN (R 4.3.1)
+ classInt        0.4-10   2023-09-05 [1] CRAN (R 4.3.1)
+ cli             3.6.2    2023-12-11 [1] CRAN (R 4.3.2)
+ codetools       0.2-19   2023-02-01 [4] CRAN (R 4.2.2)
+ colorspace      2.1-0    2023-01-23 [1] CRAN (R 4.3.0)
+ DBI           * 1.2.2    2024-02-16 [1] CRAN (R 4.3.2)
+ dbplyr          2.4.0    2023-10-26 [1] CRAN (R 4.3.1)
+ devtools        2.4.5    2022-10-11 [1] CRAN (R 4.3.0)
+ digest          0.6.34   2024-01-11 [1] CRAN (R 4.3.2)
+ dplyr         * 1.1.4    2023-11-17 [1] CRAN (R 4.3.2)
+ e1071           1.7-14   2023-12-06 [1] CRAN (R 4.3.2)
+ ebirdst       * 3.2022.2 2024-01-15 [1] Github (ebird/ebirdst@bd409c7)
+ ellipsis        0.3.2    2021-04-29 [1] CRAN (R 4.3.0)
+ evaluate        0.23     2023-11-01 [1] CRAN (R 4.3.1)
+ fansi           1.0.6    2023-12-08 [1] CRAN (R 4.3.2)
+ fastmap         1.1.1    2023-02-24 [1] CRAN (R 4.3.0)
+ forcats       * 1.0.0    2023-01-29 [1] CRAN (R 4.3.0)
+ fs              1.6.3    2023-07-20 [1] CRAN (R 4.3.1)
+ generics        0.1.3    2022-07-05 [1] CRAN (R 4.3.0)
+ ggplot2       * 3.5.0    2024-02-23 [1] CRAN (R 4.3.2)
+ ggrepel       * 0.9.5    2024-01-10 [1] CRAN (R 4.3.2)
+ glue            1.7.0    2024-01-09 [1] CRAN (R 4.3.2)
+ gt            * 0.10.0   2023-10-07 [1] CRAN (R 4.3.1)
+ gtable          0.3.4    2023-08-21 [1] CRAN (R 4.3.1)
+ hms             1.1.3    2023-03-21 [1] CRAN (R 4.3.0)
+ htmltools       0.5.7    2023-11-03 [1] CRAN (R 4.3.1)
+ htmlwidgets     1.6.4    2023-12-06 [1] CRAN (R 4.3.2)
+ httpuv          1.6.14   2024-01-26 [1] CRAN (R 4.3.2)
+ httr            1.4.7    2023-08-15 [1] CRAN (R 4.3.1)
+ jsonlite        1.8.8    2023-12-04 [1] CRAN (R 4.3.2)
+ KernSmooth      2.23-22  2023-07-10 [1] CRAN (R 4.3.1)
+ knitr           1.45     2023-10-30 [1] CRAN (R 4.3.1)
+ later           1.3.2    2023-12-06 [1] CRAN (R 4.3.2)
+ lifecycle       1.0.4    2023-11-07 [1] CRAN (R 4.3.2)
+ lubridate     * 1.9.3    2023-09-27 [1] CRAN (R 4.3.1)
+ magrittr        2.0.3    2022-03-30 [1] CRAN (R 4.3.0)
+ memoise         2.0.1    2021-11-26 [1] CRAN (R 4.3.0)
+ mime            0.12     2021-09-28 [1] CRAN (R 4.3.0)
+ miniUI          0.1.1.1  2018-05-18 [1] CRAN (R 4.3.0)
+ motus         * 6.1.0    2024-02-01 [1] Github (motuswts/motus@9d99ed5)
+ munsell         0.5.0    2018-06-12 [1] CRAN (R 4.3.0)
+ naturecounts    0.4.0    2023-06-20 [1] local
+ pillar          1.9.0    2023-03-22 [1] CRAN (R 4.3.0)
+ pkgbuild        1.4.3    2023-12-10 [1] CRAN (R 4.3.2)
+ pkgconfig       2.0.3    2019-09-22 [1] CRAN (R 4.3.0)
+ pkgload         1.3.3    2023-09-22 [1] CRAN (R 4.3.1)
+ profvis         0.3.8    2023-05-02 [1] CRAN (R 4.3.1)
+ promises        1.2.1    2023-08-10 [1] CRAN (R 4.3.1)
+ proxy           0.4-27   2022-06-09 [1] CRAN (R 4.3.0)
+ purrr         * 1.0.2    2023-08-10 [1] CRAN (R 4.3.1)
+ R6              2.5.1    2021-08-19 [1] CRAN (R 4.3.0)
+ Rcpp            1.0.12   2024-01-09 [1] CRAN (R 4.3.2)
+ readr         * 2.1.5    2024-01-10 [1] CRAN (R 4.3.2)
+ remotes         2.4.2.1  2023-07-18 [1] CRAN (R 4.3.2)
+ rlang           1.1.3    2024-01-10 [1] CRAN (R 4.3.2)
+ rmarkdown       2.25     2023-09-18 [1] CRAN (R 4.3.1)
+ rnaturalearth * 1.0.1    2023-12-15 [1] CRAN (R 4.3.2)
+ RSQLite         2.3.5    2024-01-21 [1] CRAN (R 4.3.2)
+ rstudioapi      0.15.0   2023-07-07 [1] CRAN (R 4.3.1)
+ scales          1.3.0    2023-11-28 [1] CRAN (R 4.3.2)
+ sessioninfo     1.2.2    2021-12-06 [1] CRAN (R 4.3.0)
+ sf            * 1.0-15   2023-12-18 [1] CRAN (R 4.3.2)
+ shiny           1.8.0    2023-11-17 [1] CRAN (R 4.3.2)
+ stringi         1.8.3    2023-12-11 [1] CRAN (R 4.3.2)
+ stringr       * 1.5.1    2023-11-14 [1] CRAN (R 4.3.2)
+ terra           1.7-71   2024-01-31 [1] CRAN (R 4.3.2)
+ tibble        * 3.2.1    2023-03-20 [1] CRAN (R 4.3.0)
+ tidyr         * 1.3.1    2024-01-24 [1] CRAN (R 4.3.2)
+ tidyselect      1.2.0    2022-10-10 [1] CRAN (R 4.3.0)
+ timechange      0.3.0    2024-01-18 [1] CRAN (R 4.3.2)
+ tzdb            0.4.0    2023-05-12 [1] CRAN (R 4.3.1)
+ units         * 0.8-5    2023-11-28 [1] CRAN (R 4.3.2)
+ urlchecker      1.0.1    2021-11-30 [1] CRAN (R 4.3.0)
+ usethis         2.2.2    2023-07-06 [1] CRAN (R 4.3.1)
+ utf8            1.2.4    2023-10-22 [1] CRAN (R 4.3.1)
+ vctrs           0.6.5    2023-12-01 [1] CRAN (R 4.3.2)
+ withr           3.0.0    2024-01-16 [1] CRAN (R 4.3.2)
+ xfun            0.42     2024-02-08 [1] CRAN (R 4.3.2)
+ xml2            1.3.6    2023-12-04 [1] CRAN (R 4.3.2)
+ xtable          1.8-4    2019-04-21 [1] CRAN (R 4.3.0)
+ yaml            2.3.8    2023-12-11 [1] CRAN (R 4.3.2)
+
+ [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3
+ [2] /usr/local/lib/R/site-library
+ [3] /usr/lib/R/site-library
+ [4] /usr/lib/R/library
+
+──────────────────────────────────────────────────────────────────────────────</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -446,7 +626,15 @@ Session Info
 
 </section>
 
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Based on notes from Amie MacDonald’s scripts<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Based on notes from Amie MacDonald’s scripts<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Based on notes from Amie MacDonald’s scripts<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -841,8 +1029,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./99_checks.html" class="pagination-link" aria-label="Metadata checks">
-        <span class="nav-page-text">Metadata checks</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./06_bouts_transitions.html" class="pagination-link" aria-label="Bouts and Transitions">
+        <span class="nav-page-text">Bouts and Transitions</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

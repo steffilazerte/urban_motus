@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-02-16">
+<meta name="dcterms.date" content="2024-05-03">
 
 <title>Motus tracking of urban migration stopovers - Basic Filtering</title>
 <style>
@@ -172,7 +172,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./02_download.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Download/Update Data</span></a>
+ <span class="menu-text">Download/Update Data &amp; Transform</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -191,6 +191,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./05_fine_filters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Fine-scale Filtering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06_bouts_transitions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bouts and Transitions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07_find_problems.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Finding Problems</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08_manual_adjustments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Manual Adjustments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09_summaries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Summaries</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -240,15 +264,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a>
-  <ul class="collapse">
-  <li><a href="#custom-tables" id="toc-custom-tables" class="nav-link" data-scroll-target="#custom-tables">Custom tables</a></li>
-  </ul></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
   <li><a href="#non-deployments" id="toc-non-deployments" class="nav-link" data-scroll-target="#non-deployments">Non-deployments</a></li>
   <li><a href="#time" id="toc-time" class="nav-link" data-scroll-target="#time">Time</a></li>
   <li><a href="#space" id="toc-space" class="nav-link" data-scroll-target="#space">Space</a></li>
+  <li><a href="#duplicate-runids" id="toc-duplicate-runids" class="nav-link" data-scroll-target="#duplicate-runids">Duplicate runIDs</a></li>
   <li><a href="#looking-at-the-filters" id="toc-looking-at-the-filters" class="nav-link" data-scroll-target="#looking-at-the-filters">Looking at the filters</a></li>
-  <li><a href="#add-filters-to-database" id="toc-add-filters-to-database" class="nav-link" data-scroll-target="#add-filters-to-database">Add filters to database</a></li>
+  <li><a href="#saving-filters" id="toc-saving-filters" class="nav-link" data-scroll-target="#saving-filters">Saving filters</a></li>
   <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap up</a></li>
   <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
   </ul>
@@ -276,7 +298,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 16, 2024</p>
+      <p class="date">May 3, 2024</p>
     </div>
   </div>
   
@@ -290,92 +312,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>Here we apply broad filters for missing details, time, space, and species. We’ll omit runs missing deployment information for tags and receivers, runs which occur during times we’re not interested in, and runs which occur for species/receiver pairs which are not within a particular species’ range (ranges were determined in <a href="03_range_maps.html">Range Maps</a>), also omitting species we’re not interested in.</p>
 <p>The idea is to reduce the size of the data we’re working with as much as possible before we get into the fine details of assessing data quality.</p>
-<p>However, we don’t want to simply delete records in our original .motus databases because</p>
+<p>However, we don’t want to simply delete records in our original data because</p>
 <ul>
-<li>we’re working with databases which may need to be updated</li>
+<li>we’re working with data which may need to be updated</li>
 <li>we can’t go back if we change our criteria</li>
 </ul>
-<p>So we will create lists of all the run/tagID combinations <em>to be removed</em>, and we’ll store these as a new table inside the databases.</p>
-<p>When we want to calculate our final summaries, we can apply these filters in the last step <em>before</em> <code>collect()</code>ing (flattening) the database.</p>
+<p>So we will create lists of all the run/tagID combinations <em>to be removed</em>, and we’ll store these as a new dataset.</p>
+<p>When we want to calculate our final summaries, we can apply these filters in the last step <em>before</em> <code>collect()</code>ing (flattening) the parquet data files.</p>
 <section id="setup" class="level2">
 <h2 class="anchored" data-anchor-id="setup">Setup</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"XX_setup.R"</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>recvs <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Data/Datasets/receivers.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>recvs <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Data/Datasets/receivers.csv"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>runs <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/runs"</span>, <span class="at">format =</span> <span class="st">"feather"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="custom-tables" class="level3">
-<h3 class="anchored" data-anchor-id="custom-tables">Custom tables</h3>
-<p>Normally, we would use the <code>allruns</code> view from our .motus data bases.</p>
-<p>However, this view includes a lot of data that we don’t need and I find it faster to pull out the variables we’re interested by hand using a custom function, <code>custom_runs()</code>.</p>
-<div class="callout callout-style-simple callout-important no-icon callout-titled" title="Caution">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Caution
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>That being said, there are some complex joins going on in the <code>allruns</code> view. I have replicated the relevant ones here, and while I reasonably sure these yield the same data, if there are is any hint that they’re not exactly the same, we should double check.</p>
-</div>
-</div>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>custom_runs <span class="ot">&lt;-</span> <span class="cf">function</span>(db) {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Replacement for NULL tsEnd values (i.e. today plus change)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  max_ts <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">Sys.time</span>()) <span class="sc">+</span> <span class="dv">1000</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Receivers</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"deviceID"</span>, <span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"tsStartRecv"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndRecv"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndRecv =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndRecv), max_ts, tsEndRecv))</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get tags</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">tbl</span>(db, <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>, <span class="st">"speciesID"</span>, <span class="st">"tsStartTag"</span> <span class="ot">=</span> <span class="st">"tsStart"</span>, <span class="st">"tsEndTag"</span> <span class="ot">=</span> <span class="st">"tsEnd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tsEndTag =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(tsEndTag), max_ts, tsEndTag))</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine with runs</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(db, <span class="st">"runs"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tsBegin"</span>, <span class="st">"tsEnd"</span>, <span class="st">"tagID"</span> <span class="ot">=</span> <span class="st">"motusTagID"</span>, <span class="st">"motusFilter"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(t, <span class="at">by =</span> <span class="fu">join_by</span>(tagID, <span class="fu">between</span>(tsBegin, tsStartTag, tsEndTag))) <span class="sc">|&gt;</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batchRuns by runID (to get the batchID)</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batchRuns"</span>), <span class="at">by =</span> <span class="st">"runID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in batches by batchID (to get the deviceID)</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(db, <span class="st">"batches"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="st">"batchID"</span>, <span class="st">"motusDeviceID"</span>), <span class="at">by =</span> <span class="st">"batchID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(r, <span class="at">by =</span> <span class="fu">join_by</span>(motusDeviceID <span class="sc">==</span> deviceID, <span class="fu">between</span>(tsBegin, tsStartRecv, tsEndRecv))) <span class="sc">|&gt;</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only relevant data</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(runID, motusFilter, </span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>           tagID, tagDeployID, speciesID, </span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>           recvDeployID, <span class="at">recvDeviceID =</span> motusDeviceID, </span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>           tsBegin, tsEnd) <span class="sc">|&gt;</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>()</span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>This function is faster than collecting the <code>allruns</code> view</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>(<span class="fu">tbl</span>(dbs[[<span class="st">"607"</span>]], <span class="st">"allRuns"</span>) <span class="sc">|&gt;</span> <span class="fu">collect</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   user  system elapsed 
-  0.712   0.333   1.109 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">system.time</span>(<span class="fu">custom_runs</span>(dbs[[<span class="st">"607"</span>]]) <span class="sc">|&gt;</span> <span class="fu">collect</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   user  system elapsed 
-  0.201   0.004   0.208 </code></pre>
-</div>
-</div>
-<p>Get the custom run tables for all databases</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>runs <span class="ot">&lt;-</span> <span class="fu">map</span>(dbs, custom_runs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
 </section>
 <section id="non-deployments" class="level2">
 <h2 class="anchored" data-anchor-id="non-deployments">Non-deployments</h2>
@@ -409,143 +360,135 @@ Caution
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>no_tag_dep <span class="ot">&lt;-</span> <span class="fu">map</span>(runs, \(x) <span class="fu">filter</span>(x, <span class="fu">is.na</span>(speciesID)))</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>no_recv_dep <span class="ot">&lt;-</span> <span class="fu">map</span>(runs, \(x) <span class="fu">filter</span>(x, <span class="fu">is.na</span>(recvDeployID)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>no_deps <span class="ot">&lt;-</span> <span class="fu">filter</span>(runs, <span class="fu">is.na</span>(speciesID) <span class="sc">|</span> <span class="fu">is.na</span>(recvDeployID)) <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
-<p>To be sure that we’re not missing things, we’ll explore what is removed if we use <code>tagDeployID</code> rather than <code>speciesID</code> (as we could conceivibly have tags with a deploy id but not species ids).</p>
+<p>To be sure that we’re not missing things, we’ll explore what is removed if we use <code>tagDeployID</code> rather than <code>speciesID</code> (as we could conceivably have tags with a deploy id but not species ids).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>no_tag_dep_check <span class="ot">&lt;-</span> <span class="fu">map</span>(runs, \(x) <span class="fu">filter</span>(x, <span class="fu">is.na</span>(tagDeployID)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>no_tag_dep_check <span class="ot">&lt;-</span> <span class="fu">filter</span>(runs, <span class="fu">is.na</span>(tagDeployID))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For example, in this project for this tag, we have no species ids for a series of runs.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>no_tag_dep_check[[<span class="st">"484"</span>]] <span class="sc">|&gt;</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tagID <span class="sc">==</span> <span class="dv">63138</span>) <span class="sc">|&gt;</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_ts</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>no_tag_dep_check <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(tagID, tagDeployID, speciesID, tsBegin, tsEnd, motusFilter) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tagID <span class="sc">==</span> <span class="dv">63138</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_ts</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 301 × 9
-       runID motusFilter tagID tagDeployID speciesID recvDeployID recvDeviceID
-       &lt;int&gt;       &lt;dbl&gt; &lt;int&gt;       &lt;int&gt;     &lt;int&gt;        &lt;int&gt;        &lt;int&gt;
- 1 462984876           0 63138          NA        NA         8262         2392
- 2 462986025           0 63138          NA        NA         8262         2392
- 3 462987529           0 63138          NA        NA         8262         2392
- 4 475644251           0 63138          NA        NA         8513         2626
- 5 475647457           0 63138          NA        NA         8006         2361
- 6 477819172           0 63138          NA        NA         8002         2382
- 7 478646782           0 63138          NA        NA         8262         2392
- 8 480019785           0 63138          NA        NA         7700         1552
- 9 481242586           0 63138          NA        NA         8457         2656
-10 481245624           0 63138          NA        NA         8457         2656
+<pre><code># A tibble: 301 × 6
+   tagID tagDeployID speciesID tsBegin             tsEnd              
+   &lt;int&gt;       &lt;int&gt;     &lt;int&gt; &lt;dttm&gt;              &lt;dttm&gt;             
+ 1 63138          NA        NA 2022-01-15 10:27:31 2022-01-15 10:28:51
+ 2 63138          NA        NA 2022-01-16 04:26:10 2022-01-16 04:26:50
+ 3 63138          NA        NA 2022-01-27 01:22:06 2022-01-27 01:22:45
+ 4 63138          NA        NA 2022-04-11 20:25:47 2022-04-11 20:27:07
+ 5 63138          NA        NA 2022-04-02 21:10:25 2022-04-02 21:11:45
+ 6 63138          NA        NA 2022-05-30 21:39:44 2022-05-30 21:41:04
+ 7 63138          NA        NA 2022-06-02 22:34:33 2022-06-02 22:35:53
+ 8 63138          NA        NA 2022-02-14 19:55:01 2022-02-14 19:55:41
+ 9 63138          NA        NA 2022-05-01 01:58:15 2022-05-01 01:59:34
+10 63138          NA        NA 2022-07-01 10:04:21 2022-07-01 10:05:41
 # ℹ 291 more rows
-# ℹ 2 more variables: tsBegin &lt;dttm&gt;, tsEnd &lt;dttm&gt;</code></pre>
+# ℹ 1 more variable: motusFilter &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <p>Note that the <code>motusFilter</code> is also 0, indicating that they are likely false positives based on other metrics as well.</p>
 <p>Now if we look at the tag deployment dates for that tag, we see that these runs occurred even before the tag was deployed, further indicating that they are false positives.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(dbs[[<span class="st">"484"</span>]], <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tagID <span class="sc">==</span> <span class="st">"63138"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(tagID, deployID, projectID, tsStart, tsEnd, speciesID) <span class="sc">|&gt;</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_ts</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>runs <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tagID <span class="sc">==</span> <span class="dv">63138</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(tagID, tagDeployID,  tsStartTag, tsEndTag, speciesID) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_ts</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 6
-  tagID deployID projectID tsStart             tsEnd               speciesID
-  &lt;int&gt;    &lt;int&gt;     &lt;int&gt; &lt;dttm&gt;              &lt;dttm&gt;                  &lt;int&gt;
-1 63138    52117       484 2023-11-10 17:15:00 2025-08-10 17:15:00     19060</code></pre>
+<pre><code># A tibble: 2 × 5
+  tagID tagDeployID tsStartTag          tsEndTag            speciesID
+  &lt;int&gt;       &lt;int&gt; &lt;dttm&gt;              &lt;dttm&gt;                  &lt;int&gt;
+1 63138          NA NA                  NA                         NA
+2 63138       52117 2023-11-10 17:15:00 2025-08-10 17:15:00     19060</code></pre>
 </div>
 </div>
-<p>However, just because we have a tagDeployID, it doesn’t necessarily mean we have a speciesID</p>
+<p>However, just because we have a tagDeployID, it doesn’t necessarily mean we have a speciesID.</p>
+<p>But in all cases where there <em>is</em> a tagDeployID but there <em>is not</em> a speciesID, it’s because the tag is a test tag (<code>test = 1</code>).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>missing_species <span class="ot">&lt;-</span> <span class="fu">map</span>(runs, \(x) <span class="fu">filter</span>(x, <span class="sc">!</span><span class="fu">is.na</span>(tagDeployID), <span class="fu">is.na</span>(speciesID)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>In this example, it is because one deployment is a test deployment</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>missing_species[[<span class="st">"551"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>runs <span class="sc">|&gt;</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(tagDeployID), <span class="fu">is.na</span>(speciesID)) <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(tagID, tagDeployID, test) <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># Source:   SQL [?? x 9]
-# Database: sqlite 3.45.0 [/home/steffi/Projects/Business/Barbara Frei/urban_motus/Data/Raw/project-551.motus]
-       runID motusFilter tagID tagDeployID speciesID recvDeployID recvDeviceID
-       &lt;int&gt;       &lt;dbl&gt; &lt;int&gt;       &lt;int&gt;     &lt;int&gt;        &lt;int&gt;        &lt;int&gt;
- 1 499052332           1 68914       42527        NA           NA         2276
- 2 499052376           0 68914       42527        NA         9021         2276
- 3 499052378           1 68914       42527        NA         9021         2276
- 4 499052381           1 68914       42527        NA         9021         2276
- 5 499052382           1 68914       42527        NA         9021         2276
- 6 499052384           1 68914       42527        NA         9021         2276
- 7 499052386           1 68914       42527        NA         9021         2276
- 8 652062609           1 68906       42671        NA         9028         1563
- 9 652062673           1 68906       42671        NA         9028         1563
-10 652062677           0 68906       42671        NA         9028         1563
-# ℹ more rows
-# ℹ 2 more variables: tsBegin &lt;dbl&gt;, tsEnd &lt;dbl&gt;</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(dbs[[<span class="st">"551"</span>]], <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(tagID <span class="sc">==</span> <span class="dv">68914</span>) <span class="sc">|&gt;</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(tagID, deployID, projectID, test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># Source:   SQL [2 x 4]
-# Database: sqlite 3.45.0 [/home/steffi/Projects/Business/Barbara Frei/urban_motus/Data/Raw/project-551.motus]
-  tagID deployID projectID  test
-  &lt;int&gt;    &lt;int&gt;     &lt;int&gt; &lt;int&gt;
-1 68914    42527       551     1
-2 68914    43720       551     0</code></pre>
+<pre><code># A tibble: 13 × 3
+   tagID tagDeployID  test
+   &lt;int&gt;       &lt;int&gt; &lt;int&gt;
+ 1 23608       12511     1
+ 2 26315       16538     1
+ 3 26448       13848     1
+ 4 52917       32346     1
+ 5 68906       42671     1
+ 6 74330       45876     1
+ 7 74328       45833     1
+ 8 74328       45874     1
+ 9 74331       45877     1
+10 74329       45875     1
+11 52918       33943     1
+12 64024       38571     1
+13 68914       42527     1</code></pre>
 </div>
 </div>
-<p>And that’s what it looks like for all of them too.</p>
-<p>This returns records missing a species id which are NOT tests. Since nothing is returned, they are all tests.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">imap</span>(runs, \(x, y) {</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(tagDeployID), <span class="fu">is.na</span>(speciesID)) <span class="sc">|&gt;</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">tbl</span>(dbs[[y]], <span class="st">"tagDeps"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(tagID, deployID, projectID, test),</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"tagID"</span>, <span class="st">"tagDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span>test) <span class="sc">|&gt;</span></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 0 × 11
-# ℹ 11 variables: runID &lt;int&gt;, motusFilter &lt;dbl&gt;, tagID &lt;int&gt;,
-#   tagDeployID &lt;int&gt;, speciesID &lt;int&gt;, recvDeployID &lt;int&gt;, recvDeviceID &lt;int&gt;,
-#   tsBegin &lt;dbl&gt;, tsEnd &lt;dbl&gt;, projectID &lt;int&gt;, test &lt;int&gt;</code></pre>
-</div>
-</div>
-<p>So we can actually remove all records with missing species ids without worry.</p>
+<p>Therefore, we can actually remove all records with missing species ids without worry.</p>
 </div>
 <div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
 <p>For example, in this project (484) for this receiver device ID (3071), we have no deployment ids (<code>recvDeployID</code>) for a series of runs.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>no_recv_dep_check <span class="ot">&lt;-</span> <span class="fu">map</span>(runs, \(x) <span class="fu">filter</span>(x, <span class="fu">is.na</span>(recvDeployID)))</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>no_recv_dep_check[[<span class="st">"484"</span>]] <span class="sc">|&gt;</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(recvDeviceID <span class="sc">==</span> <span class="st">"3071"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_ts</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(runs, <span class="fu">is.na</span>(recvDeployID)) <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(proj_id, recvDeployID, recvDeviceID) <span class="sc">|&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 40 × 9
-       runID motusFilter tagID tagDeployID speciesID recvDeployID recvDeviceID
-       &lt;int&gt;       &lt;dbl&gt; &lt;int&gt;       &lt;int&gt;     &lt;int&gt;        &lt;int&gt;        &lt;int&gt;
- 1 540827863           0 62740       41246     18550           NA         3071
- 2 540827867           0 62740       41246     18550           NA         3071
- 3 540827898           0 62740       41246     18550           NA         3071
- 4 540827900           0 62740       41246     18550           NA         3071
- 5 540827914           0 62740       41246     18550           NA         3071
- 6 540827956           0 62740       41246     18550           NA         3071
- 7 540827975           0 62737       41243     18550           NA         3071
- 8 540827979           0 62740       41246     18550           NA         3071
- 9 540827997           0 62737       41243     18550           NA         3071
-10 540828021           0 62740       41246     18550           NA         3071
-# ℹ 30 more rows
-# ℹ 2 more variables: tsBegin &lt;dttm&gt;, tsEnd &lt;dttm&gt;</code></pre>
+<pre><code># A tibble: 501 × 3
+   proj_id recvDeployID recvDeviceID
+     &lt;int&gt;        &lt;int&gt;        &lt;int&gt;
+ 1     364           NA          559
+ 2     364           NA         3071
+ 3     364           NA         3179
+ 4     364           NA         3180
+ 5     364           NA         2541
+ 6     364           NA         3207
+ 7     364           NA         3357
+ 8     364           NA         3333
+ 9     364           NA          514
+10     168           NA         1882
+# ℹ 491 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(runs, <span class="fu">is.na</span>(recvDeployID)) <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(proj_id <span class="sc">==</span> <span class="dv">484</span>, recvDeviceID <span class="sc">==</span> <span class="dv">3071</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(proj_id, runID, recvDeployID, recvDeviceID, tagDeployID) <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_ts</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 40 × 5
+   proj_id     runID recvDeployID recvDeviceID tagDeployID
+     &lt;int&gt;     &lt;int&gt;        &lt;int&gt;        &lt;int&gt;       &lt;int&gt;
+ 1     484 540827863           NA         3071       41246
+ 2     484 540827867           NA         3071       41246
+ 3     484 540827898           NA         3071       41246
+ 4     484 540827900           NA         3071       41246
+ 5     484 540827914           NA         3071       41246
+ 6     484 540827956           NA         3071       41246
+ 7     484 540827975           NA         3071       41243
+ 8     484 540827979           NA         3071       41246
+ 9     484 540827997           NA         3071       41243
+10     484 540828021           NA         3071       41246
+# ℹ 30 more rows</code></pre>
 </div>
 </div>
 <p>Now if we look at the receiver deployment dates for that device, we see that these runs occurred before the receiver was deployed, although not that much earlier.</p>
 <p>Perhaps these are semi-legitimate runs, which were detected when testing and installing the receiver.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(dbs[[<span class="st">"484"</span>]], <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(deviceID <span class="sc">==</span> <span class="st">"3071"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(deviceID, deployID, projectID, tsStart, tsEnd, status) <span class="sc">|&gt;</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_ts</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(dbs[[<span class="st">"484"</span>]], <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(deviceID <span class="sc">==</span> <span class="st">"3071"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(deviceID, deployID, projectID, tsStart, tsEnd, status) <span class="sc">|&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_ts</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
   deviceID deployID projectID tsStart             tsEnd  status
@@ -565,743 +508,34 @@ Caution
 <li>Fall and Spring migration</li>
 <li>August - December &amp; February - July</li>
 </ul>
-<p>Motus date/times are stored as ts in UTC these is a standard number that can be converted to a date time:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as_datetime</span>(<span class="dv">1646289838</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "2022-03-03 06:43:58 UTC"</code></pre>
-</div>
-</div>
-<p>And back</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.numeric</span>(<span class="fu">as_datetime</span>(<span class="st">"2022-03-03 06:43:58"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 1646289838</code></pre>
-</div>
-</div>
-<p>Here we will create a list of time stamp ranges to use when filtering. We’ll create a list of dates from the first year in the data up to the end of the current analysis year.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Calculate date ranges</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Explore date ranges</a></li></ul>
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Create filter</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Example of the data omitted</a></li></ul>
 <div class="tab-content">
 <div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<p>Get all runs that are NOT within these dates (Jan, July, Dec)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>min_year <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(dbs, \(x) <span class="fu">tbl</span>(x, <span class="st">"runs"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(tsBegin) <span class="sc">|&gt;</span> <span class="fu">min</span>()) <span class="sc">|&gt;</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">min</span>(<span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_datetime</span>() <span class="sc">|&gt;</span></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">year</span>()</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>max_year <span class="ot">&lt;-</span> <span class="fu">year</span>(<span class="fu">Sys.Date</span>())</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>date_ranges <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">year =</span> min_year<span class="sc">:</span>max_year, </span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">data.frame</span>(<span class="at">migration =</span> <span class="fu">c</span>(<span class="st">"spring"</span>, <span class="st">"fall"</span>),</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">start =</span> <span class="fu">c</span>(<span class="st">"02-01"</span>, <span class="st">"08-01"</span>),</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">end =</span> <span class="fu">c</span>(<span class="st">"07-01"</span>, <span class="st">"12-01"</span>))) <span class="sc">|&gt;</span></span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(<span class="st">"start"</span>, <span class="st">"end"</span>), \(x) <span class="fu">as_datetime</span>(<span class="fu">paste0</span>(year, <span class="st">"-"</span>, x))),</span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(<span class="fu">c</span>(<span class="st">"start"</span>, <span class="st">"end"</span>), <span class="at">.names =</span> <span class="st">"ts_{.col}"</span>, as.numeric))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>noise_time <span class="ot">&lt;-</span> runs <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(monthBegin <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">7</span>, <span class="dv">12</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
-<p>These are the ranges of dates we want to keep.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gt</span>(date_ranges) <span class="sc">|&gt;</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt_theme</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div id="klulkwwnvv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#klulkwwnvv table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#klulkwwnvv thead, #klulkwwnvv tbody, #klulkwwnvv tfoot, #klulkwwnvv tr, #klulkwwnvv td, #klulkwwnvv th {
-  border-style: none;
-}
-
-#klulkwwnvv p {
-  margin: 0;
-  padding: 0;
-}
-
-#klulkwwnvv .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 3px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#klulkwwnvv .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#klulkwwnvv .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#klulkwwnvv .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 3px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: bold;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#klulkwwnvv .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: bold;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#klulkwwnvv .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#klulkwwnvv .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#klulkwwnvv .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 3px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#klulkwwnvv .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#klulkwwnvv .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#klulkwwnvv .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#klulkwwnvv .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#klulkwwnvv .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#klulkwwnvv .gt_row {
-  padding-top: 7px;
-  padding-bottom: 7px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#klulkwwnvv .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#klulkwwnvv .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#klulkwwnvv .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#klulkwwnvv .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#klulkwwnvv .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#klulkwwnvv .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#klulkwwnvv .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#klulkwwnvv .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#klulkwwnvv .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#klulkwwnvv .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#klulkwwnvv .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#klulkwwnvv .gt_left {
-  text-align: left;
-}
-
-#klulkwwnvv .gt_center {
-  text-align: center;
-}
-
-#klulkwwnvv .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#klulkwwnvv .gt_font_normal {
-  font-weight: normal;
-}
-
-#klulkwwnvv .gt_font_bold {
-  font-weight: bold;
-}
-
-#klulkwwnvv .gt_font_italic {
-  font-style: italic;
-}
-
-#klulkwwnvv .gt_super {
-  font-size: 65%;
-}
-
-#klulkwwnvv .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#klulkwwnvv .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#klulkwwnvv .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#klulkwwnvv .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#klulkwwnvv .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#klulkwwnvv .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#klulkwwnvv .gt_indent_5 {
-  text-indent: 25px;
-}
-</style>
-
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-<thead>
-<tr class="header gt_col_headings">
-<th id="year" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">year</th>
-<th id="migration" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">migration</th>
-<th id="start" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">start</th>
-<th id="end" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">end</th>
-<th id="ts_start" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">ts_start</th>
-<th id="ts_end" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">ts_end</th>
-</tr>
-</thead>
-<tbody class="gt_table_body">
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2014</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2014-02-01</td>
-<td class="gt_row gt_right" headers="end">2014-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1391212800</td>
-<td class="gt_row gt_right" headers="ts_end">1404172800</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2014</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2014-08-01</td>
-<td class="gt_row gt_right" headers="end">2014-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1406851200</td>
-<td class="gt_row gt_right" headers="ts_end">1417392000</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2015</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2015-02-01</td>
-<td class="gt_row gt_right" headers="end">2015-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1422748800</td>
-<td class="gt_row gt_right" headers="ts_end">1435708800</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2015</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2015-08-01</td>
-<td class="gt_row gt_right" headers="end">2015-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1438387200</td>
-<td class="gt_row gt_right" headers="ts_end">1448928000</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2016</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2016-02-01</td>
-<td class="gt_row gt_right" headers="end">2016-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1454284800</td>
-<td class="gt_row gt_right" headers="ts_end">1467331200</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2016</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2016-08-01</td>
-<td class="gt_row gt_right" headers="end">2016-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1470009600</td>
-<td class="gt_row gt_right" headers="ts_end">1480550400</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2017</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2017-02-01</td>
-<td class="gt_row gt_right" headers="end">2017-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1485907200</td>
-<td class="gt_row gt_right" headers="ts_end">1498867200</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2017</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2017-08-01</td>
-<td class="gt_row gt_right" headers="end">2017-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1501545600</td>
-<td class="gt_row gt_right" headers="ts_end">1512086400</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2018</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2018-02-01</td>
-<td class="gt_row gt_right" headers="end">2018-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1517443200</td>
-<td class="gt_row gt_right" headers="ts_end">1530403200</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2018</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2018-08-01</td>
-<td class="gt_row gt_right" headers="end">2018-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1533081600</td>
-<td class="gt_row gt_right" headers="ts_end">1543622400</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2019</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2019-02-01</td>
-<td class="gt_row gt_right" headers="end">2019-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1548979200</td>
-<td class="gt_row gt_right" headers="ts_end">1561939200</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2019</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2019-08-01</td>
-<td class="gt_row gt_right" headers="end">2019-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1564617600</td>
-<td class="gt_row gt_right" headers="ts_end">1575158400</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2020</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2020-02-01</td>
-<td class="gt_row gt_right" headers="end">2020-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1580515200</td>
-<td class="gt_row gt_right" headers="ts_end">1593561600</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2020</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2020-08-01</td>
-<td class="gt_row gt_right" headers="end">2020-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1596240000</td>
-<td class="gt_row gt_right" headers="ts_end">1606780800</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2021</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2021-02-01</td>
-<td class="gt_row gt_right" headers="end">2021-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1612137600</td>
-<td class="gt_row gt_right" headers="ts_end">1625097600</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2021</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2021-08-01</td>
-<td class="gt_row gt_right" headers="end">2021-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1627776000</td>
-<td class="gt_row gt_right" headers="ts_end">1638316800</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2022</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2022-02-01</td>
-<td class="gt_row gt_right" headers="end">2022-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1643673600</td>
-<td class="gt_row gt_right" headers="ts_end">1656633600</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2022</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2022-08-01</td>
-<td class="gt_row gt_right" headers="end">2022-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1659312000</td>
-<td class="gt_row gt_right" headers="ts_end">1669852800</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2023</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2023-02-01</td>
-<td class="gt_row gt_right" headers="end">2023-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1675209600</td>
-<td class="gt_row gt_right" headers="ts_end">1688169600</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2023</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2023-08-01</td>
-<td class="gt_row gt_right" headers="end">2023-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1690848000</td>
-<td class="gt_row gt_right" headers="ts_end">1701388800</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="year">2024</td>
-<td class="gt_row gt_left" headers="migration">spring</td>
-<td class="gt_row gt_right" headers="start">2024-02-01</td>
-<td class="gt_row gt_right" headers="end">2024-07-01</td>
-<td class="gt_row gt_right" headers="ts_start">1706745600</td>
-<td class="gt_row gt_right" headers="ts_end">1719792000</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="year">2024</td>
-<td class="gt_row gt_left" headers="migration">fall</td>
-<td class="gt_row gt_right" headers="start">2024-08-01</td>
-<td class="gt_row gt_right" headers="end">2024-12-01</td>
-<td class="gt_row gt_right" headers="ts_start">1722470400</td>
-<td class="gt_row gt_right" headers="ts_end">1733011200</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">Create filter</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Check filter values</a></li></ul>
-<div class="tab-content">
-<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
-<p>Get all runs that are NOT within these dates</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Avoid anti_join() (see Details)</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>dts <span class="ot">&lt;-</span> <span class="fu">select</span>(date_ranges, <span class="st">"migration"</span>, <span class="st">"ts_start"</span>, <span class="st">"ts_end"</span>)</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>noise_time <span class="ot">&lt;-</span> <span class="fu">map</span>(runs, \(x) {</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(x, dts, </span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">join_by</span>(<span class="fu">between</span>(tsBegin, ts_start, ts_end, <span class="at">bounds =</span> <span class="st">"[)"</span>)), </span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">copy =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">is.na</span>(migration)) <span class="sc">|&gt;</span></span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"migration"</span>, <span class="sc">-</span><span class="st">"ts_start"</span>, <span class="sc">-</span><span class="st">"ts_end"</span>)</span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</div>
-<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
-<p><strong>Months omitted by filter</strong></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(noise_time, \(x) {</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span> </span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(tsBegin) <span class="sc">|&gt;</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">ts =</span> <span class="fu">as_datetime</span>(tsBegin),</span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">month =</span> <span class="fu">month</span>(ts)) <span class="sc">|&gt;</span></span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(month) <span class="sc">|&gt;</span></span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sort</span>() <span class="sc">|&gt;</span></span>
-<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unique</span>()</span>
-<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span></span>
-<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unlist</span>() <span class="sc">|&gt;</span></span>
-<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1]  1  7 12</code></pre>
-</div>
-</div>
-<blockquote class="blockquote">
-<p>Good!</p>
-</blockquote>
-<p><strong>Example of the data omitted</strong></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> runs[[<span class="st">"464"</span>]] <span class="sc">|&gt;</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(runID, tagID, tsBegin) <span class="sc">|&gt;</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">mutate</span>(noise_time[[<span class="st">"464"</span>]], <span class="at">probability =</span> <span class="dv">0</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>, <span class="st">"tsBegin"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">probability =</span> <span class="fu">as.integer</span>(<span class="fu">replace_na</span>(probability, <span class="dv">1</span>)),</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">time =</span> <span class="fu">as_datetime</span>(tsBegin))</span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> <span class="fu">factor</span>(tagID), <span class="at">colour =</span> <span class="fu">factor</span>(probability))) <span class="sc">+</span></span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">end =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">caption =</span> <span class="st">"Probability of 0 is data omitted by the filter"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> runs <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(proj_id <span class="sc">==</span> <span class="dv">464</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">probability =</span> <span class="fu">if_else</span>(monthBegin <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">7</span>, <span class="dv">12</span>), <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(runID, tagID, tsBegin, probability, timeBegin) <span class="sc">|&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="fu">aes</span>(<span class="at">x =</span> timeBegin, <span class="at">y =</span> <span class="fu">factor</span>(tagID), <span class="at">colour =</span> <span class="fu">factor</span>(probability))) <span class="sc">+</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>(<span class="at">end =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">caption =</span> <span class="st">"Probability of 0 is data omitted by the filter"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="04_basic_filters_files/figure-html/unnamed-chunk-20-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="04_basic_filters_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="768"></a></p>
+<p><a href="04_basic_filters_files/figure-html/unnamed-chunk-11-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="04_basic_filters_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="768"></a></p>
 </figure>
 </div>
 </div>
@@ -1316,59 +550,55 @@ Caution
 <p>These are runs associated with a species which is unlikely to be found at that station and can therefore be assumed to be false positives.</p>
 <p>Note that this step <em>also</em> omits species we’re not interested in, as they are not included in the list of species ranges and receivers.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Create filter</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Check filter values</a></li></ul>
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">Create filter</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Check filter values</a></li></ul>
 <div class="tab-content">
-<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
 <p>First we’ll add the master list of whether or not a species is in range for each receiver deployment.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>rs <span class="ot">&lt;-</span> recvs <span class="sc">|&gt;</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">speciesID =</span> <span class="fu">as.integer</span>(id), </span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">recvDeployID =</span> <span class="fu">as.integer</span>(deployID)) <span class="sc">|&gt;</span></span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(in_range) <span class="sc">|&gt;</span></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(speciesID, recvDeployID, in_range)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>rs <span class="ot">&lt;-</span> recvs <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">speciesID =</span> <span class="fu">as.integer</span>(id), </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">recvDeployID =</span> <span class="fu">as.integer</span>(deployID)) <span class="sc">|&gt;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(in_range) <span class="sc">|&gt;</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(speciesID, recvDeployID, in_range)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now, get all runs which are NOT in range given the species and the receiver deployment.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Avoid anti_join() (see Details)</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>noise_space <span class="ot">&lt;-</span> <span class="fu">map</span>(runs, \(x) {</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(x, rs, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"recvDeployID"</span>, <span class="st">"speciesID"</span>), <span class="at">copy =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">is.na</span>(in_range)) <span class="sc">|&gt;</span></span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="st">"in_range"</span>)</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>noise_space <span class="ot">&lt;-</span> runs <span class="sc">|&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(rs, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"recvDeployID"</span>, <span class="st">"speciesID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(in_range)) <span class="sc">|&gt;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">"in_range"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
-<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
 <p>Many of these omitted are omitted because they are missing the speciesID or the recevDeployID (which is already accounted for the the <a href="#non-depoloyments">Non-deployments</a> section above.</p>
 <p>However, let’s take a look at the remaining ones to check.</p>
 <p>Hmm, most of these are poor quality runs (i.e.&nbsp;the <code>motusFilter</code> is 0). So this is a good sign that these are indeed false positives which should be omitted.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(noise_space, \(x) {</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span> </span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(speciesID), <span class="sc">!</span><span class="fu">is.na</span>(recvDeployID)) <span class="sc">|&gt;</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">count</span>(motusFilter) <span class="sc">|&gt;</span></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span></span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"proj_id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">|&gt;</span></span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt_theme</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>noise_space <span class="sc">|&gt;</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(speciesID), <span class="sc">!</span><span class="fu">is.na</span>(recvDeployID)) <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(proj_id, motusFilter) <span class="sc">|&gt;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">|&gt;</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt_theme</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="ztxhjppdff" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ztxhjppdff table {
+<div id="qdnmloaykv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qdnmloaykv table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ztxhjppdff thead, #ztxhjppdff tbody, #ztxhjppdff tfoot, #ztxhjppdff tr, #ztxhjppdff td, #ztxhjppdff th {
+#qdnmloaykv thead, #qdnmloaykv tbody, #qdnmloaykv tfoot, #qdnmloaykv tr, #qdnmloaykv td, #qdnmloaykv th {
   border-style: none;
 }
 
-#ztxhjppdff p {
+#qdnmloaykv p {
   margin: 0;
   padding: 0;
 }
 
-#ztxhjppdff .gt_table {
+#qdnmloaykv .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1394,12 +624,12 @@ Caution
   border-left-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_caption {
+#qdnmloaykv .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ztxhjppdff .gt_title {
+#qdnmloaykv .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1411,7 +641,7 @@ Caution
   border-bottom-width: 0;
 }
 
-#ztxhjppdff .gt_subtitle {
+#qdnmloaykv .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1423,7 +653,7 @@ Caution
   border-top-width: 0;
 }
 
-#ztxhjppdff .gt_heading {
+#qdnmloaykv .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1435,13 +665,13 @@ Caution
   border-right-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_bottom_border {
+#qdnmloaykv .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_col_headings {
+#qdnmloaykv .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1456,7 +686,7 @@ Caution
   border-right-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_col_heading {
+#qdnmloaykv .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1476,7 +706,7 @@ Caution
   overflow-x: hidden;
 }
 
-#ztxhjppdff .gt_column_spanner_outer {
+#qdnmloaykv .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1488,15 +718,15 @@ Caution
   padding-right: 4px;
 }
 
-#ztxhjppdff .gt_column_spanner_outer:first-child {
+#qdnmloaykv .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ztxhjppdff .gt_column_spanner_outer:last-child {
+#qdnmloaykv .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ztxhjppdff .gt_column_spanner {
+#qdnmloaykv .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 3px;
   border-bottom-color: #D3D3D3;
@@ -1508,11 +738,11 @@ Caution
   width: 100%;
 }
 
-#ztxhjppdff .gt_spanner_row {
+#qdnmloaykv .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ztxhjppdff .gt_group_heading {
+#qdnmloaykv .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1538,7 +768,7 @@ Caution
   text-align: left;
 }
 
-#ztxhjppdff .gt_empty_group_heading {
+#qdnmloaykv .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1553,15 +783,15 @@ Caution
   vertical-align: middle;
 }
 
-#ztxhjppdff .gt_from_md > :first-child {
+#qdnmloaykv .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ztxhjppdff .gt_from_md > :last-child {
+#qdnmloaykv .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ztxhjppdff .gt_row {
+#qdnmloaykv .gt_row {
   padding-top: 7px;
   padding-bottom: 7px;
   padding-left: 5px;
@@ -1580,7 +810,7 @@ Caution
   overflow-x: hidden;
 }
 
-#ztxhjppdff .gt_stub {
+#qdnmloaykv .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1593,7 +823,7 @@ Caution
   padding-right: 5px;
 }
 
-#ztxhjppdff .gt_stub_row_group {
+#qdnmloaykv .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1607,15 +837,15 @@ Caution
   vertical-align: top;
 }
 
-#ztxhjppdff .gt_row_group_first td {
+#qdnmloaykv .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ztxhjppdff .gt_row_group_first th {
+#qdnmloaykv .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ztxhjppdff .gt_summary_row {
+#qdnmloaykv .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1625,16 +855,16 @@ Caution
   padding-right: 5px;
 }
 
-#ztxhjppdff .gt_first_summary_row {
+#qdnmloaykv .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_first_summary_row.thick {
+#qdnmloaykv .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ztxhjppdff .gt_last_summary_row {
+#qdnmloaykv .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1644,7 +874,7 @@ Caution
   border-bottom-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_grand_summary_row {
+#qdnmloaykv .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1654,7 +884,7 @@ Caution
   padding-right: 5px;
 }
 
-#ztxhjppdff .gt_first_grand_summary_row {
+#qdnmloaykv .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1664,7 +894,7 @@ Caution
   border-top-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_last_grand_summary_row_top {
+#qdnmloaykv .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1674,11 +904,11 @@ Caution
   border-bottom-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_striped {
+#qdnmloaykv .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ztxhjppdff .gt_table_body {
+#qdnmloaykv .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1687,7 +917,7 @@ Caution
   border-bottom-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_footnotes {
+#qdnmloaykv .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1701,7 +931,7 @@ Caution
   border-right-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_footnote {
+#qdnmloaykv .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1710,7 +940,7 @@ Caution
   padding-right: 5px;
 }
 
-#ztxhjppdff .gt_sourcenotes {
+#qdnmloaykv .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1724,7 +954,7 @@ Caution
   border-right-color: #D3D3D3;
 }
 
-#ztxhjppdff .gt_sourcenote {
+#qdnmloaykv .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1732,63 +962,63 @@ Caution
   padding-right: 5px;
 }
 
-#ztxhjppdff .gt_left {
+#qdnmloaykv .gt_left {
   text-align: left;
 }
 
-#ztxhjppdff .gt_center {
+#qdnmloaykv .gt_center {
   text-align: center;
 }
 
-#ztxhjppdff .gt_right {
+#qdnmloaykv .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ztxhjppdff .gt_font_normal {
+#qdnmloaykv .gt_font_normal {
   font-weight: normal;
 }
 
-#ztxhjppdff .gt_font_bold {
+#qdnmloaykv .gt_font_bold {
   font-weight: bold;
 }
 
-#ztxhjppdff .gt_font_italic {
+#qdnmloaykv .gt_font_italic {
   font-style: italic;
 }
 
-#ztxhjppdff .gt_super {
+#qdnmloaykv .gt_super {
   font-size: 65%;
 }
 
-#ztxhjppdff .gt_footnote_marks {
+#qdnmloaykv .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ztxhjppdff .gt_asterisk {
+#qdnmloaykv .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ztxhjppdff .gt_indent_1 {
+#qdnmloaykv .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ztxhjppdff .gt_indent_2 {
+#qdnmloaykv .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ztxhjppdff .gt_indent_3 {
+#qdnmloaykv .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ztxhjppdff .gt_indent_4 {
+#qdnmloaykv .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ztxhjppdff .gt_indent_5 {
+#qdnmloaykv .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1803,54 +1033,34 @@ Caution
 </thead>
 <tbody class="gt_table_body">
 <tr class="odd">
-<td class="gt_row gt_right" headers="proj_id">484</td>
-<td class="gt_row gt_right" headers="motusFilter">0</td>
-<td class="gt_row gt_right" headers="n">28156</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="proj_id">484</td>
-<td class="gt_row gt_right" headers="motusFilter">1</td>
-<td class="gt_row gt_right" headers="n">76</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="proj_id">551</td>
-<td class="gt_row gt_right" headers="motusFilter">0</td>
-<td class="gt_row gt_right" headers="n">1748</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="proj_id">551</td>
-<td class="gt_row gt_right" headers="motusFilter">1</td>
-<td class="gt_row gt_right" headers="n">5</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="proj_id">373</td>
-<td class="gt_row gt_right" headers="motusFilter">0</td>
-<td class="gt_row gt_right" headers="n">72</td>
-</tr>
-<tr class="even">
 <td class="gt_row gt_right" headers="proj_id">168</td>
 <td class="gt_row gt_right" headers="motusFilter">0</td>
 <td class="gt_row gt_right" headers="n">685</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td class="gt_row gt_right" headers="proj_id">352</td>
 <td class="gt_row gt_right" headers="motusFilter">0</td>
 <td class="gt_row gt_right" headers="n">1574</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td class="gt_row gt_right" headers="proj_id">352</td>
 <td class="gt_row gt_right" headers="motusFilter">1</td>
 <td class="gt_row gt_right" headers="n">11</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td class="gt_row gt_right" headers="proj_id">364</td>
 <td class="gt_row gt_right" headers="motusFilter">0</td>
 <td class="gt_row gt_right" headers="n">1866</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td class="gt_row gt_right" headers="proj_id">364</td>
 <td class="gt_row gt_right" headers="motusFilter">1</td>
 <td class="gt_row gt_right" headers="n">275</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="proj_id">373</td>
+<td class="gt_row gt_right" headers="motusFilter">0</td>
+<td class="gt_row gt_right" headers="n">72</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_right" headers="proj_id">393</td>
@@ -1883,6 +1093,16 @@ Caution
 <td class="gt_row gt_right" headers="n">3</td>
 </tr>
 <tr class="odd">
+<td class="gt_row gt_right" headers="proj_id">484</td>
+<td class="gt_row gt_right" headers="motusFilter">0</td>
+<td class="gt_row gt_right" headers="n">28156</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="proj_id">484</td>
+<td class="gt_row gt_right" headers="motusFilter">1</td>
+<td class="gt_row gt_right" headers="n">76</td>
+</tr>
+<tr class="odd">
 <td class="gt_row gt_right" headers="proj_id">515</td>
 <td class="gt_row gt_right" headers="motusFilter">0</td>
 <td class="gt_row gt_right" headers="n">389</td>
@@ -1891,6 +1111,16 @@ Caution
 <td class="gt_row gt_right" headers="proj_id">515</td>
 <td class="gt_row gt_right" headers="motusFilter">1</td>
 <td class="gt_row gt_right" headers="n">2</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="proj_id">551</td>
+<td class="gt_row gt_right" headers="motusFilter">0</td>
+<td class="gt_row gt_right" headers="n">1700</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="proj_id">551</td>
+<td class="gt_row gt_right" headers="motusFilter">1</td>
+<td class="gt_row gt_right" headers="n">5</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_right" headers="proj_id">607</td>
@@ -1906,37 +1136,37 @@ Caution
 <p>Let’s take a closer look at one species in one project.</p>
 <p>There is quite possibly a lot of noise (see the amount of scatter in the <code>motusFilter = 0</code> category. And clearly this individual (Spotted Towhee) had a home base in southern BC.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>ns <span class="ot">&lt;-</span> noise_space[[<span class="dv">1</span>]] <span class="sc">|&gt;</span> </span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speciesID <span class="sc">==</span> <span class="dv">18550</span>) <span class="sc">|&gt;</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">in_range =</span> <span class="dv">0</span>)</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>coords <span class="ot">&lt;-</span> <span class="fu">tbl</span>(dbs[[<span class="st">"484"</span>]], <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"deployID"</span>, <span class="st">"latitude"</span>, <span class="st">"longitude"</span>)</span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>rn <span class="ot">&lt;-</span> <span class="fu">filter</span>(runs[[<span class="st">"484"</span>]], speciesID <span class="sc">==</span> <span class="dv">18550</span>) <span class="sc">|&gt;</span></span>
-<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(coords, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(ns, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(latitude), <span class="sc">!</span><span class="fu">is.na</span>(longitude)) <span class="sc">|&gt;</span></span>
-<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(motusFilter, tagDeployID, tsBegin, tsEnd, in_range, latitude, longitude) <span class="sc">|&gt;</span></span>
-<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">in_range =</span> <span class="fu">factor</span>(<span class="fu">replace_na</span>(in_range, <span class="dv">1</span>)))</span>
-<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>map <span class="ot">&lt;-</span> <span class="fu">ne_countries</span>(<span class="at">country =</span> <span class="fu">c</span>(<span class="st">"Canada"</span>, <span class="st">"United States of America"</span>), <span class="at">returnclass =</span> <span class="st">"sf"</span>)</span>
-<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a>rn_sf_cnt <span class="ot">&lt;-</span> rn <span class="sc">|&gt;</span></span>
-<span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"motusFilter"</span>, <span class="st">"in_range"</span>, <span class="st">"latitude"</span>, <span class="st">"longitude"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb38-22"><a href="#cb38-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>), <span class="at">crs =</span> <span class="dv">4326</span>)</span>
-<span id="cb38-23"><a href="#cb38-23" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb38-24"><a href="#cb38-24" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rn_sf_cnt) <span class="sc">+</span></span>
-<span id="cb38-25"><a href="#cb38-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> map) <span class="sc">+</span></span>
-<span id="cb38-26"><a href="#cb38-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">colour =</span> in_range, <span class="at">size =</span> n)) <span class="sc">+</span></span>
-<span id="cb38-27"><a href="#cb38-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>motusFilter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ns <span class="ot">&lt;-</span> noise_space <span class="sc">|&gt;</span> </span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(proj_id <span class="sc">==</span> <span class="dv">484</span>, speciesID <span class="sc">==</span> <span class="dv">18550</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">in_range =</span> <span class="dv">0</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>coords <span class="ot">&lt;-</span> <span class="fu">tbl</span>(dbs[[<span class="st">"484"</span>]], <span class="st">"recvDeps"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"deployID"</span>, <span class="st">"latitude"</span>, <span class="st">"longitude"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>rn <span class="ot">&lt;-</span> <span class="fu">filter</span>(runs, proj_id <span class="sc">==</span> <span class="dv">484</span>, speciesID <span class="sc">==</span> <span class="dv">18550</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(coords, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"recvDeployID"</span> <span class="ot">=</span> <span class="st">"deployID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(ns, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(latitude), <span class="sc">!</span><span class="fu">is.na</span>(longitude)) <span class="sc">|&gt;</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(motusFilter, tagDeployID, tsBegin, tsEnd, in_range, latitude, longitude) <span class="sc">|&gt;</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">in_range =</span> <span class="fu">factor</span>(<span class="fu">replace_na</span>(in_range, <span class="dv">1</span>)))</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>map <span class="ot">&lt;-</span> <span class="fu">ne_countries</span>(<span class="at">country =</span> <span class="fu">c</span>(<span class="st">"Canada"</span>, <span class="st">"United States of America"</span>), <span class="at">returnclass =</span> <span class="st">"sf"</span>)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>rn_sf_cnt <span class="ot">&lt;-</span> rn <span class="sc">|&gt;</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"motusFilter"</span>, <span class="st">"in_range"</span>, <span class="st">"latitude"</span>, <span class="st">"longitude"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>), <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(rn_sf_cnt) <span class="sc">+</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> map) <span class="sc">+</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="fu">aes</span>(<span class="at">colour =</span> in_range, <span class="at">size =</span> n)) <span class="sc">+</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>motusFilter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><a href="04_basic_filters_files/figure-html/unnamed-chunk-24-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="04_basic_filters_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></a></p>
+<p><a href="04_basic_filters_files/figure-html/unnamed-chunk-15-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="04_basic_filters_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -1945,62 +1175,74 @@ Caution
 </div>
 </div>
 </section>
+<section id="duplicate-runids" class="level2">
+<h2 class="anchored" data-anchor-id="duplicate-runids">Duplicate runIDs</h2>
+<p>Double check that there are no duplicate runIDs, which can happen when joining all the data together if we don’t account for duplicate/overlapping receiver/tag deployments.</p>
+<p>Additionally there are some duplicates based on the same runID in different batches… This occurs in <code>allruns</code> too, so isn’t an artifact of the custom joins, but still not idea.</p>
+<p>These <em>should</em> have been dealt with in <code>custom_runs()</code> but just in case, we’ll verify here.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>runs <span class="sc">|&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(runID) <span class="sc">|&gt;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 2
+# ℹ 2 variables: runID &lt;int&gt;, n &lt;int&gt;</code></pre>
+</div>
+</div>
+<p>Okay, good, there are zero duplicates (zero rows).</p>
+</section>
 <section id="looking-at-the-filters" class="level2">
 <h2 class="anchored" data-anchor-id="looking-at-the-filters">Looking at the filters</h2>
 <p>First we’ll combine and collect the ‘bad’ runs.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>noise <span class="ot">&lt;-</span> <span class="fu">pmap</span>(<span class="fu">list</span>(no_recv_dep, no_tag_dep, noise_time, noise_space), \(w, x, y, z) {</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="fu">list</span>(w, x, y, z), \(a) <span class="fu">collect</span>(<span class="fu">select</span>(a, <span class="st">"runID"</span>, <span class="st">"tagID"</span>))) <span class="sc">|&gt;</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">BAD =</span> <span class="dv">1</span>)</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>noise <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(no_deps, noise_time, noise_space) <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next we’ll take a look at how this compares to the motusFilter</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(runs[[<span class="dv">1</span>]], motusFilter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(runs, proj_id, motusFilter) <span class="sc">|&gt;</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(proj_id <span class="sc">==</span> <span class="dv">484</span>) <span class="sc">|&gt;</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># Source:   SQL [2 x 2]
-# Database: sqlite 3.45.0 [/home/steffi/Projects/Business/Barbara Frei/urban_motus/Data/Raw/project-484.motus]
-  motusFilter      n
-        &lt;dbl&gt;  &lt;int&gt;
-1           0 492942
-2           1 601907</code></pre>
+<pre><code># A tibble: 2 × 3
+  proj_id motusFilter      n
+    &lt;int&gt;       &lt;dbl&gt;  &lt;int&gt;
+1     484           0 492931
+2     484           1 601907</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(<span class="fu">anti_join_quick</span>(runs[[<span class="dv">1</span>]], noise[[<span class="dv">1</span>]], <span class="at">copy =</span> <span class="cn">TRUE</span>), motusFilter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anti_join</span>(runs, noise, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>, <span class="st">"tagDeployID"</span>, <span class="st">"recvDeployID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(proj_id <span class="sc">==</span> <span class="dv">484</span>) <span class="sc">|&gt;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(proj_id, motusFilter) <span class="sc">|&gt;</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># Source:   SQL [2 x 2]
-# Database: sqlite 3.45.0 [/home/steffi/Projects/Business/Barbara Frei/urban_motus/Data/Raw/project-484.motus]
-  motusFilter      n
-        &lt;dbl&gt;  &lt;int&gt;
-1           0 305817
-2           1 416234</code></pre>
+<pre><code># A tibble: 2 × 3
+  proj_id motusFilter      n
+    &lt;int&gt;       &lt;dbl&gt;  &lt;int&gt;
+1     484           0 336867
+2     484           1 429134</code></pre>
 </div>
 </div>
 <p>There are still many ‘bad’ data according to the motusFilter… perhaps we should use that as well, or see what happens after we do the next stage of fine scale filtering.</p>
 </section>
-<section id="add-filters-to-database" class="level2">
-<h2 class="anchored" data-anchor-id="add-filters-to-database">Add filters to database</h2>
-<p>We’ll record these filters in the database for use in the next steps.</p>
+<section id="saving-filters" class="level2">
+<h2 class="anchored" data-anchor-id="saving-filters">Saving filters</h2>
+<p>We’ll save the ‘bad data’ for use in the next steps.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk2</span>(dbs, noise, \(x, y) {</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="st">"bad_data"</span> <span class="sc">%in%</span> <span class="fu">dbListTables</span>(x)) <span class="fu">dbRemoveTable</span>(x, <span class="at">name =</span> <span class="st">"bad_data"</span>)</span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dbCreateTable</span>(x, <span class="at">name =</span> <span class="st">"bad_data"</span>, <span class="at">fields =</span> y)</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dbAppendTable</span>(x, <span class="at">name =</span> <span class="st">"bad_data"</span>, <span class="at">value =</span> y)</span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_feather</span>(noise, <span class="at">sink =</span> <span class="st">"Data/Datasets/noise_runs.feather"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="wrap-up" class="level2">
 <h2 class="anchored" data-anchor-id="wrap-up">Wrap up</h2>
 <p>Disconnect from the databases</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk</span>(dbs, dbDisconnect)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk</span>(dbs, dbDisconnect)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="reproducibility" class="level2">
 <h2 class="anchored" data-anchor-id="reproducibility">Reproducibility</h2>
 <div class="callout callout-style-simple callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -2009,38 +1251,40 @@ Session Info
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>─ Session info ───────────────────────────────────────────────────────────────
  setting  value
- version  R version 4.3.2 (2023-10-31)
- os       Ubuntu 22.04.3 LTS
+ version  R version 4.3.3 (2024-02-29)
+ os       Ubuntu 22.04.4 LTS
  system   x86_64, linux-gnu
  ui       X11
  language en_CA:en
  collate  en_CA.UTF-8
  ctype    en_CA.UTF-8
  tz       America/Winnipeg
- date     2024-02-16
+ date     2024-03-08
  pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────
  package       * version  date (UTC) lib source
+ arrow         * 13.0.0.1 2023-09-22 [1] CRAN (R 4.3.1)
  assertr       * 3.0.0    2022-11-05 [1] CRAN (R 4.3.0)
+ assertthat      0.2.1    2019-03-21 [1] CRAN (R 4.3.0)
  bit             4.0.5    2022-11-15 [1] CRAN (R 4.3.0)
  bit64           4.0.5    2020-08-30 [1] CRAN (R 4.3.0)
  blob            1.2.4    2023-03-17 [1] CRAN (R 4.3.0)
  cachem          1.0.8    2023-05-01 [1] CRAN (R 4.3.0)
- callr           3.7.3    2022-11-02 [1] CRAN (R 4.3.0)
  class           7.3-22   2023-05-03 [4] CRAN (R 4.3.1)
  classInt        0.4-10   2023-09-05 [1] CRAN (R 4.3.1)
  cli             3.6.2    2023-12-11 [1] CRAN (R 4.3.2)
+ codetools       0.2-19   2023-02-01 [4] CRAN (R 4.2.2)
  colorspace      2.1-0    2023-01-23 [1] CRAN (R 4.3.0)
  crayon          1.5.2    2022-09-29 [1] CRAN (R 4.3.0)
- DBI           * 1.2.1    2024-01-12 [1] CRAN (R 4.3.2)
+ DBI           * 1.2.2    2024-02-16 [1] CRAN (R 4.3.2)
  dbplyr          2.4.0    2023-10-26 [1] CRAN (R 4.3.1)
  devtools        2.4.5    2022-10-11 [1] CRAN (R 4.3.0)
  digest          0.6.34   2024-01-11 [1] CRAN (R 4.3.2)
@@ -2054,7 +1298,7 @@ Session Info
  fastmap         1.1.1    2023-02-24 [1] CRAN (R 4.3.0)
  fs              1.6.3    2023-07-20 [1] CRAN (R 4.3.1)
  generics        0.1.3    2022-07-05 [1] CRAN (R 4.3.0)
- ggplot2       * 3.4.4    2023-10-12 [1] CRAN (R 4.3.1)
+ ggplot2       * 3.5.0    2024-02-23 [1] CRAN (R 4.3.2)
  glue            1.7.0    2024-01-09 [1] CRAN (R 4.3.2)
  gt            * 0.10.0   2023-10-07 [1] CRAN (R 4.3.1)
  gtable          0.3.4    2023-08-21 [1] CRAN (R 4.3.1)
@@ -2068,7 +1312,6 @@ Session Info
  knitr           1.45     2023-10-30 [1] CRAN (R 4.3.1)
  labeling        0.4.3    2023-08-29 [1] CRAN (R 4.3.1)
  later           1.3.2    2023-12-06 [1] CRAN (R 4.3.2)
- lattice         0.22-5   2023-10-24 [4] CRAN (R 4.3.1)
  lifecycle       1.0.4    2023-11-07 [1] CRAN (R 4.3.2)
  lubridate     * 1.9.3    2023-09-27 [1] CRAN (R 4.3.1)
  magrittr        2.0.3    2022-03-30 [1] CRAN (R 4.3.0)
@@ -2079,15 +1322,12 @@ Session Info
  munsell         0.5.0    2018-06-12 [1] CRAN (R 4.3.0)
  naturecounts    0.4.0    2023-06-20 [1] local
  pillar          1.9.0    2023-03-22 [1] CRAN (R 4.3.0)
- pkgbuild        1.4.2    2023-06-26 [1] CRAN (R 4.3.1)
+ pkgbuild        1.4.3    2023-12-10 [1] CRAN (R 4.3.2)
  pkgconfig       2.0.3    2019-09-22 [1] CRAN (R 4.3.0)
  pkgload         1.3.3    2023-09-22 [1] CRAN (R 4.3.1)
- prettyunits     1.2.0    2023-09-24 [1] CRAN (R 4.3.1)
- processx        3.8.2    2023-06-30 [1] CRAN (R 4.3.1)
  profvis         0.3.8    2023-05-02 [1] CRAN (R 4.3.1)
  promises        1.2.1    2023-08-10 [1] CRAN (R 4.3.1)
  proxy           0.4-27   2022-06-09 [1] CRAN (R 4.3.0)
- ps              1.7.5    2023-04-18 [1] CRAN (R 4.3.0)
  purrr         * 1.0.2    2023-08-10 [1] CRAN (R 4.3.1)
  R6              2.5.1    2021-08-19 [1] CRAN (R 4.3.0)
  Rcpp            1.0.12   2024-01-09 [1] CRAN (R 4.3.2)
@@ -2095,23 +1335,23 @@ Session Info
  remotes         2.4.2.1  2023-07-18 [1] CRAN (R 4.3.2)
  rlang           1.1.3    2024-01-10 [1] CRAN (R 4.3.2)
  rmarkdown       2.25     2023-09-18 [1] CRAN (R 4.3.1)
- rnaturalearth * 0.3.4    2023-08-21 [1] CRAN (R 4.3.1)
+ rnaturalearth * 1.0.1    2023-12-15 [1] CRAN (R 4.3.2)
  RSQLite         2.3.5    2024-01-21 [1] CRAN (R 4.3.2)
  rstudioapi      0.15.0   2023-07-07 [1] CRAN (R 4.3.1)
  sass            0.4.8    2023-12-06 [1] CRAN (R 4.3.2)
  scales          1.3.0    2023-11-28 [1] CRAN (R 4.3.2)
  sessioninfo     1.2.2    2021-12-06 [1] CRAN (R 4.3.0)
- sf            * 1.0-14   2023-07-11 [1] CRAN (R 4.3.1)
+ sf            * 1.0-15   2023-12-18 [1] CRAN (R 4.3.2)
  shiny           1.8.0    2023-11-17 [1] CRAN (R 4.3.2)
- sp              2.1-1    2023-10-16 [1] CRAN (R 4.3.1)
  stringi         1.8.3    2023-12-11 [1] CRAN (R 4.3.2)
  stringr       * 1.5.1    2023-11-14 [1] CRAN (R 4.3.2)
+ terra           1.7-71   2024-01-31 [1] CRAN (R 4.3.2)
  tibble        * 3.2.1    2023-03-20 [1] CRAN (R 4.3.0)
  tidyr         * 1.3.1    2024-01-24 [1] CRAN (R 4.3.2)
  tidyselect      1.2.0    2022-10-10 [1] CRAN (R 4.3.0)
  timechange      0.3.0    2024-01-18 [1] CRAN (R 4.3.2)
  tzdb            0.4.0    2023-05-12 [1] CRAN (R 4.3.1)
- units         * 0.8-4    2023-09-13 [1] CRAN (R 4.3.1)
+ units         * 0.8-5    2023-11-28 [1] CRAN (R 4.3.2)
  urlchecker      1.0.1    2021-11-30 [1] CRAN (R 4.3.0)
  usethis         2.2.2    2023-07-06 [1] CRAN (R 4.3.1)
  utf8            1.2.4    2023-10-22 [1] CRAN (R 4.3.1)
@@ -2540,7 +1780,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   </div>
 </nav>
 </div> <!-- /content -->
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/04_basic_filters.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","openEffect":"zoom","selector":".lightbox","loop":false,"descPosition":"bottom"});
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/04_basic_filters.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script>var lightboxQuarto = GLightbox({"openEffect":"zoom","loop":false,"selector":".lightbox","descPosition":"bottom","closeEffect":"zoom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;
