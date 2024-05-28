@@ -8,9 +8,17 @@
 .DS_Store
 .quarto
 Data/
-
-*/02_range_maps_files/figure-html/*
 *cache/
 *.motus
 References
 *.pdf
+
+# Don't push local "_files" folders, only those in the docs folder
+*_files/*
+!*/docs/*_files/*
+# But still don't share the range maps
+/docs/*_range_maps_files/*  
+
+# Don't push local "Figs" folder, only that in teh docs folder
+/Figs/*
+!*/docs/Figs/*
