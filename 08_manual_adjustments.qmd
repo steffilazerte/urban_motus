@@ -123,7 +123,8 @@ First remove manually defined 'bad' bouts, as well as previously identified
 
 ```{r}
 bouts <- anti_join(bouts, fix, 
-                   by = join_by("tagDeployID", "stn_group", within("timeBegin", "timeEnd", "start", "end"))) |>
+                   by = join_by("tagDeployID", "stn_group", 
+                                within("timeBegin", "timeEnd", "start", "end"))) |>
   filter(!id %in% all_bad)
 overlaps <- create_overlapping(bouts) 
 trans <- create_trans(bouts, overlaps, dist)
@@ -171,6 +172,7 @@ ids <- trans |>
   semi_join(fix, by = "tagDeployID") |>
   pull(tagDeployID) |>
   unique()
+
 walk(ids, \(x) {
   g <- plot_bouts(trans, bouts = bouts, tagDeployID = x)
   ggsave(paste0("Figs/check2_", x, "_map.png"), g, width = 3840*1.5, height = 1920*1.5, units = "px")
@@ -184,7 +186,7 @@ walk(ids, \(x) {
 #|   group: checks
 walk(ids, \(x) {
   cat("\n\n#### ", x, " {#", x, "}\n\n", sep = "")
-  cat("\n![](Figs/check_", x, "_map.png){out-width=100%}\n\n", sep = "")
+  cat("\n![](Figs/check2_", x, "_map.png){out-width=100%}\n\n", sep = "")
   cat("\n\n", sep = "")
 })
 ```
