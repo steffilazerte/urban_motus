@@ -406,10 +406,10 @@ create_bouts <- function(x, cutoff) {
       lag = pmin(lag1, lag2),
       prev_lag = lag(lag, default = set_units(Inf, "min")),
       start = prev_lag >= .env$cutoff,
-      bout = cumsum(start))
+      bout_id = cumsum(start))
   
   x1 |>
-    group_by(bout) |>
+    group_by(bout_id) |>
     summarize(timeBegin = min(timeBegin), timeEnd = max(timeEnd), 
               runID = list(unlist(runID)),
               n_runs = n(), 
@@ -434,7 +434,7 @@ find_overlaps <- function(x2, type = "logical") {
   ovlps <- ovlps | t(ovlps) # either id1/id2 or id2/id1
   
   if(type == "df") {
-    nms <- paste0(x2$stn_group, "_", x2$bout)
+    nms <- paste0(x2$stn_group, "_", x2$bout_id)
     dimnames(ovlps) <- list(nms, nms)
     r <- expand_grid(id1 = nms, id2 = nms) |>
       mutate(overlap = as.vector(ovlps)) |>

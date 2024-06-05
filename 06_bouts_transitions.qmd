@@ -228,7 +228,7 @@ bouts <- nest(groups, .by = c("tagDeployID", "stn_group")) |>
   mutate(dateBegin = as_date(timeBegin),
          # Use first station in a group to define recvDeployID
          recvDeployID = as.numeric(str_split_i(stn_group, "-", i = 1)), 
-         id = paste0(tagDeployID, "_", stn_group, "_", bout)) |>
+         id = paste0(tagDeployID, "_", stn_group, "_", bout_id)) |>
   arrange(tagDeployID, timeBegin) |>
   left_join(recvs, by = "recvDeployID")
 ```
