@@ -111,7 +111,7 @@ dist <- st_distance(recvs_sf) |>
   pivot_longer(-recv_from, names_to = "recv_to", values_to = "next_dist") |>
   mutate(recv_to = as.integer(recv_to)) |>
   arrange(recv_from, recv_to) |>
-  mutate(next_pair = paste0(recv_from, "_", recv_to),
+  mutate(recv_pair = paste0(recv_from, "_", recv_to),
          next_dist = set_units(next_dist, "km"),
          min_time = next_dist / max_flight_speed) |>
   #filter(next_dist > max_tower_dist) |>

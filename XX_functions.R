@@ -242,7 +242,7 @@ plot_map <- function(trans, tagDeployID = NULL) {
       summarize(
         lon = lon1, 
         lat = lat1,
-        stn_pair = stn_pair[1],
+        recv_pair = recv_pair[1],
         problem_chr = pmap_chr(list(problem_fast, problem_manual),
                                \(x, y) paste0(c("too fast", "manual")[c(x, y)], collapse = ", ")),
         nudge_x = sign(lon2 - lon1) * ((bb[[2]] - bb[[1]]) * 0.1),
@@ -507,11 +507,11 @@ create_trans <- function(bouts, overlapping_bouts, dist) {
               by = "id2") |>
     
     # Identify transition pairs
-    mutate(stn_pair = paste0(recv1, "_", recv2)) |>
+    mutate(recv_pair = paste0(recv1, "_", recv2)) |>
     
     # Add in distance between stations
-    left_join(select(dist, "stn_pair" = "next_pair", "next_dist", "min_time"),
-              by = "stn_pair") |>
+    left_join(select(dist, "recv_pair", "next_dist", "min_time"),
+              by = "recv_pair") |>
     
     # Calculate the time and speed taken to move between stations
     mutate(trans_id = row_number(),
