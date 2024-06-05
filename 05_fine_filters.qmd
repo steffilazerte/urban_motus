@@ -13,9 +13,9 @@ previous steps.
 #| message: false
 #| cache: false
 source("XX_setup.R")
-noise_runs <- open_dataset("Data/Datasets/noise_runs.feather", format = "feather")
+noise_runs <- open_dataset("Data/02_Datasets/noise_runs.feather", format = "feather")
 
-runs <- open_dataset("Data/Datasets/runs", format = "feather") |>
+runs <- open_dataset("Data/02_Datasets/runs", format = "feather") |>
   anti_join(noise_runs)
 
 hits <- load_hits() |>
@@ -142,7 +142,7 @@ definitely getting closer.
 We'll save the 'bad data' for use in the next steps.
 
 ```{r}
-write_feather(noise_hits, sink = "Data/Datasets/noise_hits.feather")
+write_feather(noise_hits, sink = "Data/02_Datasets/noise_hits.feather")
 ```
 
 ## Wrap up

@@ -12,7 +12,7 @@ If we find any problems we have the **power** (`r emo::ji("strong")`) to fix the
 #| cache: false
 source("XX_setup.R")
 
-runs <- open_dataset("Data/Datasets/runs", format = "feather")
+runs <- open_dataset("Data/02_Datasets/runs", format = "feather")
 ```
 
 ## Duplications

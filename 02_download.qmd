@@ -31,10 +31,10 @@ Get the status of each project (i.e. how much data left to download?)
 ```{r}
 if(update) {
   status <- data.frame(proj_id = projects, 
-                       file = paste0("Data/Raw/project-", projects, ".motus")) |>
+                       file = paste0("Data/01_Raw/project-", projects, ".motus")) |>
     mutate(status = map2(
       proj_id, file, 
-      \(x, y) tellme(x, dir = "Data/Raw", new = !file.exists(y)))) |>
+      \(x, y) tellme(x, dir = "Data/01_Raw", new = !file.exists(y)))) |>
     unnest(status) |>
     mutate(currentMB = file.size(file)/1024/1024,
            newMB = numBytes/1024/1024)
@@ -58,7 +58,7 @@ if(update) {
 
 ```{r}
 #| message: false
-if(update) tagme(dir = "Data/Raw")
+if(update) tagme(dir = "Data/01_Raw")
 ```
 
 ## Clean up
@@ -68,7 +68,7 @@ Here we'll deal with deprecated batches and metadata.
 First we'll load the database connections.
 
 ```{r}
-dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
+dbs <- map(projects, \(x) tagme(x, dir = "Data/01_Raw", update = FALSE))
 ```
 
 
@@ -154,7 +154,7 @@ On the way we'll also create some added date and time columns.
 This should run reasonably fast. 
 ```{r}
 if(update) {
-  unlink("Data/Datasets/runs/*", recursive = TRUE)
+  unlink("Data/02_Datasets/runs/*", recursive = TRUE)
   iwalk(runs, \(x, i) {
     message(i)
     x |>
@@ -167,7 +167,7 @@ if(update) {
              monthBegin = month(timeBegin),
              yearBegin = year(timeBegin),) |>
       group_by(proj_id) |>
-      write_dataset(path = "Data/Datasets/runs/", format = "arrow") 
+      write_dataset(path = "Data/02_Datasets/runs/", format = "arrow") 
   })
 }
 ```
@@ -179,7 +179,7 @@ The thing with splitting data across multiple files is that we don't want files 
 
 So let's double check that we have reasonable file sizes and numbers.
 ```{r}
-tibble(files = list.files("Data/Datasets/runs/", recursive = TRUE, full.names = TRUE)) |>
+tibble(files = list.files("Data/02_Datasets/runs/", recursive = TRUE, full.names = TRUE)) |>
   mutate(size_mb = file.size(files) * 1e-6) |>
   summarize(n = n(),
             min_mb = min(size_mb),
@@ -200,7 +200,7 @@ takes a fair amount of disk space (much more than the SQLite databases).
 if(update) {
   hits <- map(dbs, \(x) tbl(x, "hits"))
   
-  unlink("Data/Datasets/hits/*", recursive = TRUE)
+  unlink("Data/02_Datasets/hits/*", recursive = TRUE)
   iwalk(hits, \(x, i) {
     message(i) 
     r <- select(runs[[i]], "runID", "speciesID", "tagDeployID", "tagID", 
@@ -214,7 +214,7 @@ if(update) {
              month = month(date),
              year = year(date),) |> 
       group_by(proj_id, speciesID, year) |>
-      write_dataset(path = "Data/Datasets/hits/", format = "arrow") 
+      write_dataset(path = "Data/02_Datasets/hits/", format = "arrow") 
   })
 }
 ```
@@ -223,7 +223,7 @@ As with hits, we don't want files to be <20MB or >2GB and we want to avoid too m
 
 So let's double check that we have reasonable file sizes and numbers.
 ```{r}
-tibble(files = list.files("Data/Datasets/hits/", recursive = TRUE, full.names = TRUE)) |>
+tibble(files = list.files("Data/02_Datasets/hits/", recursive = TRUE, full.names = TRUE)) |>
   mutate(size_mb = file.size(files) * 1e-6) |>
   summarize(n = n(),
             min_mb = min(size_mb),

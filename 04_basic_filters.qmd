@@ -27,7 +27,7 @@ So we will create lists of all the run/tagID combinations *to be removed*,
 and we'll store these as a new dataset.
 
 When we want to calculate our final summaries, we can apply these filters 
-in the last step *before* `collect()`ing (flattening) the parquet data files. 
+in the last step *before* `collect()`ing (flattening) the feather data files. 
 
 ## Setup
 ```{r}
@@ -35,8 +35,8 @@ in the last step *before* `collect()`ing (flattening) the parquet data files.
 #| cache: false
 source("XX_setup.R")
 
-recvs <- read_csv("Data/Datasets/receivers.csv")
-runs <- open_dataset("Data/Datasets/runs", format = "feather")
+recvs <- read_csv("Data/02_Datasets/receivers.csv")
+runs <- open_dataset("Data/02_Datasets/runs", format = "feather")
 ```
 
 ## Non-deployments
@@ -352,7 +352,7 @@ filtering.
 We'll save the 'bad data' for use in the next steps.
 
 ```{r}
-write_feather(noise, sink = "Data/Datasets/noise_runs.feather")
+write_feather(noise, sink = "Data/02_Datasets/noise_runs.feather")
 ```
 
 ## Wrap up

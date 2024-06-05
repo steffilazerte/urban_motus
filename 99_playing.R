@@ -10,7 +10,7 @@ source("XX_setup.R")
 
 
 # Playing with numbers
-db <- tagme(projects[1], dir = "Data/Raw", update = FALSE)
+db <- tagme(projects[1], dir = "Data/01_Raw", update = FALSE)
 
 dbGetQuery(db, "SELECT COUNT(*) from tags")    # 168         # Super fast
 dbGetQuery(db, "SELECT COUNT(*) from runs")    #  1,069,536  # Quite fast

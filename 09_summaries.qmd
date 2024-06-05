@@ -27,9 +27,9 @@ meta <- runs |>
   left_join(tbl(dbs[[1]], "species") |> select(english, id) |> collect(), 
             by = c("speciesID" = "id"))
 
-bouts <- read_rds("Data/Datasets/bouts_cleaned.rds") |>
+bouts <- read_rds("Data/02_Datasets/bouts_cleaned.rds") |>
   left_join(meta, by = "tagDeployID")
-trans <- read_rds("Data/Datasets/transitions_cleaned.rds") |>
+trans <- read_rds("Data/02_Datasets/transitions_cleaned.rds") |>
   left_join(meta, by = "tagDeployID")
 
 ```

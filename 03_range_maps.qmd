@@ -386,7 +386,7 @@ recvs |>
   full_join(p, by = c("deployID", "deviceID", "name", "species_code", 
                       "id", "english", "in_range")) |>
   mutate(problem = replace_na(problem, "none")) |>
-  write_csv("Data/Datasets/receivers.csv")
+  write_csv("Data/02_Datasets/receivers.csv")
 ```
 
 ## Wrap up

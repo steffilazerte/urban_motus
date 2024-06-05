@@ -46,8 +46,12 @@ projects <- c(484, 551, 373, 168, # From Barbara and Elizabeth
               352, 364, 393, 417, 464, 515, 607) # Open Motus projects
 projects <- setNames(projects, projects)
 
+
+# ---- folders ----
+fs::dir_create(c("Data/01_Raw", "Data/02_Datasets", "Data/03_Final"))
+
 # ---- db_load ----
-dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))
+dbs <- map(projects, \(x) tagme(x, dir = "Data/01_Raw", update = FALSE))
 
 # ---- db_species ----
 # naturecounts::nc_metadata() # Update naturecounts taxonomy lists
@@ -71,7 +75,7 @@ sp <- tbl(dbs[[1]], "tagDeps") |>
     scientific = str_replace(scientific, "Setophaga coronata coronata", "Setophaga coronata"))
 
 # ----- arrow ------
-arws <- tibble(file = list.files("Data/Datasets/hits/", recursive = TRUE, full.names = TRUE)) |>
+arws <- tibble(file = list.files("Data/02_Datasets/hits/", recursive = TRUE, full.names = TRUE)) |>
   mutate(proj_id = str_extract(file, "(?<=proj_id\\=)\\d+"),
          species_id = str_extract(file, "(?<=speciesID\\=)\\d+"),
          year = str_extract(file, "(?<=year\\=)\\d+")) |>

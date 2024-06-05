@@ -56,7 +56,7 @@ In this workflow, `map()` is often use to perform a task on each motus database.
 This is why it often iterates over `projects` (the list of project ids) or
 `dbs` (the list of database connections).
 
-For example, we use `dbs <- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))`
+For example, we use `dbs <- map(projects, \(x) tagme(x, dir = "Data/01_Raw", update = FALSE))`
 in the [Setup]("XX_setup.html") to read each data base connection and put it in 
 the `dbs` list.
 

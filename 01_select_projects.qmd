@@ -36,7 +36,7 @@ was the same)
 - omit projects with non-Canadian species
 
 ```{r}
-p_sp <- read_excel("Data/Raw/TagsSpeciesProject.xlsx") |>
+p_sp <- read_excel("Data/01_Raw/TagsSpeciesProject.xlsx") |>
   rename_with(.cols = contains("No column"), \(x) "access") |>
   filter(access == 1,             # Only completely open projects
          speciesID != 129470) |>  # Don't worry about Human tags :D

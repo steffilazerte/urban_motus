@@ -11,7 +11,7 @@ motus_vars$userLogin
 # - Montreal Connectivity #373 (105 tags)
 # - Montreal moult migrant research #168 (113 tags)
 
-t1 <- tagme(484, new = FALSE, update = TRUE, dir = "Data/Raw")
-t2 <- tagme(551, new = FALSE, update = TRUE, dir = "Data/Raw")
-t3 <- tagme(373, new = FALSE, update = TRUE, dir = "Data/Raw")
-t4 <- tagme(168, new = FALSE, update = TRUE, dir = "Data/Raw")
+t1 <- tagme(484, new = FALSE, update = TRUE, dir = "Data/01_Raw")
+t2 <- tagme(551, new = FALSE, update = TRUE, dir = "Data/01_Raw")
+t3 <- tagme(373, new = FALSE, update = TRUE, dir = "Data/01_Raw")
+t4 <- tagme(168, new = FALSE, update = TRUE, dir = "Data/01_Raw")

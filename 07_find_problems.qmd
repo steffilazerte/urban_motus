@@ -14,9 +14,9 @@ source("XX_setup.R")
 runs <- load_runs()
 hits <- load_hits()
 
-trans <- read_rds("Data/Datasets/transitions_initial.rds")
-bouts <- read_rds("Data/Datasets/bouts_initial.rds")
-dist <- read_rds("Data/Datasets/stn_dist.rds")
+trans <- read_rds("Data/02_Datasets/transitions_initial.rds")
+bouts <- read_rds("Data/02_Datasets/bouts_initial.rds")
+dist <- read_rds("Data/02_Datasets/stn_dist.rds")
 ```
 
 ```{r}
@@ -176,7 +176,7 @@ trans_full <- trans_clean |>
 We'll also keep track of the 'bad' bouts to be omitted in the next step
 
 ```{r}
-write_rds(all_bad, "Data/Datasets/bad_bouts.rds")
+write_rds(all_bad, "Data/02_Datasets/bad_bouts.rds")
 ```
 
 
