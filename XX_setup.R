@@ -1,34 +1,35 @@
 
+renv::restore()
+
 # ---- packages ----
 # Motus data and data bases
-library(motus)
-library(DBI)   # Data bases
-library(arrow) # parquet files
+library(motus)     # Fetch motus data
+library(DBI)       # Data bases
+library(arrow)     # feather files
 
 # Tidy data manipulation
-library(purrr)
-library(furrr)
-library(dplyr)
-library(tidyr)
-library(tibble)
-library(stringr)
-library(ggplot2)
-library(readr)
-library(lubridate)
-library(assertr) # Check data quality
-library(forcats)
-library(ggrepel)
-library(patchwork)
+library(purrr)     # Loops
+library(furrr)     # Parallel loops
+library(dplyr)     # Manipulate data
+library(tidyr)     # Transform data
+library(tibble)    # Data frames (ish)
+library(stringr)   # Text manipulation/search
+library(readr)     # Read data
+library(lubridate) # Deal with date/times
+library(assertr)   # Check data quality
 
 # Data display
-library(gt)
+library(ggplot2)   # Figures
+library(ggrepel)   # Push labels away from points in figures
+library(patchwork) # Combine figures
+library(gt)        # HTML tables
 
 # Spatial data
-library(sf)
-library(rnaturalearth)
-library(ebirdst) # Species ranges
-library(units)
-library(ggspatial)
+library(sf)        # Work with spatial data
+library(rnaturalearth) # Get maps
+library(ebirdst)   # Fetch species ranges
+library(units)     # Deal with units of distance and speed
+library(ggspatial) # Plot spatial data
 
 
 

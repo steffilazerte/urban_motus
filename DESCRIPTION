@@ -1,0 +1,33 @@
+Type: Workflow
+Description: Summarizing bird migration and stopovers within urbanized landscapes using Motus data
+Depends: 
+  motus,
+  naturecounts,
+  DBI,  
+  arrow,
+  purrr,
+  furrr,
+  dplyr,
+  tidyr, 
+  tibble,
+  stringr,
+  readr,  
+  lubridate,
+  assertr,  
+  ggplot2,  
+  ggrepel,  
+  patchwork,
+  gt,       
+  sf,       
+  rnaturalearth,
+  ebirdst,   
+  units,     
+  ggspatial,
+  knitr,
+  emo,
+  devtools,
+  fs
+Suggests:
+  usethis
+  pak
+
