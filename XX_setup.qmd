@@ -45,7 +45,7 @@ Additionally we're using open motus projects selected via
 ```{r projects}
 ```
 
-## Define contants
+## Define constants
 
 Here we define any cutoffs or constants we will be using
 

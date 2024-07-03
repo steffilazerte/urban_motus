@@ -2,8 +2,6 @@
 title: "Notes & Details"
 ---
 
-> WIP
-
 This section contains notes and details about the analysis, from design choices
 to coding explanations. This is most relevant for those who may be working with
 the code, as opposed to those interpreting the outputs.
@@ -24,7 +22,7 @@ This creates a PDF of just the plots which can be easily distributed via email
 ## Pipes `|>` 
 
 Here I use pipes, namely the R base pipe `|>` which allows you to 'pipe' the 
-output from the first line as the input to the second line ((details)[https://r4ds.hadley.nz/workflow-style.html#sec-pipes]).
+output from the first line as the input to the second line ([details](https://r4ds.hadley.nz/workflow-style.html#sec-pipes)).
 
 One handy way of reading code with pipes is to think "and then..." every time you
 see it.
@@ -60,9 +58,13 @@ For example, we use `dbs <- map(projects, \(x) tagme(x, dir = "Data/01_Raw", upd
 in the [Setup]("XX_setup.html") to read each data base connection and put it in 
 the `dbs` list.
 
-Similarly, in [Download/Update Data](02_download.qmd), we use
+Similarly, in [Download Data](02_download.qmd), we use
 `walk(dbs, metadata)` to 'walk' through the list of databases and add the full
 metadata to each one.
+
+Occasionally we also use the [furrr package](https://furrr.futureverse.org/)
+and its `future_map()` function(s) to
+run `map()` and family in parallel to maximize the speed of a computation.
 
 
 ## Spatial
@@ -76,8 +78,9 @@ errors and will occasionally be found in the middle of a pipe for this reason.
 
 ## Databases
 
-**Avoiding `anti_join()`**
+**Avoiding `anti_join()`**  
+
 - This is pretty [slow for SQLite databases](https://github.com/tidyverse/dbplyr/issues/1355)
-- So we'll use a left join plus filter instead 
+- So we'll use a left join plus `filter` instead (if joining on Databases)
   (but remember that may have to filter to *keep* missing values if appropriate)
 

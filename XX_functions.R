@@ -149,7 +149,7 @@ load_hits <- function() {
   })
 }
 
-plot_bouts <- function(trans, trans_clean = NULL, bouts, tagDeployID, save = TRUE) {
+plot_bouts <- function(trans, trans_clean = NULL, bouts, tagDeployID, save = FALSE) {
   
   trans <- filter(trans, tagDeployID == .env$tagDeployID)
   if(is.null(trans_clean)) trans_clean <- trans
@@ -419,7 +419,16 @@ create_bouts <- function(x, cutoff) {
               .groups = "drop")
 }
 
+calc_trans <- function(x) {
+  x |>
+    rename(id1 = id) |>
+    mutate(next_stn = lead(stn_group), 
+           id2 = lead(id1), .by = "tagDeployID") |>
+    filter(stn_group != next_stn) |>
+    select(tagDeployID, id1, id2)
+}
 
+# ---- find_overlaps ----
 find_overlaps <- function(x2, type = "logical") {
   #if(3551 %in% x2$stn_group) browser()
   #           comp B/E2  vs. B/E1
@@ -443,15 +452,6 @@ find_overlaps <- function(x2, type = "logical") {
     r <- any(colSums(ovlps) > 1)
   }
   r
-}
-
-calc_trans <- function(x) {
-  x |>
-    rename(id1 = id) |>
-    mutate(next_stn = lead(stn_group), 
-           id2 = lead(id1), .by = "tagDeployID") |>
-    filter(stn_group != next_stn) |>
-    select(tagDeployID, id1, id2)
 }
 
 # ---- load_runs ----

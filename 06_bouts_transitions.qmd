@@ -1,7 +1,6 @@
 ---
 title: "Bouts and Transitions"
 freeze: auto
-cache: true
 ---
 
 Here we'll start collapsing the various runs into *bouts*. 
@@ -33,8 +32,8 @@ knitr::read_chunk("XX_functions.R")
 ### Final filter application
 
 Although we may wish to revisit the filters, for now we will apply the filters
-collected in 04_basic_filters and 05_fine_filters. We will finish off with 
-omitting any run with a length of 2 or less (this is a partial application of the 
+collected in [Basic Filtering](04_basic_filters.html) and [Fine-scale Filtering](05_fine_filters.html).
+We will finish off by omitting any run with a length of 2 or less (this is a partial application of the 
 `motusFilter`, so will likely still let false positives through).
 
 :::{.panel-tabset}
@@ -57,13 +56,13 @@ from a station* in which a bird could conceivably be detected (otherwise we
 might calculate super fast flight speeds simply because a bird was at the
 detection limit of two stations and moved back and forth across the boundary).
 
-We will assume the following limits for `max_flight_speed` and `max_tower_dist` (defined in `XX_setup.R`).
+We will assume the following limits for `max_flight_speed` and `max_tower_dist` (defined in [Setup](XX_setup.html)).
 
-- Flight speed 72 m/s (`max_flight_speed`)
+- Flight speed `r max_flight_speed` m/s (`max_flight_speed`)
     - from Amie via Anderson et al. (2019) and Gronroos et al. (2012))
     - for shorebirds and with a buffer to avoid missing true flights, 
       so may be much faster than realistic for our birds (false positives)
-- Tower distance 50 km (`max_tower_dist`)
+- Tower distance `r max_tower_dist` km (`max_tower_dist`)
     - from Amie, based on a 25km radius at each tower (so 50 between the two)
     - generous as most towers have a smaller detection range, but possible
 
@@ -83,15 +82,16 @@ We'll be looking at movements between stations and how quickly they occur.
 So the first step is to calculate these distances and then our minimum 
 time to travel between those two towers.
 
-- Here we use the units package to handle the unit conversions for time (min) and distance (m)
-  into speed (km/day)
+- Here we use the units package to handle the unit conversions
 - Units can then be compared with the `max_flight_speed` in units of `m/s`
+- We defined a `min_time` which is the minimum amount of time it can take to
+  transition between two stations acording to their distance the the `max_flight_speed`.
 
 We can't reliably assess speed over very small distances, because each tower
 could presumably detect birds up to 25km away.
 
 So we'll only consider fast birds when the distance between towers is greater than 
-our buffer `max_tower_dist` and the flight speed is more than `max_flight_speed`
+our buffer `max_tower_dist` and the flight speed is more than `max_flight_speed`.
 
 ```{r}
 recvs <- runs |>
@@ -128,7 +128,7 @@ there are multiple simultaneous bouts on these stations and transitions between
 these stations and others.
 
 Here we identify station groups as groups of stations where each station in the
-group is within `r max_tower_dist` of the others. 
+group is within `r max_tower_dist` km of the others. 
 
 Groups that are not completely inclusive (i.e. both stations Z and X are close
 to station Y but not to each other) are not included (they would remain station
@@ -186,11 +186,11 @@ Now we'll summarize the runs into detection bouts for each receiver for each
 individual. 
 
 For example, if a bird was detected around a station for a total of 6 hours over
-the course of 10 runs, we would collapse this down into one detection bout of
-6 hours. 
+the course of 10 runs (all within `r bout_cutoff` minutes of each other),
+we would collapse this down into one detection bout of 6 hours. 
 
-We'll use a `bout_cutoff` of `r bout_cutoff` defined in `XX_setup.R`. So if
-two runs at the same station are more than `r bout_cutoff` apart, we'll consider
+We'll use a `bout_cutoff` of `r bout_cutoff` minutes defined in [Setup](XX_setup.html).
+So if two runs at the same station are more than `r bout_cutoff` min apart, we'll consider
 those runs to belong to separate bouts.
 
 Because there are overlapping runs we need to run the bout collapsing function
@@ -249,6 +249,10 @@ overlapping_bouts <- create_overlapping(bouts)
 ```
 
 ### Function
+
+```{r find_overlaps}
+```
+
 ```{r create_overlapping}
 ```
 

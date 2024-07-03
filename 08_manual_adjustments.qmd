@@ -111,7 +111,9 @@ fix <- tribble(
 ```{r}
 select(fix, -problem_manual) |>
   gt() |>
-  gt_theme()
+  gt_theme()  |>
+  tab_options(container.height = px(600),
+              container.overflow.y = "auto")
 ```
 
 - What's up with the bunch of ids ~ 43882 etc. which all go from Indiana to Montreal?

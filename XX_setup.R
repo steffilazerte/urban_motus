@@ -1,6 +1,3 @@
-
-renv::restore()
-
 # ---- packages ----
 # Motus data and data bases
 library(motus)     # Fetch motus data
@@ -30,6 +27,7 @@ library(rnaturalearth) # Get maps
 library(ebirdst)   # Fetch species ranges
 library(units)     # Deal with units of distance and speed
 library(ggspatial) # Plot spatial data
+library(lutz)      # Timezones by location
 
 
 

@@ -16,7 +16,7 @@ format-links: false
 In this step we decide **Which receivers do we keep?**
 
 - We keep receivers which are within ranges of the species in question
-- We'll keep runs which have acceptable receivers for a given species
+- We'll keep runs which have acceptable receivers for a given species (future steps)
 
 So first we need to get a list of receivers that are within different species 
 ranges.  We'll use this list to filter the Motus runs in later steps.
@@ -82,7 +82,9 @@ sp_codes <- sp_ebird$species_code
 ### Species list
 ```{r}
 gt(sp_ebird, rownames_to_stub = TRUE) |>
-  gt_theme()
+  gt_theme() |>
+  tab_options(container.height = px(600),
+              container.overflow.y = "auto")
 ```
 :::
 

@@ -1,6 +1,5 @@
 ---
 title: Fine-scale Filtering
-freeze: auto
 ---
 
 Here we perform fine-scale filtering which involves more assessments of potential issues. 
@@ -23,9 +22,9 @@ hits <- load_hits() |>
   
 ```
 
-We'll also use a modified version of the motusFilter[^1], such that 
+We'll also use a modified version of the `motusFilter`[^1], such that 
 hits from SENSORGNOME stations with a `freqSD > 0.1` will be considered 'bad' data 
-(i.e., we'll set the motusFilter value to 0 for these hits).
+(i.e., we'll set the `motusFilter` value to 0 for these hits).
 
 [^1]: Based on notes from Amie MacDonald's scripts
 
@@ -114,7 +113,7 @@ noise_hits <- bind_rows(noise_tags, noise_quality) |>
 noise_hits
 ```
 
-Next we'll take a look at how this compares to the motusFilter
+Next we'll take a look at how this compares to the `motusFilter`
 
 With only the runs filtering
 ```{r}
@@ -133,7 +132,7 @@ anti_join(runs, noise_hits, by = c("runID", "tagDeployID", "recvDeployID")) |>
   arrange(proj_id)
 ```
 
-There are still many 'bad' data according to the motusFilter... but we are 
+There are still many 'bad' data according to the `motusFilter`... but we are 
 definitely getting closer.
 
 

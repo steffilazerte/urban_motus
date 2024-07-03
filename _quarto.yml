@@ -41,4 +41,4 @@ format:
     callout-appearance: minimal
 
 execute: 
-  freeze: true
+  freeze: auto

@@ -56,7 +56,9 @@ p_sp <- read_excel("Data/01_Raw/TagsSpeciesProject.xlsx") |>
 
 gt(p_sp) |>
   fmt_number("prop_good_tags", decimals = 2) |>
-  gt_theme()
+  gt_theme() |>
+  tab_options(container.height = px(600),
+              container.overflow.y = "auto")
 ```
 
 ## Summarize

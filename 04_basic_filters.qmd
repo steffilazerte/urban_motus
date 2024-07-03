@@ -1,6 +1,5 @@
 ---
 title: Basic Filtering
-freeze: auto
 ---
 
 ```{r}
@@ -189,15 +188,14 @@ noise_time <- runs |>
 
 d <- runs |>
   filter(proj_id == 464) |>
-  mutate(probability = if_else(monthBegin %in% c(1, 7, 12), 0, 1)) |>
-  select(runID, tagID, tsBegin, probability, timeBegin) |>
+  mutate(omit = if_else(monthBegin %in% c(1, 7, 12), TRUE, FALSE)) |>
+  select(runID, tagID, tsBegin, omit, timeBegin) |>
   collect()
 
-ggplot(data = d, aes(x = timeBegin, y = factor(tagID), colour = factor(probability))) +
+ggplot(data = d, aes(x = timeBegin, y = factor(tagID), colour = omit)) +
   theme_bw() +
   geom_point() +
-  scale_color_viridis_d(end = 0.8) +
-  labs(caption = "Probability of 0 is data omitted by the filter")
+  scale_color_viridis_d(end = 0.8)
 ```
 :::
 
@@ -330,20 +328,26 @@ noise <- bind_rows(no_deps, noise_time, noise_space) |>
 ```
 
 
-Next we'll take a look at how this compares to the motusFilter
+Next we'll take a look at how this compares to the motusFilter.
 
+
+Original runs
 ```{r}
 count(runs, proj_id, motusFilter) |>
   filter(proj_id == 484) |>
-  collect()
+  collect() |>
+  arrange(motusFilter)
+```
 
+Remaining (non-bad) runs
+```{r}
 anti_join(runs, noise, by = c("runID", "tagDeployID", "recvDeployID")) |>
   filter(proj_id == 484) |>
   count(proj_id, motusFilter) |>
   collect()
 ```
 
-There are still many 'bad' data according to the motusFilter... perhaps we should
+There are still many remaining 'bad' data (according to the `motusFilter`)... perhaps we should
 use that as well, or see what happens after we do the next stage of fine scale
 filtering.
 

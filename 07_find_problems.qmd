@@ -1,6 +1,5 @@
 ---
 title: "Finding Problems"
-freeze: auto
 ---
 
 Now that we've created our bouts and transitions, we need to do some further 
