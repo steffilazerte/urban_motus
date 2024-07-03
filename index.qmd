@@ -4,8 +4,8 @@ title: "Summarizing bird migration and stopovers within urbanized landscapes usi
 
 __*Pilot Phase*__
 
-Principal Investigators: **Barbara Frei, Elizabeth Gow and Krista De Groot**  
-Technical: Steffi LaZerte
+Principal Investigators: **[Barbara Frei](https://www.thebirdsthetrees.com/), [Elizabeth Gow](https://www.elizabethgow.com/) and Krista De Groot**  
+Workflow design: [Steffi LaZerte](https://steffilazerte.ca)
 
 
 ## Getting Started
@@ -13,10 +13,70 @@ Technical: Steffi LaZerte
 This site contains the workflow for obtaining and filtering Motus track data
 for the analysis of Urban/Rural stopovers during avian migration.
 
+This website contains the full annotated code and outputs run as of the dates
+on each page.
 
-## To Do
+There are two ways to use this workflow
 
-- Setup instructions (installing packages, renv?)
-- How to use this repository
-- How to update this workflow
-- How to interpret these outputs
+1. **Walk through this website**, familiarize yourself with the code and outputs [Most users]
+
+2. **Modify this workflow** by working directly in the qmd scripts used to create
+this workflow [Some users]
+    - To do this, you can either create a [PR](https://happygitwithr.com/big-picture.html?q=pull%20request#special-features-of-github)
+    to the workflow or [clone](https://happygitwithr.com/push-pull-github.html?q=clone#git-clone-command-line)
+    it and work on your own copy.
+    - Each qmd file is setup to be run interactively (i.e. in an R session) as well
+    as to be compiled non-interactively to create this script
+    - Be warned that compiling the whole site can take a long time, especially if
+  new data is being downloaded!
+    - Use `renv::restore()` to ensure you have the same packages and versions
+    installed in this project to reproduce this workflow.
+  
+## Packages and Reproducibility
+
+All R packages used in this workflow are loaded by the `XX_setup.R` (see the 
+Appendix [Setup](XX_setup.html)). 
+
+We use [renv](https://rstudio.github.io/renv/) to keep track of the packages used
+and their versions. Use `renv::restore()` to double check that your version of 
+this project has the correct packages ready to go. 
+If all goes as planned renv should install the packages for you if you're missing any.
+
+Each script ends with a "Reproducibility" block which includes the session information
+with specific packages used when that page was last compiled.
+
+For publication, check the [Citations](XX_citations.R) Appendix to ensure we use proper citations.
+
+
+## Understanding outputs
+
+Each page performs a different step in the workflow (in order), from downloading the data,
+to filtering, to summarizing. 
+
+**Hidden Code**  
+All code to illustrate these steps is included in the documents, however, it may
+sometimes be 'folded'. To show this code, click on the "Code" button below.
+
+```{r}
+#| code-fold: true
+# Folded code!
+```
+
+**Hidden Tables**  
+Note that many tables are actually much longer (and/or wider) than they appear.
+If you hover the mouse over a table, scroll bars should appear (or you can use the
+mouse roller button).
+
+**More details please!**  
+
+- The [Notes & Details](XX_details.html) Appendix explains some of the more technical
+aspects and general coding design and decisions made. 
+- The [Setup](XX_setup.html) Appendix explains the setup and defaults as well as 
+sharing the fuctions used in this workflow.
+- If you have questions about a particular step in the workflow, contact Steffi
+or consider opening an issue in the repository. 
+
+**Data**  
+All the datasets created by this workflow are documented in the Appendix [Datasets](XX_data.html). 
+
+
