@@ -631,3 +631,14 @@ resolve_stns <- function(bouts, trans, problems_manual = NULL) {
       .by = c("tagDeployID", "trans_id")) |>
     mutate(resolved = any(omit), .by = c("tagDeployID", "trans_id"))
 }
+
+#' Convert unit vectors to regular numeric vectors
+#'
+#' @param x Vector (or column)
+#' @param units Units to ensure they match
+#'
+flatten_units <- function(x, units) {
+  if(inherits(x, "difftime")) x <- as_units(x)
+  set_units(x, units, mode = "standard") |>
+    as.numeric()
+}
