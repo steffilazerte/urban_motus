@@ -149,12 +149,14 @@ We'll start by doing some preliminary filtering:
 ### Filtering
 
 Get list of receivers in the databases. We only need to do to one databases, as the
-`metadata()` data step in [Download/Update](02_download.html) data adds full
+`metadata()` data step in [Download Data](02_download.html) data adds full
 receiver lists to all databases (i.e. they are the same in each one).
 
 ```{r}
 recvs_full <- tbl(dbs[[1]], "recvDeps") |>
-  select(deployID, deviceID, name, longitude, latitude, isMobile) |>
+  select("recvDeployID" = "deployID", "recvDeviceID" = "deviceID", 
+         "name", "recvDeployLon" = "longitude", "recvDeployLat" = "latitude", 
+         "isMobile") |>
   distinct() |>
   collect()
 ```
@@ -175,8 +177,8 @@ regular problems (what the receiver is or it's metadata).
 
 ```{r}
 recvs_spatial_problems <- recvs_full |>
-  drop_na(latitude, longitude) |>
-  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+  drop_na(recvDeployLat, recvDeployLon) |>
+  st_as_sf(coords = c("recvDeployLon", "recvDeployLat"), crs = 4326) |>
   st_transform(crs = 3347) |>
   mutate(
     # No overlap at least one species
@@ -184,13 +186,13 @@ recvs_spatial_problems <- recvs_full |>
     # Not in the Americas (i.e. European receivers)
     no_americas = !st_intersects(geometry, americas_buffer, sparse = FALSE)) |> 
   st_drop_geometry() |>
-  select("deployID", "no_species", "no_americas")
+  select("recvDeployID", "no_species", "no_americas")
     
 recvs_problems <- recvs_full |>
-  left_join(recvs_spatial_problems, by = "deployID") |>
+  left_join(recvs_spatial_problems, by = "recvDeployID") |>
   mutate(problem = case_when(
     # Missing lat/lon
-    is.na(longitude) | is.na(latitude) ~ "missing coords",
+    is.na(recvDeployLon) | is.na(recvDeployLat) ~ "missing coords",
     # Mobile receivers
     isMobile == 1 ~ "mobile station",
     # Receivers labelled "test"
@@ -200,7 +202,7 @@ recvs_problems <- recvs_full |>
     TRUE ~ "no problem")
   ) |>
   filter(problem != "no problem") |>
-  select(deployID, deviceID, name, longitude, latitude, problem)
+  select("recvDeployID", "recvDeviceID", "name", "recvDeployLon", "recvDeployLat", "problem")
 ```
 
 
@@ -212,10 +214,10 @@ Clean up master receivers list
 recvs <- recvs_full |>
   select(-"isMobile") |>
   # Omit problems
-  anti_join(recvs_problems, by = "deployID") |>
+  anti_join(recvs_problems, by = "recvDeployID") |>
   # Transform to a spatial data set  
-  drop_na(latitude, longitude) |>
-  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+  drop_na(recvDeployLat, recvDeployLon) |>
+  st_as_sf(coords = c("recvDeployLon", "recvDeployLat"), crs = 4326) |>
   st_transform(crs = 3347)
 ```
 
@@ -228,7 +230,7 @@ recvs <- recvs_full |>
 #### Table {style="height:500px; overflow-y:auto"}
 ```{r}
 recvs_problems |>
-  arrange(deployID) |>
+  arrange(recvDeployID) |>
   gt() |>
   gt_theme(container.height = 500)
 ```
@@ -239,12 +241,12 @@ recvs_problems |>
 americas_buffer2 <- st_transform(americas_buffer, crs = "+proj=laea +lon_0=-75.23 +lat_0=15.23 +datum=WGS84 +units=m +no_defs")
 
 r <- recvs |>
-  group_by(deployID) |>
+  group_by(recvDeployID) |>
   slice(1)
 
 p <- recvs_problems |>
-  drop_na(latitude, longitude) |>
-  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |>
+  drop_na(recvDeployLat, recvDeployLon) |>
+  st_as_sf(coords = c("recvDeployLon", "recvDeployLat"), crs = 4326) |>
   arrange(problem)
 
 g <- ggplot() +
@@ -278,7 +280,7 @@ sp_range_intersections <- recvs |>
   as_tibble(.name_repair = ~ranges_buffer$species_code)
 
 recvs <- bind_cols(recvs, sp_range_intersections) |>
-  pivot_longer(cols = -c("deployID", "deviceID", "name", "geometry"), 
+  pivot_longer(cols = -c("recvDeployID", "recvDeviceID", "name", "geometry"), 
                names_to = "species_code", values_to = "in_range") |>
   left_join(select(sp_ebird, "species_code", "id", "english"), by = "species_code")
 ```
@@ -379,13 +381,13 @@ This way we have the reason each receiver is not `in_range` when we go to
 examine the filters in the next step.
 
 ```{r}
-p <- select(recvs_problems, "deployID", "deviceID", "name", "problem") |>
+p <- select(recvs_problems, "recvDeployID", "recvDeviceID", "name", "problem") |>
   expand_grid(select(sp_ebird, "species_code", "id", "english")) |>
   mutate(in_range = FALSE)
 
 recvs |>
   st_drop_geometry() |>
-  full_join(p, by = c("deployID", "deviceID", "name", "species_code", 
+  full_join(p, by = c("recvDeployID", "recvDeviceID", "name", "species_code", 
                       "id", "english", "in_range")) |>
   mutate(problem = replace_na(problem, "none")) |>
   write_csv("Data/02_Datasets/receivers.csv")

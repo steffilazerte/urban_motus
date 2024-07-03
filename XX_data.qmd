@@ -1,0 +1,154 @@
+---
+title: Datasets
+---
+
+
+```{r}
+#| message: false
+source("XX_setup.R")
+```
+
+
+This workflow produces many different data sets, some of which are only intermediate,
+used in the next of the workflow, and some of which are final, summarized
+and ready-to-use datasets.
+
+Throughout the workflow, when a data set is saved, it is also described. 
+For convenience, all these descriptions are collected here for easy reference.
+
+Generally speaking, `.rds` files (R data file) are used to pass output from one
+step to another, while preserving variable types (categorical, etc.) as well as
+nested data (list-columns).
+
+`.csv` files are used for final outputs, or where the data being passed between
+steps is smaller and simpler.
+
+`.feather` files are used for the initial conversion of Motus data stored in SQLite 
+tables to a different format. SQLite data bases are great for quick access, but
+I found that the more filters and joins and other manipulations I applied, the 
+slower the operations became. I found it easier to convert to feather right at the
+beginning and then use this format for filtering etc. later on.
+
+Data are stored in the `Data` folder *created by the workflow*. This data is too
+large to be stored on GitHub, so only the workflow scripts and report outputs are
+online. 
+
+## Data folders
+
+**`01_Raw`** - Downloaded or acquired data  
+
+  - Motus SQLite databases (`project-XXX.motus`)
+  - `TagsSpeciesProject.xlsx` from Catherine
+
+**`02_Datasets`** - Data produced by the workflows   
+
+  - `hits` and `runs` folders - filtered hit and run level data in feather format
+  - `noise_hits.feather` & `noise_runs.feather`
+  - `receivers.csv`
+  - `transistions_intitial.rds` & `bouts_initial.rds`
+  - `transistions_cleaned.rds` & `bouts_cleaned.rds`
+  - `stn_dist.rds`
+  - `bad_boiuts.rds`
+  
+**`03_Final`** - Final data sets for analysis
+
+  - `bouts_final.csv`
+  - `trans_final.csv`
+  - `summary_daily_bouts.csv`
+
+## Data variables
+
+```{r}
+#| echo: false
+
+meta <- tribble(
+  ~Variable, ~Description,
+  "tagDeployID", "ID of the tag/individual from Motus",
+  "speciesID", "ID of the species associated with that tagDeployID from Motus",
+  "english", "English species name",
+  "bout_id", "Unique identifier of bouts within a tag at a particular station group",
+  "trans_id", "Unique identified of transitions",
+  c("id", "id1", "id2"), "Unique identifier for a bout (`id`, `id1`, `id2`), which reflects the {tagDeployID}-{station group}-{bout_id}",
+  "overlap", "Whether or not a bout overlaps another for that individual",
+  "n_runs", "The number of runs summarized into this bout",
+  "runID", "A list of runIDs summarized into this bout (nested list column)",
+  "len", "The `len` values (number of hits) for each run summarized into this bout (nested list column)",
+  c("len_min", "len_max"), "The min/max `len` value (number of hits) across all runs summarized into this bout",
+  "ant", "The `ant` values (antenna ids) for each run summarized into this bout (nested list column)",
+  "n_ant", "The number of unique antennas summarized into this bout",
+  c("total_time", "total_time_min"), "The duration in minutes of the bout",
+  c("stn", "stn1", "stn2", "stn_group"), "Receiver *group*. Can be one of a pair in transitions (`stn1`/`stn2`)",
+  c("recv1", "recv2", "recvDeployID", "recv_pair"), "*Individial* receiver stations (recvDeployID from Motus). Can be one of a pair in transitions (`recv1`/`recv2`) or a pair of receivers (`recv_pair`)", 
+  "recvDeviceID", "Motus receiver device ID (not used)",
+  "name", "Motus receiver deployment name (not used)", 
+  "species_code", "eBird species code",
+  "in_range", "Logical value indicating whether a receiver is within a given species natural range",
+  "problem", "Whether or not there is an issue with that receiver, such as 'mobile station', 'test station', 'out of all species ranges', 'missing coords', or 'out of americas'",
+  c("lat1", "lat2", "lon1", "lon2", "latitude", "longitude", "recvDeployLat", "recvDeployLon"), "Reciever station coordinates from Motus",
+  c("b1", "e1", "b2", "e2", "timeBegin", "timeEnd", "timeBeginLocal", "timeEndLocal"), "Begining and ending times for bouts. Can be one of a pair in transitions (`b1`/`b2` or `e1`/`e2`). Generally in UTC unless 'Local'. If 'Local' in the timezone of that receiver (including applicable Daylightly savings).",
+  c("dateBegin", "dateEnd"), "The start/end dates of the bout",
+  "date_local", "The date over which the bouts have been summarized (corresponds to the Local timezone for the receiver or receiver group)",
+  "time_hrs", "The number of hours a bird was recorded at that receiver or receiver group on that date",
+  c("next_dist", "next_dist_km"), "Distance in Kilometers to the next station in a transition or station pair",
+  c("min_time", "min_time_hrs"), "The minimum about of time in hours required to travel to the next station to avoid being flagged as too fast",
+  "utc_offset_h", "The number of hours the local time zone of that receiver is offset from UTC",
+  c("lag1", "lag2", "lag1_min", "lag2_min"), "The amount of time in minutes between the end of the first bout and the beginning of the next (lag1) or the end of the next (lag2). Both lags are accounted for to deal with overlapping bouts.",
+  c("time_diff", "time_diff_hrs"), "The minimum amount of time in hours from the end of the first bout to either the start or end of the next (to account for overlapping bouts",
+  c("speed", "speed_m_s"), "The speed of travel between stations, `next_dist` / `time_diff` in meters per second.", 
+  "mid_date", "The date at the midpoint of the transition",
+  "migration", "If both start and end of the transition occur within October to December, we call this a 'south' migration. If both the start and end of the transition occur within February to July, we call this a 'north' migration. Used for assessing incorrect directions in transitions.",
+  "connected", "From Amie's scripts, if the transition speed is greater than 5 m/s",
+  
+  "travelled", "Whether or not individuals moved more than 100km",
+  "migrated", "Whether or not individuals moved more than 1 latitude",
+  "migrated_far", "Whether or not individuals moved more than 5 latitude",
+  "n_stn", "Number of station groups visited by an individual",
+  "min_date", "First date an individual was detected",
+  "mean_date", "Average date of bounts for an individual",
+  "max_date", "Final date an individual was detected",
+  "total_time_hrs", "Total amount of time in bouts an individual was detected",
+  "mean_time_hrs", "Average amount of time per bout an individual was detected",
+  "res_stn", "First station group an individual was detected at, this is considered the 'resident' station",
+  "mean_time_no_resident_hrs", "Average amount of time per bout *excluding the resident station* an individual was detectect",
+  "first_time_hrs", "Total amount of time an individual was detected at the resident station (first station)",
+  "last_time_hrs", "Total amount of time an individual was detected at the last station in its record"
+) |>
+  unnest(Variable)
+
+s <- fs::dir_ls("Data", recurse = TRUE, glob = "*/runs/*|*/hits/*|*01_Raw/*", invert = TRUE, type = "file")
+d <- str_subset(s, "bad_bouts|feather", negate = TRUE)
+d <- setNames(d, str_remove(d, "Data\\/"))
+s <- s[!s %in% d]
+
+t <- map(d, \(x) {
+  message(x)
+  ext <- fs::path_ext(x)
+  if(ext == "csv") xx <- read_csv(x, show_col_types = FALSE) 
+  if(ext == "rds") xx <- read_rds(x)
+  if(ext == "feather") xx <- read_feather(x)
+
+  v <- left_join(tibble(Variable = names(xx)), meta, by = "Variable")
+  if(any(is.na(v$Description))) message("  - Missing variables")
+  v$`Example Value` <- drop_na(xx) |> slice(1) |> mutate(across(everything(), as.character)) |>t()
+  
+  v |>
+    gt() |>
+    gt_theme() |>
+    fmt_markdown() |>
+    gt::tab_header(title = x)
+})
+```
+
+
+```{r}
+#| results: asis
+#| echo: false
+iwalk(t, \(x, i) {
+  cat(paste0("\n### ", i, "\n"))
+  print(x)
+})
+```
+  
+
+
+

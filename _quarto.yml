@@ -18,6 +18,7 @@ website:
         contents: 
           - "XX_details.qmd"
           - "XX_setup.qmd"
+          - "XX_data.qmd"
           - "XX_citations.qmd"
     tools:
       - icon: github

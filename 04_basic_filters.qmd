@@ -220,7 +220,7 @@ receiver deployment.
 ```{r}
 rs <- recvs |>
   mutate(speciesID = as.integer(id), 
-         recvDeployID = as.integer(deployID)) |>
+         recvDeployID = as.integer(recvDeployID)) |>
   filter(in_range) |>
   select(speciesID, recvDeployID, in_range)
 ```

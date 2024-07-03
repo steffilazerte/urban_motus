@@ -105,13 +105,13 @@ recvs_sf <- recvs |>
   
 dist <- st_distance(recvs_sf) |>
   as_tibble() |>
-  mutate(recv_from = recvs_sf$recvDeployID) |>
-  relocate(recv_from) |>
+  mutate(recv1 = recvs_sf$recvDeployID) |>
+  relocate(recv1) |>
   rename_with(\(x) as.character(recvs_sf$recvDeployID), .cols = -1) |>
-  pivot_longer(-recv_from, names_to = "recv_to", values_to = "next_dist") |>
-  mutate(recv_to = as.integer(recv_to)) |>
-  arrange(recv_from, recv_to) |>
-  mutate(recv_pair = paste0(recv_from, "_", recv_to),
+  pivot_longer(-recv1, names_to = "recv2", values_to = "next_dist") |>
+  mutate(recv2 = as.integer(recv2)) |>
+  arrange(recv1, recv2) |>
+  mutate(recv_pair = paste0(recv1, "_", recv2),
          next_dist = set_units(next_dist, "km"),
          min_time = next_dist / max_flight_speed) |>
   #filter(next_dist > max_tower_dist) |>
@@ -145,19 +145,19 @@ groups <- nest(runs, .by = c("tagDeployID")) |>
   mutate(data = future_map(data, \(x) {
     
     g <- dist |>
-      filter(recv_from %in% unique(x$recvDeployID), 
-             recv_to %in% unique(x$recvDeployID)) |>
-      filter(recv_from != recv_to) |>
+      filter(recv1 %in% unique(x$recvDeployID), 
+             recv2 %in% unique(x$recvDeployID)) |>
+      filter(recv1 != recv2) |>
       summarize(
-        stn_grouped_with = list(recv_to[next_dist < max_tower_dist]), 
-        stn_group = paste0(sort(unique(c(recv_from, recv_to[next_dist < max_tower_dist]))), 
+        stn_grouped_with = list(recv2[next_dist < max_tower_dist]), 
+        stn_group = paste0(sort(unique(c(recv1, recv2[next_dist < max_tower_dist]))), 
                            collapse = "-"),
-        .by = "recv_from") |>
+        .by = "recv1") |>
       # Only keep groups which are common across stations
-      mutate(stn_group = if_else(n() > 1, stn_group[1], as.character(recv_from)[1]), 
+      mutate(stn_group = if_else(n() > 1, stn_group[1], as.character(recv1)[1]), 
              .by = "stn_group")
     
-    left_join(x, g, by = c("recvDeployID" = "recv_from")) |>
+    left_join(x, g, by = c("recvDeployID" = "recv1")) |>
       mutate(stn_group = if_else(is.na(stn_group), as.character(recvDeployID), stn_group))
   }, .progress = interactive())
   ) |>
