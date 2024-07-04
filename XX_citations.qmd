@@ -22,6 +22,9 @@ but you should keep track of the packages used and their versions
 (see General Info, note that if an workflow step was updated separately, see
 the most up-to-date package versions under that pages "General Info").
 
+Unfortuntaly journals do not often want you to cite general data manipulation 
+and visualization packages (which is most of what we use).
+
 ```{r}
 #| code-fold: true
 #| echo: false
@@ -36,6 +39,14 @@ library(ebirdst)
 cat("\n#### tidyverse (for general data management and figures)\n")
 citation("tidyverse") |> print(style = "text")
 ```
+
+### Maps
+
+Note that map tiles should be attributed. Best is to include that attribution
+ in the figure itself, but you can also include it in the caption.
+ 
+We use [CARTO light tiles](https://carto.com/basemaps).
+ 
 
 ### General Info
 ```{r}

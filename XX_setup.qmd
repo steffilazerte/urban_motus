@@ -22,9 +22,9 @@ Here we set the credentials for this session
 (so you don't have to manually type it in every time)
  
 This code expects that you store your Motus login and password as 
-`URBAN_USER` and `URBAN_PASSWORD` in an .Renviron file
+`URBAN_USER` and `URBAN_PASSWORD` in an `.Renviron` file
 
-- learn more about this file: https://rstats.wtf/r-startup.html#renviron
+- learn more about this file: <https://rstats.wtf/r-startup.html#renviron>
 - easily edit this file with `usethis::edit_r_environ()`
 
 ```{r credentials}
@@ -61,10 +61,11 @@ station before those runs will be considered separate detection bouts.
 
 ## Data
 
-Get species lists from naturecounts taxonomy and join this with the species
-metadata from the motus data bases. 
+Get species lists from NatureCounts taxonomy and join this with the species
+metadata from the Motus data bases. 
 
-We only need to do this to one database, as the `metadata()` data step in [Download/Update data](02_download.html) adds full species lists to all databases (so all database metadata are the same).
+We only need to do this to one database, as the `metadata()` data step in [Download/Update data](02_download.html) adds full species lists to all databases (so metadata is the same
+across all databases).
 
 ### Species
 ```{r data_sp}
@@ -77,7 +78,7 @@ We only need to do this to one database, as the `metadata()` data step in [Downl
 ```
 
 #### Establish included species
-- We match existing species in the databases to the species list from naturecounts
+- We match existing species in the databases to the species list from NatureCounts
 - We rename scientific names to omit subspecies (e.g., myrtle yellow-rumped warbler)
   [required for later eBird range steps]
   
@@ -86,7 +87,10 @@ We only need to do this to one database, as the `metadata()` data step in [Downl
 
 
 ## Functions
-These functions are sourced from `XX_functions.R`
+These are the custom functions used in this workflow.
+Some functions are displayed in the various workflow pages, but they are all
+sourced from `XX_functions.R` (as is the following).
+
 ```{r}
 #| file: XX_functions.R
 ```

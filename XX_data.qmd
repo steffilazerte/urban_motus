@@ -9,12 +9,9 @@ source("XX_setup.R")
 ```
 
 
-This workflow produces many different data sets, some of which are only intermediate,
+This workflow produces many different datasets, some of which are only intermediate,
 used in the next of the workflow, and some of which are final, summarized
 and ready-to-use datasets.
-
-Throughout the workflow, when a data set is saved, it is also described. 
-For convenience, all these descriptions are collected here for easy reference.
 
 Generally speaking, `.rds` files (R data file) are used to pass output from one
 step to another, while preserving variable types (categorical, etc.) as well as
@@ -33,6 +30,8 @@ Data are stored in the `Data` folder *created by the workflow*. This data is too
 large to be stored on GitHub, so only the workflow scripts and report outputs are
 online. 
 
+Here, we list all the datasets followed by definitions for each variable included. 
+
 ## Data folders
 
 **`01_Raw`** - Downloaded or acquired data  
@@ -40,27 +39,29 @@ online.
   - Motus SQLite databases (`project-XXX.motus`)
   - `TagsSpeciesProject.xlsx` from Catherine
 
-**`02_Datasets`** - Data produced by the workflows   
+**`02_Datasets`** - Intermediate data produced by the workflows   
 
-  - `hits` and `runs` folders - filtered hit and run level data in feather format
-  - `noise_hits.feather` & `noise_runs.feather`
-  - `receivers.csv`
-  - `transistions_intitial.rds` & `bouts_initial.rds`
-  - `transistions_cleaned.rds` & `bouts_cleaned.rds`
-  - `stn_dist.rds`
-  - `bad_boiuts.rds`
+  - `hits` and `runs` folders - filtered hit and run level data in feather format [Not included in below descriptions]
+  - `noise_hits.feather` & `noise_runs.feather` - "noisy" runs or hits for later removal [Not included in below descriptions]
+  - `receivers.csv` - List of receivers and whether they overlap with a species eBird range.
+  - `transitions_intitial.rds` & `bouts_initial.rds` - First pass created transitions and bouts
+  - `transitions_cleaned.rds` & `bouts_cleaned.rds` - Final pass transitions and bouts (but without complete metadata)
+  - `stn_dist.rds` - Station (groups) distances and minimum flight times
+  - `bad_bouts.rds` - List of bouts identified as being 'bad' (false positives) to be filtered [Not included in below descriptions]
   
-**`03_Final`** - Final data sets for analysis
+**`03_Final`** - Final datasets for analysis
 
-  - `bouts_final.csv`
-  - `trans_final.csv`
-  - `summary_daily_bouts.csv`
+  - `bouts_final.csv` - Bouts of activity detected by a station (group) for each bird over time
+  - `trans_final.csv` - Transitions between stations (groups) for each bird over time
+  - `summary_birds.csv` - Summaries of movement and timing for each bird
+  - `summary_daily_bouts.csv` - Daily bouts of activity by a birds at a particular station (group)
+  - `summary_stopover_days.csv` - Subset of the daily bouts data showing birds with possible stopovers, identified by those detected at a station (group) over multiple days during migration.
+  - `summary_stopover_time.csv` - Subset of the daily bouts data showing birds with possible stopovers, identified by those spending time at at a station during migration.
 
 ## Data variables
 
 ```{r}
 #| echo: false
-
 meta <- tribble(
   ~Variable, ~Description,
   "tagDeployID", "ID of the tag/individual from Motus",

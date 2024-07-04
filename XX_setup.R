@@ -53,7 +53,7 @@ fs::dir_create(c("Data/01_Raw", "Data/02_Datasets", "Data/03_Final"))
 dbs <- map(projects, \(x) tagme(x, dir = "Data/01_Raw", update = FALSE))
 
 # ---- db_species ----
-# naturecounts::nc_metadata() # Update naturecounts taxonomy lists
+# naturecounts::nc_metadata() # Update naturecounts taxonomy lists as needed
 species_list <- naturecounts::meta_species_taxonomy() |>
   filter(order_taxon %in% c("Passeriformes", "Piciformes"))
 

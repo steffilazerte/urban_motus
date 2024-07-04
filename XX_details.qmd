@@ -48,14 +48,14 @@ sp_ebird <- select(ebirdst_runs, "species_code", "scientific_name") |>
 
 The functions `map()`, `imap()`, `walk()`, etc. are from the [purrr package](https://purrr.tidyverse.org/)
 and are ways in which to loop over a list. 
-Using `map()` is very similar to using `lapply()` or `for()` loops ((details)[https://r4ds.hadley.nz/iteration.html]).
+Using `map()` is very similar to using `lapply()` or `for()` loops ([details](https://r4ds.hadley.nz/iteration.html)).
 
-In this workflow, `map()` is often use to perform a task on each motus database.
+In this workflow, `map()` is often use to perform a task on each Motus database or project.
 This is why it often iterates over `projects` (the list of project ids) or
 `dbs` (the list of database connections).
 
 For example, we use `dbs <- map(projects, \(x) tagme(x, dir = "Data/01_Raw", update = FALSE))`
-in the [Setup]("XX_setup.html") to read each data base connection and put it in 
+in the [Setup](XX_setup.html) to read each data base connection and put it in 
 the `dbs` list.
 
 Similarly, in [Download Data](02_download.qmd), we use
@@ -81,6 +81,6 @@ errors and will occasionally be found in the middle of a pipe for this reason.
 **Avoiding `anti_join()`**  
 
 - This is pretty [slow for SQLite databases](https://github.com/tidyverse/dbplyr/issues/1355)
-- So we'll use a left join plus `filter` instead (if joining on Databases)
+- So we'll use a left join plus `filter()` instead (if joining on Databases)
   (but remember that may have to filter to *keep* missing values if appropriate)
 

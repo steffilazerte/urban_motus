@@ -53,7 +53,7 @@ For publication, check the [Citations](XX_citations.R) Appendix to ensure we use
 Each page performs a different step in the workflow (in order), from downloading the data,
 to filtering, to summarizing. 
 
-**Hidden Code**  
+#### Hidden Code
 All code to illustrate these steps is included in the documents, however, it may
 sometimes be 'folded'. To show this code, click on the "Code" button below.
 
@@ -62,12 +62,26 @@ sometimes be 'folded'. To show this code, click on the "Code" button below.
 # Folded code!
 ```
 
-**Hidden Tables**  
+#### Hidden Tables
 Note that many tables are actually much longer (and/or wider) than they appear.
 If you hover the mouse over a table, scroll bars should appear (or you can use the
 mouse roller button).
 
-**More details please!**  
+```{r}
+#| echo: false
+#| message: false
+source("XX_setup.R")
+read_csv("Data/03_Final/trans_final.csv") |>
+  gt() |>
+  gt_theme() |>
+  tab_options(container.height = px(200),
+              container.overflow.y = "auto")
+```
+
+#### Data
+All the datasets created by this workflow are documented in the Appendix [Datasets](XX_data.html). 
+
+#### More details please!
 
 - The [Notes & Details](XX_details.html) Appendix explains some of the more technical
 aspects and general coding design and decisions made. 
@@ -76,7 +90,6 @@ sharing the fuctions used in this workflow.
 - If you have questions about a particular step in the workflow, contact Steffi
 or consider opening an issue in the repository. 
 
-**Data**  
-All the datasets created by this workflow are documented in the Appendix [Datasets](XX_data.html). 
+
 
 
