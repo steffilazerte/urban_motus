@@ -33,15 +33,15 @@ We can identify problematic transitions these in several ways.
     - This reflects transitions which occurred over a distance greater than
       the maximum tower distance (`r max_tower_dist` `r units(max_tower_dist) |> as.character()`), and which were either 
       instantaneous (i.e. overlaps), or way too fast.
-    - These can be identified *and* fixed automatically
+    - These can be identified *and* fixed automatically (but will still be manually reviewed, just in case)
 
 2. **Transitions which are in the wrong direction**
     - It's highly unlikely that a migrating bird will start migration and then 
-      backtrack hundreds of kilometres. So 'false' starts, are likely false positives.
+      backtrack hundreds of kilometres. So 'false' starts, likely false positives some where in those transitions.
     - These can be identified automatically, but are prone to being overzealous so 
-      need to be assessed manually. 
+      need to be assessed manually. It can also be tricky to identify which bout is the problem.
       
-3. **Transitions which include a suspiciously short bout**
+3. **Transitions which include a suspiciously short bout - NOT IMPLEMENTED**
     - Transitions between stations where one of the end bouts is quite short
     (e.g., all runs < 10 and perhaps only a few runs) are less likely to be
     "true" transitions, as they may originate or end with a bout that is less
@@ -53,6 +53,11 @@ We can identify problematic transitions these in several ways.
 
 Now we'll pull out the problems we should address. These include problems which
 we can programatically fix, and those that we need to manually fix. 
+
+:::{.callout-tip}
+#### Note
+Even programatically fixed problems will be manually reviewed in the [Manual Checks](#manual-checks) section below.
+:::
 
 :::{.panel-tabset}
 #### Run

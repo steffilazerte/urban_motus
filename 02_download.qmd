@@ -154,8 +154,9 @@ if(update) runs <- map(dbs, custom_runs)
 
 ### Export
 
-Now save these as Arrow/Feather format (but first clear the original data, as we'll be 
-saving to Arrow by splitting the data across multiple files, so don't want any conflicts).
+Now save these as Arrow/Feather format (but first remove any previously saved data, 
+as we'll be saving to Arrow by splitting the data across multiple files, 
+so don't want any conflicts).
 
 On the way we'll also create some added date and time columns.
 
@@ -186,7 +187,7 @@ The thing with splitting data across multiple files is that we ideally want file
 to be >20MB and <2GB and we want to avoid too many files (< 10,000).
 
 So let's double check that we have reasonable file sizes and numbers.
-Not too bad.
+Not perfect, but probably good enough.
 ```{r}
 tibble(files = list.files("Data/02_Datasets/runs/", recursive = TRUE, full.names = TRUE)) |>
   mutate(size_mb = file.size(files) * 1e-6) |>
@@ -240,7 +241,8 @@ tibble(files = list.files("Data/02_Datasets/hits/", recursive = TRUE, full.names
             max_mb = max(size_mb))
 ```
 
-
+Not fantastic, but we want the data to be split in a sensible way, so we'll leave
+it as is.
 
 ## Wrap up
 Disconnect from the databases

@@ -1,6 +1,5 @@
 ---
 title: "Summaries"
-cache: true
 ---
 
 In this script we will finalize the data sets by adding metadata 
@@ -87,7 +86,7 @@ day.
 ```{r}
 plan(multisession, workers = 6) # Setup parallel
 
-stn_time <- bouts |>
+daily_bouts <- bouts |>
   mutate(
     # Split bouts by days
     date_local = future_map2(timeBeginLocal, timeEndLocal, \(x, y) {
@@ -109,13 +108,13 @@ stn_time <- bouts |>
   left_join(select(bouts, "stn_group", "recvDeployLat", "recvDeployLon") |> distinct(),
             by = "stn_group")
 
-write_csv(stn_time, "Data/03_Final/summary_daily_bouts.csv")
+write_csv(daily_bouts, "Data/03_Final/summary_daily_bouts.csv")
 ```
 
 
-## Overall Summary
+## Individual Summaries
 
-Summarize the overall patterns and number of samples in the data.
+Summarize the individual and overall patterns and number of samples in the data.
 
 We'll categorize birds as those who we know 
 
@@ -140,7 +139,7 @@ trans_dist <- trans |>
             migrated_far = (max(lat1) - min(lat2)) > 5,
             .by = c("english", "tagDeployID"))
 
-sum_time <- stn_time |> 
+sum_time <- daily_bouts |> 
   left_join(trans_dist, by = c("english", "tagDeployID")) |>
   mutate(total_dist = replace_na(total_dist, set_units(0, "km")),
          travelled = replace_na(travelled, FALSE),
@@ -165,8 +164,9 @@ sum_time <- stn_time |>
 write_csv(sum_time, "Data/03_Final/summary_birds.csv")
 ```
 
+Now we'll create an overall summary of these individual-level summaries. 
 This is a summary table looking at the sample sizes (No. XXX) as well as 
-averages of individual means (Avg of mean etc.)
+averages of individual means (Avg of mean etc.). 
 
 ```{r}
 #| code-fold: true
@@ -201,7 +201,8 @@ sum_time |>
   pivot_wider(names_from = "type") |>
   select("Measure", contains("No large"), contains("Trave"), contains(">1"), contains(">5"), "Overall") |>
   gt() |>
-  gt_theme()
+  gt_theme() |>
+  tab_header(title = "Overall summary")
 ```
 
 
@@ -215,8 +216,9 @@ We'll look for two different indicators of a stopover
     - In the above summaries, we see that the average amount of time detected at
       a receiver which is not the first (or home) receiver, is about 9min (0.15 hours)
   
-2. Being detected around a single receiver (or receiver group) on and off
-   within a week.
+2. Being detected around a single receiver (or receiver group) on more than one
+   day each detection within a week of another (and no other stations detected 
+   in the meanwhile).
 
 So looking only at October through April (months 10-4), we'll define some 
 stopover metrics. 
@@ -229,21 +231,24 @@ stopover metrics.
 
 
 ```{r}
-stopovers <- stn_time |>
+stopovers <- daily_bouts |>
   arrange(tagDeployID, date_local) |>
   filter(stn_group != stn_group[1], 
          month(date_local) %in% c(10, 11, 12, 1, 2, 3, 4), .by = "tagDeployID") |>
   mutate(
+    # Detected at the same station across days?
     same_stn = stn_group == lead(stn_group, default = "x"),
     same_stn = same_stn | lag(same_stn, default = FALSE),
+    # Detected within 7 days?
     close_time = date_local >= (lead(date_local, default = ymd("2999-01-01")) - days(7)), 
     close_time = close_time | lag(close_time, default = FALSE),
+    # If both, call this a multi-day stopover
     stopover = same_stn & close_time,
     .by = "tagDeployID")
 ```
 
 
-### Over 30min at a receiver
+### Over 30 min at a receiver
 Here we see different individuals spending time around receivers during
 migration.
 ```{r}
@@ -357,7 +362,7 @@ filter(b0, tagDeployID == 41224, dateBegin > "2022-09-01", dateBegin < "2023-01-
   geom_segment(linewidth = 1.5) +
   labs(x = "Hour (Local timezone)", title = "tagDeployID 41224 (Spotted Towhee)")
 
-filter(b0, tagDeployID == 41209, dateBegin < "2022-12-01") |>
+filter(b0, tagDeployID == 41209, dateBegin < "2022-12-01", dateBegin > "2022-07-30") |>
   ggplot(aes(x = start, xend = end, y = dateBegin, colour = stn_group)) +
   geom_segment(linewidth = 1.5) +
   labs(x = "Hour (Local timezone)", title = "tagDeployID 41224 (Spotted Towhee)")

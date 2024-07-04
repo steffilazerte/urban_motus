@@ -20,7 +20,7 @@ before we get into the fine details of assessing data quality.
 However, we don't want to simply delete records in our original data because
 
 - we're working with data which may need to be updated
-- we can't go back if we change our criteria
+- if we delete the data we can't go back if we change our criteria
 
 So we will create lists of all the run/tagID combinations *to be removed*,
 and we'll store these as a new dataset.
@@ -304,7 +304,7 @@ deployments.
 
 Additionally there are some duplicates based on the same runID in different batches...
 This occurs in `allruns` too, so isn't an artifact of the custom joins, but still
-not idea. 
+not ideal. 
 
 These *should* have been dealt with in `custom_runs()` but just in case, we'll
 verify here.

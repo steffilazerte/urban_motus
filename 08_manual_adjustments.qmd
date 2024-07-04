@@ -106,9 +106,7 @@ fix <- tribble(
          start = ymd_hms(start, truncated = 5),
          end = ymd_hms(end, truncated = 5),
          end = if_else(is.na(end), ceiling_date(start + seconds(1), unit = "year"), end))
-```
 
-```{r}
 select(fix, -problem_manual) |>
   gt() |>
   gt_theme()  |>

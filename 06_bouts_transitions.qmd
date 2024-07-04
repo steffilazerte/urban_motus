@@ -10,7 +10,7 @@ However, there are some difficulties to consider:
 
 - runs can overlap each other at the same station (as well as at separate stations)
 - a run can be 4hrs long and overlap several other runs of shorter lengths
-- this means we cannot simply compare runs on sequential lines 
+- this means we cannot simply compare runs on sequential rows in a data frame (using `lag()` or `lead()`, for example)
 - we'll need to iterate over runs until all runs have been collapsed as much as 
   possible
 
@@ -49,14 +49,14 @@ runs <- load_runs()
 
 ## Assumptions
 
-In this script we'll be filtering out unlikely movements between stations (i.e. super fast birds).
+In this step we'll be identifying unlikely movements between stations (i.e. super fast birds, and those going the wrong way).
 
 This involves setting a *maximum allowable flight speed*, but also the *distance
 from a station* in which a bird could conceivably be detected (otherwise we
 might calculate super fast flight speeds simply because a bird was at the
 detection limit of two stations and moved back and forth across the boundary).
 
-We will assume the following limits for `max_flight_speed` and `max_tower_dist` (defined in [Setup](XX_setup.html)).
+We will assume the following limits for `max_flight_speed` and `max_tower_dist` (defined in [Setup](XX_setup.html#define-constants)).
 
 - Flight speed `r max_flight_speed` m/s (`max_flight_speed`)
     - from Amie via Anderson et al. (2019) and Gronroos et al. (2012))
@@ -189,7 +189,7 @@ For example, if a bird was detected around a station for a total of 6 hours over
 the course of 10 runs (all within `r bout_cutoff` minutes of each other),
 we would collapse this down into one detection bout of 6 hours. 
 
-We'll use a `bout_cutoff` of `r bout_cutoff` minutes defined in [Setup](XX_setup.html).
+We'll use a `bout_cutoff` of `r bout_cutoff` minutes defined in [Setup](XX_setup.html#define-constants).
 So if two runs at the same station are more than `r bout_cutoff` min apart, we'll consider
 those runs to belong to separate bouts.
 
@@ -308,4 +308,8 @@ and speed columns.
 write_rds(trans, "Data/02_Datasets/transitions_initial.rds")
 write_rds(bouts, "Data/02_Datasets/bouts_initial.rds")
 ```
+
+
+## Reproducibility
+{{< include _reproducibility.qmd >}}
 
