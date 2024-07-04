@@ -12,6 +12,7 @@ Data/
 *.motus
 References
 *.pdf
+*.zip
 
 # Don't push local "_files" folders, only those in the docs folder
 *_files/*
