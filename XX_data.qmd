@@ -53,8 +53,10 @@ Here, we list all the datasets followed by definitions for each variable include
 
   - `bouts_final.csv` - Bouts of activity detected by a station (group) for each bird over time
   - `trans_final.csv` - Transitions between stations (groups) for each bird over time
+  - `bouts_final_split.csv` - Same as `bouts_final.csv` except that bouts which span more than one local day are split at midnight into separate bouts. 
   - `summary_birds.csv` - Summaries of movement and timing for each bird
   - `summary_daily_bouts.csv` - Daily bouts of activity by a birds at a particular station (group)
+  - `summary_circadian_bouts.csv` - Subset of the split bouts data including only birds who spent a significant amount of time at a single station. Includes start/end variables for plotting circadian rhythms.
   - `summary_stopover_days.csv` - Subset of the daily bouts data showing birds with possible stopovers, identified by those detected at a station (group) over multiple days during migration.
   - `summary_stopover_time.csv` - Subset of the daily bouts data showing birds with possible stopovers, identified by those spending time at at a station during migration.
 
@@ -88,7 +90,9 @@ meta <- tribble(
   c("lat1", "lat2", "lon1", "lon2", "latitude", "longitude", "recvDeployLat", "recvDeployLon"), "Reciever station coordinates from Motus",
   c("b1", "e1", "b2", "e2", "timeBegin", "timeEnd", "timeBeginLocal", "timeEndLocal"), "Begining and ending times for bouts. Can be one of a pair in transitions (`b1`/`b2` or `e1`/`e2`). Generally in UTC unless 'Local'. If 'Local' in the timezone of that receiver (including applicable Daylightly savings).",
   c("dateBegin", "dateEnd"), "The start/end dates of the bout",
-  "date_local", "The date over which the bouts have been summarized (corresponds to the Local timezone for the receiver or receiver group)",
+  "dateBeginLocal", "The date over which the bouts have been summarized (corresponds to the Local timezone for the receiver or receiver group)",
+  "year", "The year of the `dateBeginLocal`",
+  c("start", "end"), "The daily start/end times of a bout in decimal hours. For example, 2023-10-01 10:45:01 would have a decimal hour time of 10.75. This is good for plotting daily activity rhythms",
   "time_hrs", "The number of hours a bird was recorded at that receiver or receiver group on that date",
   c("next_dist", "next_dist_km"), "Distance in Kilometers to the next station in a transition or station pair",
   c("min_time", "min_time_hrs"), "The minimum about of time in hours required to travel to the next station to avoid being flagged as too fast",

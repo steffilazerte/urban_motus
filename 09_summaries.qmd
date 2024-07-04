@@ -36,7 +36,7 @@ so can now be saved to csv.
 > **Datasets created**:  
 > 
 > - [`Data/03_Final/bouts_final.csv`](XX_data.html#finalbouts_final.csv)
-> - [`Data/03_Final/trans_final.csv`](XX_data.html#finaltrans_final.csv)
+> - [`Data/03_Final/transitions_final.csv`](XX_data.html#finaltransitions_final.csv)
 
 ```{r}
 trans <- trans |>
@@ -69,7 +69,7 @@ bouts <- left_join(bouts, tz, by = c("dateBegin", "recvDeployLat", "recvDeployLo
   rename(total_time_min = total_time)
 
 write_csv(bouts, "Data/03_Final/bouts_final.csv")
-write_csv(trans, "Data/03_Final/trans_final.csv")
+write_csv(trans, "Data/03_Final/transitions_final.csv")
 ```
 
 
@@ -78,15 +78,23 @@ write_csv(trans, "Data/03_Final/trans_final.csv")
 Summarize how much time each individual spent at a particular station on a given
 day. 
 
+Here we will work in local times to determine when a day rolls over at midnight.
+We will then split each bout that crosses midnight into multiple bouts, each 
+starting and stopping at the day's limits (midnight).
+
+Then we'll summarize these data into amount of time spent per day at a spectific
+station.
+
 
 > **Datasets created**:  
 > 
+> - [`Data/03_Final/bouts_final_split.csv`](XX_data.html#finalbouts_final_split.csv)
 > - [`Data/03_Final/summary_daily_bouts.csv`](XX_data.html#finalsummary_daily_bouts.csv)
 
 ```{r}
 plan(multisession, workers = 6) # Setup parallel
 
-daily_bouts <- bouts |>
+bouts_split <- bouts |>
   mutate(
     # Split bouts by days
     date_local = future_map2(timeBeginLocal, timeEndLocal, \(x, y) {
@@ -100,14 +108,19 @@ daily_bouts <- bouts |>
     t2 = map(date_local, \(x) x[-1]),
   ) |>
   unnest(cols = c(t1, t2)) |>
-  mutate(date_local = as_date(t1)) |>
-  summarize(time_hrs = sum(difftime(t2, t1, units = "hours")),
+  select(-dateBegin, -timeBegin, -timeEnd, -timeBeginLocal, -timeEndLocal, -date_local) |>
+  rename(timeBeginLocal = t1, timeEndLocal = t2) |>
+  mutate(dateBeginLocal = as_date(timeBeginLocal))
+
+daily_bouts <- bouts_split |>
+  summarize(time_hrs = sum(difftime(timeEndLocal, timeBeginLocal, units = "hours")),
             time_hrs = as.numeric(time_hrs), 
-            .by = c("english", "tagDeployID", "stn_group", "date_local")) |>
+            .by = c("english", "tagDeployID", "stn_group", "dateBeginLocal")) |>
   # Add in lat/lon (corresponds to one of the stations, not all in a group, but close enough)
   left_join(select(bouts, "stn_group", "recvDeployLat", "recvDeployLon") |> distinct(),
             by = "stn_group")
 
+write_csv(daily_bouts, "Data/03_Final/bouts_final_split.csv")
 write_csv(daily_bouts, "Data/03_Final/summary_daily_bouts.csv")
 ```
 
@@ -145,11 +158,11 @@ sum_time <- daily_bouts |>
          travelled = replace_na(travelled, FALSE),
          migrated = replace_na(migrated, FALSE),
          migrated_far = replace_na(migrated_far, FALSE)) |>
-  arrange(tagDeployID, date_local) |>
+  arrange(tagDeployID, dateBeginLocal) |>
   summarize(n_stn = n_distinct(stn_group), 
-            min_date = min(date_local),
-            mean_date = mean(date_local),
-            max_date = max(date_local),
+            min_date = min(dateBeginLocal),
+            mean_date = mean(dateBeginLocal),
+            max_date = max(dateBeginLocal),
             total_time_hrs = sum(time_hrs),
             mean_time_hrs = mean(time_hrs),
             res_stn = stn_group[1],
@@ -232,15 +245,15 @@ stopover metrics.
 
 ```{r}
 stopovers <- daily_bouts |>
-  arrange(tagDeployID, date_local) |>
+  arrange(tagDeployID, dateBeginLocal) |>
   filter(stn_group != stn_group[1], 
-         month(date_local) %in% c(10, 11, 12, 1, 2, 3, 4), .by = "tagDeployID") |>
+         month(dateBeginLocal) %in% c(10, 11, 12, 1, 2, 3, 4), .by = "tagDeployID") |>
   mutate(
     # Detected at the same station across days?
     same_stn = stn_group == lead(stn_group, default = "x"),
     same_stn = same_stn | lag(same_stn, default = FALSE),
     # Detected within 7 days?
-    close_time = date_local >= (lead(date_local, default = ymd("2999-01-01")) - days(7)), 
+    close_time = dateBeginLocal >= (lead(dateBeginLocal, default = ymd("2999-01-01")) - days(7)), 
     close_time = close_time | lag(close_time, default = FALSE),
     # If both, call this a multi-day stopover
     stopover = same_stn & close_time,
@@ -322,21 +335,23 @@ plot_map(trans, 34474) +
 ```
 
 
-## Looking at diurnal patterns
+## Looking at circadian patterns
 
-This is a quick look at diurnal patterns of movement in BC birds in the fall.
+### Directed exploration 
+
+This is a quick look at circadian patterns of movement, especially for in BC birds in the fall.
 
 We first do a quick look to pull out some ids of relevant birds to explore.
 Then we create `start` and `end` columns to hold the hour of day values (i.e. 10.5
 which would be 10:30 am, local time). 
 ```{r}
 # To find birds in BC which have many records
-b <- filter(bouts, recvDeployLon < -110, recvDeployLat > 48.97) |>
+b <- filter(bouts_split, recvDeployLon < -110, recvDeployLat > 48.97) |>
   summarize(n = n(), .by = c("tagDeployID", "english")) |> 
   arrange(desc(n))
 
 # To convert start times to start/end fractional hours (i.e. time of day rather than date/time)
-b0 <- bouts |>
+b0 <- bouts_split |>
   mutate(start = hour(timeBeginLocal) + minute(timeBeginLocal)/60,
          end = hour(timeEndLocal) + minute(timeEndLocal)/60)
 ```
@@ -357,15 +372,96 @@ daylengths in the activity of these two birds.
 
 ```{r}
 #| code-fold: true
-filter(b0, tagDeployID == 41224, dateBegin > "2022-09-01", dateBegin < "2023-01-01") |>
-  ggplot(aes(x = start, xend = end, y = dateBegin, colour = stn_group)) +
+#| fig-height: 10
+#| fig-asp: 1
+filter(b0, tagDeployID == 41224, dateBeginLocal > "2022-09-01", dateBeginLocal < "2023-01-01") |>
+  ggplot(aes(x = start, xend = end, y = dateBeginLocal, colour = stn_group)) +
   geom_segment(linewidth = 1.5) +
   labs(x = "Hour (Local timezone)", title = "tagDeployID 41224 (Spotted Towhee)")
 
-filter(b0, tagDeployID == 41209, dateBegin < "2022-12-01", dateBegin > "2022-07-30") |>
-  ggplot(aes(x = start, xend = end, y = dateBegin, colour = stn_group)) +
+filter(b0, tagDeployID == 41209, dateBeginLocal < "2022-12-01", dateBeginLocal > "2022-07-30") |>
+  ggplot(aes(x = start, xend = end, y = dateBeginLocal, colour = stn_group)) +
   geom_segment(linewidth = 1.5) +
   labs(x = "Hour (Local timezone)", title = "tagDeployID 41224 (Spotted Towhee)")
+```
+
+### Create data set for exploration
+
+> **Datasets created**:  
+> 
+> - [`Data/03_Final/summary_circadian_bouts.csv`](XX_data.html#finalsummary_circadian_bouts.csv)
+
+The above exploration revealed some interesting patterns. 
+While we don't have time in this round of the project to get into them in 
+detail, we can create a data set for exploration.
+
+We'll filter the bout-level data to include only periods of time for individuals when 
+they spent more than 30 days at a specific station (without being detected at
+other stations in between). This may omit some which are hanging out in a 
+local area and are being recorded by multiple stations, but at least gives
+us a starting point. 
+
+:::{.callout-tip}
+#### Note 
+We filter by ID and date, not by station, so figures will show birds at multiple
+stations if they
+
+```{r}
+include <- daily_bouts |>
+  arrange(tagDeployID, dateBeginLocal) |>
+  mutate(same_stn1 = lead(stn_group, default = "X") == stn_group & 
+           difftime(lead(dateBeginLocal, default = ymd("2099-01-01")), dateBeginLocal, units = "days") < 3,
+         same_stn2 = lag(stn_group, default = "X") == stn_group &
+           difftime(dateBeginLocal, lag(dateBeginLocal, default = ymd("1900-01-01")), units = "days") < 3,
+         .by = "tagDeployID") |>
+  filter(!(!same_stn1 & !same_stn2)) |>
+  mutate(start = same_stn1 & !same_stn2,
+         end = !same_stn1 & same_stn2) |>
+  mutate(group = cumsum(start), .by = "tagDeployID") |>
+  mutate(n = n(),  min = min(dateBeginLocal), max = max(dateBeginLocal), 
+         .by = c("tagDeployID", "group")) |>
+  filter(n > 20, difftime(max, min, units = "days") > 30) |>
+  select(tagDeployID, stn_group, group, n, min, max) |>
+  distinct()
+
+circadian <- bouts_split |>
+  mutate(year = year(dateBeginLocal)) |>
+  semi_join(include, by = join_by("tagDeployID", between(dateBeginLocal, min, max))) |>
+  mutate(start = hour(timeBeginLocal) + minute(timeBeginLocal)/60,
+         end = hour(timeEndLocal) + minute(timeEndLocal)/60,
+         end = if_else(end == 0, 24, end), # Account for days where the bird was detected over midnight
+         stn_nice = paste0(
+           if_else(recvDeployLon < -94.96, "West", "East"), 
+           ": Station (group) ", stn_group,
+           " (", round(recvDeployLat, 4), ", ", round(recvDeployLon, 4), ")")) |>
+  arrange(speciesID, recvDeployLon)
+
+write_csv(select(circadian, -"stn_nice"), "Data/03_Final/summary_circadian_bouts.csv")
+```
+
+### Broad exploration
+
+Now we'll create circadian plots for each of these individuals for the dates at which they
+were consistently at a single station. 
+
+```{r}
+#| fig-height: 10
+#| fig-asp: 1
+#| fig-dpi: 75
+#| message: false
+#| code-fold: true
+#| results: asis
+walk(unique(circadian$tagDeployID), \(x) {
+  cat("\n\n####", x, "\n\n")
+  g <- ggplot(filter(circadian, tagDeployID == x), 
+         aes(x = start, xend = end, y = dateBeginLocal, colour = stn_nice)) +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+  geom_segment(linewidth = 1.5) +
+  facet_wrap(~ year, scales = "free") +
+  labs(title = paste0(circadian$english[circadian$tagDeployID == x], ": ", x), 
+       x = "Hour (Local timezone)")
+  print(g)
+})
 ```
 
 
@@ -377,43 +473,9 @@ filter(b0, tagDeployID == 41209, dateBegin < "2022-12-01", dateBegin > "2022-07-
   - Amie et al. use hit patterns and timing to determine if stopping in. 
 - Explore timing of activity during migration stop-overs 
   - Are birds leaving specific areas at particular times, then returning?
-  - *see Looking at diurnal patterns* for a brief exploration
+  - *see Looking at circadian patterns* for a brief exploration
 
 
-## Maps of migration by species
+## Reproducibility
+{{< include _reproducibility.qmd >}}
 
-These maps summarize the movements across all species of individuals who migrated
-(>1 latitude of movement detected). 
-
-
-```{r}
-#| fig-height: 16
-#| fig-asp: 1
-#| message: false
-#| code-fold: true
-
-migrants <-  trans_dist$tagDeployID[trans_dist$migrated_far] |> unique()
-t <- filter(trans, tagDeployID %in% migrants) |>
-  mutate(month = month(mid_date)) |>
-  mutate(n = n_distinct(tagDeployID), .by = "english") |>
-  arrange(desc(n))
-b <- filter(bouts, tagDeployID %in% migrants)
-
-#t1 <- filter(t, english %in% c("Song Sparrow", "Gray Catbird")) |>
-  
-
-walk(unique(t$speciesID), \(x) {
-  t1 <- filter(t, speciesID == x)
-  g <- ggplot(t1, aes(x = lon1, y = lat1)) +
-    annotation_map_tile(type = "cartolight", zoomin = 0) +
-    geom_spatial_segment(
-      aes(xend = lon2, yend = lat2, colour = month),
-      arrow = arrow(length = unit(10, "pt"), type = "closed"), crs = 4326, na.rm = TRUE) +
-    scale_colour_viridis_c(option = "inferno", 
-                           begin = 0.20, end = 0.85) +
-    guides(colour = guide_colourbar(reverse = TRUE)) +
-    labs(title = t1$english[1], 
-         subtitle = paste0("n = ", n_distinct(t1$tagDeployID), "; ", as_date(min(t1$b1)), " to ", as_date(max(t1$e2))))
-  print(g)
-})
-```
