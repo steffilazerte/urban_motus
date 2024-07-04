@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-05-14">
+<meta name="dcterms.date" content="2024-07-04">
 
 <title>Motus tracking of urban migration stopovers - Setup</title>
 <style>
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./XX_citations.html" rel="next">
+<link href="./XX_data.html" rel="next">
 <link href="./XX_details.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -156,12 +156,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./00_workflow.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Plans</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="./01_select_projects.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Selecting Projects</span></a>
   </div>
@@ -169,7 +163,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./02_download.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Download/Update Data &amp; Transform</span></a>
+ <span class="menu-text">Download Data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -216,8 +210,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./99_checks.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Metadata checks</span></a>
+  <a href="./10_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Maps</span></a>
   </div>
 </li>
       </ul>
@@ -245,6 +239,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./XX_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Datasets</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./XX_citations.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Citations</span></a>
   </div>
@@ -264,7 +264,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#packages" id="toc-packages" class="nav-link active" data-scroll-target="#packages">Packages</a></li>
   <li><a href="#motus-credentials" id="toc-motus-credentials" class="nav-link" data-scroll-target="#motus-credentials">Motus credentials</a></li>
   <li><a href="#define-projects" id="toc-define-projects" class="nav-link" data-scroll-target="#define-projects">Define projects</a></li>
-  <li><a href="#define-contants" id="toc-define-contants" class="nav-link" data-scroll-target="#define-contants">Define contants</a></li>
+  <li><a href="#define-constants" id="toc-define-constants" class="nav-link" data-scroll-target="#define-constants">Define constants</a></li>
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
   <ul class="collapse">
   <li><a href="#species" id="toc-species" class="nav-link" data-scroll-target="#species">Species</a></li>
@@ -296,7 +296,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 14, 2024</p>
+      <p class="date">July 4, 2024</p>
     </div>
   </div>
   
@@ -313,42 +313,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="packages">Packages</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Motus data and data bases</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(motus)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DBI)   <span class="co"># Data bases</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arrow) <span class="co"># parquet files</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(motus)     <span class="co"># Fetch motus data</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DBI)       <span class="co"># Data bases</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arrow)     <span class="co"># feather files</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Tidy data manipulation</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(assertr) <span class="co"># Check data quality</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(forcats)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Data display</span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Spatial data</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ebirdst) <span class="co"># Species ranges</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(units)</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggspatial)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)     <span class="co"># Loops</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)     <span class="co"># Parallel loops</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)     <span class="co"># Manipulate data</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)     <span class="co"># Transform data</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)    <span class="co"># Data frames (ish)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)   <span class="co"># Text manipulation/search</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)     <span class="co"># Read data</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate) <span class="co"># Deal with date/times</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(assertr)   <span class="co"># Check data quality</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Data display</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)   <span class="co"># Figures</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)   <span class="co"># Push labels away from points in figures</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork) <span class="co"># Combine figures</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)        <span class="co"># HTML tables</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Spatial data</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)        <span class="co"># Work with spatial data</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth) <span class="co"># Get maps</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ebirdst)   <span class="co"># Fetch species ranges</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(units)     <span class="co"># Deal with units of distance and speed</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggspatial) <span class="co"># Plot spatial data</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lutz)      <span class="co"># Timezones by location</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="motus-credentials" class="level2">
 <h2 class="anchored" data-anchor-id="motus-credentials">Motus credentials</h2>
 <p>Here we set the credentials for this session (so you don’t have to manually type it in every time)</p>
-<p>This code expects that you store your Motus login and password as <code>URBAN_USER</code> and <code>URBAN_PASSWORD</code> in an .Renviron file</p>
+<p>This code expects that you store your Motus login and password as <code>URBAN_USER</code> and <code>URBAN_PASSWORD</code> in an <code>.Renviron</code> file</p>
 <ul>
-<li>learn more about this file: https://rstats.wtf/r-startup.html#renviron</li>
+<li>learn more about this file: <a href="https://rstats.wtf/r-startup.html#renviron" class="uri">https://rstats.wtf/r-startup.html#renviron</a></li>
 <li>easily edit this file with <code>usethis::edit_r_environ()</code></li>
 </ul>
 <div class="cell">
@@ -372,8 +372,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>projects <span class="ot">&lt;-</span> <span class="fu">setNames</span>(projects, projects)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="define-contants" class="level2">
-<h2 class="anchored" data-anchor-id="define-contants">Define contants</h2>
+<section id="define-constants" class="level2">
+<h2 class="anchored" data-anchor-id="define-constants">Define constants</h2>
 <p>Here we define any cutoffs or constants we will be using</p>
 <ul>
 <li><code>max_flight_speed</code> is the maximum speed of travel we think is possible (with a buffer)</li>
@@ -388,8 +388,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>Get species lists from naturecounts taxonomy and join this with the species metadata from the motus data bases.</p>
-<p>We only need to do this to one database, as the <code>metadata()</code> data step in <a href="02_download.html">Download/Update data</a> adds full species lists to all databases (so all database metadata are the same).</p>
+<p>Get species lists from NatureCounts taxonomy and join this with the species metadata from the Motus data bases.</p>
+<p>We only need to do this to one database, as the <code>metadata()</code> data step in <a href="02_download.html">Download/Update data</a> adds full species lists to all databases (so metadata is the same across all databases).</p>
 <section id="species" class="level3">
 <h3 class="anchored" data-anchor-id="species">Species</h3>
 </section>
@@ -398,17 +398,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="load-existing-databases" class="level4">
 <h4 class="anchored" data-anchor-id="load-existing-databases">Load existing databases</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs <span class="ot">&lt;-</span> <span class="fu">map</span>(projects, \(x) <span class="fu">tagme</span>(x, <span class="at">dir =</span> <span class="st">"Data/Raw"</span>, <span class="at">update =</span> <span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dbs <span class="ot">&lt;-</span> <span class="fu">map</span>(projects, \(x) <span class="fu">tagme</span>(x, <span class="at">dir =</span> <span class="st">"Data/01_Raw"</span>, <span class="at">update =</span> <span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="establish-included-species" class="level4">
 <h4 class="anchored" data-anchor-id="establish-included-species">Establish included species</h4>
 <ul>
-<li>We match existing species in the databases to the species list from naturecounts</li>
+<li>We match existing species in the databases to the species list from NatureCounts</li>
 <li>We rename scientific names to omit subspecies (e.g., myrtle yellow-rumped warbler) [required for later eBird range steps]</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># naturecounts::nc_metadata() # Update naturecounts taxonomy lists</span></span>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># naturecounts::nc_metadata() # Update naturecounts taxonomy lists as needed</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>species_list <span class="ot">&lt;-</span> naturecounts<span class="sc">::</span><span class="fu">meta_species_taxonomy</span>() <span class="sc">|&gt;</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(order_taxon <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Passeriformes"</span>, <span class="st">"Piciformes"</span>))</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -433,7 +433,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
-<p>These functions are sourced from <code>XX_functions.R</code></p>
+<p>These are the custom functions used in this workflow. Some functions are displayed in the various workflow pages, but they are all sourced from <code>XX_functions.R</code> (as is the following).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>remove_by_ID <span class="ot">&lt;-</span> <span class="cf">function</span>(src, t, <span class="at">id_type =</span> <span class="st">"batchID"</span>, ids) {</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(ids) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
@@ -586,7 +586,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a>  })</span>
 <span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a>plot_bouts <span class="ot">&lt;-</span> <span class="cf">function</span>(trans, <span class="at">trans_clean =</span> <span class="cn">NULL</span>, bouts, tagDeployID, <span class="at">save =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a>plot_bouts <span class="ot">&lt;-</span> <span class="cf">function</span>(trans, <span class="at">trans_clean =</span> <span class="cn">NULL</span>, bouts, tagDeployID, <span class="at">save =</span> <span class="cn">FALSE</span>) {</span>
 <span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a>  trans <span class="ot">&lt;-</span> <span class="fu">filter</span>(trans, tagDeployID <span class="sc">==</span> .env<span class="sc">$</span>tagDeployID)</span>
 <span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">is.null</span>(trans_clean)) trans_clean <span class="ot">&lt;-</span> trans</span>
@@ -679,7 +679,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-242"><a href="#cb7-242" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarize</span>(</span>
 <span id="cb7-243"><a href="#cb7-243" aria-hidden="true" tabindex="-1"></a>        <span class="at">lon =</span> lon1, </span>
 <span id="cb7-244"><a href="#cb7-244" aria-hidden="true" tabindex="-1"></a>        <span class="at">lat =</span> lat1,</span>
-<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a>        <span class="at">stn_pair =</span> stn_pair[<span class="dv">1</span>],</span>
+<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a>        <span class="at">recv_pair =</span> recv_pair[<span class="dv">1</span>],</span>
 <span id="cb7-246"><a href="#cb7-246" aria-hidden="true" tabindex="-1"></a>        <span class="at">problem_chr =</span> <span class="fu">pmap_chr</span>(<span class="fu">list</span>(problem_fast, problem_manual),</span>
 <span id="cb7-247"><a href="#cb7-247" aria-hidden="true" tabindex="-1"></a>                               \(x, y) <span class="fu">paste0</span>(<span class="fu">c</span>(<span class="st">"too fast"</span>, <span class="st">"manual"</span>)[<span class="fu">c</span>(x, y)], <span class="at">collapse =</span> <span class="st">", "</span>)),</span>
 <span id="cb7-248"><a href="#cb7-248" aria-hidden="true" tabindex="-1"></a>        <span class="at">nudge_x =</span> <span class="fu">sign</span>(lon2 <span class="sc">-</span> lon1) <span class="sc">*</span> ((bb[[<span class="dv">2</span>]] <span class="sc">-</span> bb[[<span class="dv">1</span>]]) <span class="sc">*</span> <span class="fl">0.1</span>),</span>
@@ -843,10 +843,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-406"><a href="#cb7-406" aria-hidden="true" tabindex="-1"></a>      <span class="at">lag =</span> <span class="fu">pmin</span>(lag1, lag2),</span>
 <span id="cb7-407"><a href="#cb7-407" aria-hidden="true" tabindex="-1"></a>      <span class="at">prev_lag =</span> <span class="fu">lag</span>(lag, <span class="at">default =</span> <span class="fu">set_units</span>(<span class="cn">Inf</span>, <span class="st">"min"</span>)),</span>
 <span id="cb7-408"><a href="#cb7-408" aria-hidden="true" tabindex="-1"></a>      <span class="at">start =</span> prev_lag <span class="sc">&gt;=</span> .env<span class="sc">$</span>cutoff,</span>
-<span id="cb7-409"><a href="#cb7-409" aria-hidden="true" tabindex="-1"></a>      <span class="at">bout =</span> <span class="fu">cumsum</span>(start))</span>
+<span id="cb7-409"><a href="#cb7-409" aria-hidden="true" tabindex="-1"></a>      <span class="at">bout_id =</span> <span class="fu">cumsum</span>(start))</span>
 <span id="cb7-410"><a href="#cb7-410" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb7-411"><a href="#cb7-411" aria-hidden="true" tabindex="-1"></a>  x1 <span class="sc">|&gt;</span></span>
-<span id="cb7-412"><a href="#cb7-412" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(bout) <span class="sc">|&gt;</span></span>
+<span id="cb7-412"><a href="#cb7-412" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(bout_id) <span class="sc">|&gt;</span></span>
 <span id="cb7-413"><a href="#cb7-413" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">timeBegin =</span> <span class="fu">min</span>(timeBegin), <span class="at">timeEnd =</span> <span class="fu">max</span>(timeEnd), </span>
 <span id="cb7-414"><a href="#cb7-414" aria-hidden="true" tabindex="-1"></a>              <span class="at">runID =</span> <span class="fu">list</span>(<span class="fu">unlist</span>(runID)),</span>
 <span id="cb7-415"><a href="#cb7-415" aria-hidden="true" tabindex="-1"></a>              <span class="at">n_runs =</span> <span class="fu">n</span>(), </span>
@@ -856,47 +856,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-419"><a href="#cb7-419" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
 <span id="cb7-420"><a href="#cb7-420" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb7-421"><a href="#cb7-421" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-422"><a href="#cb7-422" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-423"><a href="#cb7-423" aria-hidden="true" tabindex="-1"></a>find_overlaps <span class="ot">&lt;-</span> <span class="cf">function</span>(x2, <span class="at">type =</span> <span class="st">"logical"</span>) {</span>
-<span id="cb7-424"><a href="#cb7-424" aria-hidden="true" tabindex="-1"></a>  <span class="co">#if(3551 %in% x2$stn_group) browser()</span></span>
-<span id="cb7-425"><a href="#cb7-425" aria-hidden="true" tabindex="-1"></a>  <span class="co">#           comp B/E2  vs. B/E1</span></span>
-<span id="cb7-426"><a href="#cb7-426" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-427"><a href="#cb7-427" aria-hidden="true" tabindex="-1"></a>  m1 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeBegin, x2<span class="sc">$</span>timeBegin, <span class="st">'&gt;='</span>)</span>
-<span id="cb7-428"><a href="#cb7-428" aria-hidden="true" tabindex="-1"></a>  m2 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeEnd, x2<span class="sc">$</span>timeEnd, <span class="st">'&lt;='</span>)</span>
-<span id="cb7-429"><a href="#cb7-429" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-430"><a href="#cb7-430" aria-hidden="true" tabindex="-1"></a>  m3 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeBegin, x2<span class="sc">$</span>timeEnd, <span class="st">'&lt;='</span>)</span>
-<span id="cb7-431"><a href="#cb7-431" aria-hidden="true" tabindex="-1"></a>  m4 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeEnd, x2<span class="sc">$</span>timeBegin, <span class="st">'&gt;='</span>)</span>
-<span id="cb7-432"><a href="#cb7-432" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-433"><a href="#cb7-433" aria-hidden="true" tabindex="-1"></a>  ovlps <span class="ot">&lt;-</span> (m1 <span class="sc">&amp;</span> m3) <span class="sc">|</span> (m2 <span class="sc">&amp;</span> m4)</span>
-<span id="cb7-434"><a href="#cb7-434" aria-hidden="true" tabindex="-1"></a>  ovlps <span class="ot">&lt;-</span> ovlps <span class="sc">|</span> <span class="fu">t</span>(ovlps) <span class="co"># either id1/id2 or id2/id1</span></span>
+<span id="cb7-422"><a href="#cb7-422" aria-hidden="true" tabindex="-1"></a>calc_trans <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb7-423"><a href="#cb7-423" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
+<span id="cb7-424"><a href="#cb7-424" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">id1 =</span> id) <span class="sc">|&gt;</span></span>
+<span id="cb7-425"><a href="#cb7-425" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">next_stn =</span> <span class="fu">lead</span>(stn_group), </span>
+<span id="cb7-426"><a href="#cb7-426" aria-hidden="true" tabindex="-1"></a>           <span class="at">id2 =</span> <span class="fu">lead</span>(id1), <span class="at">.by =</span> <span class="st">"tagDeployID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-427"><a href="#cb7-427" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(stn_group <span class="sc">!=</span> next_stn) <span class="sc">|&gt;</span></span>
+<span id="cb7-428"><a href="#cb7-428" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(tagDeployID, id1, id2)</span>
+<span id="cb7-429"><a href="#cb7-429" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-430"><a href="#cb7-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-431"><a href="#cb7-431" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- find_overlaps ----</span></span>
+<span id="cb7-432"><a href="#cb7-432" aria-hidden="true" tabindex="-1"></a>find_overlaps <span class="ot">&lt;-</span> <span class="cf">function</span>(x2, <span class="at">type =</span> <span class="st">"logical"</span>) {</span>
+<span id="cb7-433"><a href="#cb7-433" aria-hidden="true" tabindex="-1"></a>  <span class="co">#if(3551 %in% x2$stn_group) browser()</span></span>
+<span id="cb7-434"><a href="#cb7-434" aria-hidden="true" tabindex="-1"></a>  <span class="co">#           comp B/E2  vs. B/E1</span></span>
 <span id="cb7-435"><a href="#cb7-435" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-436"><a href="#cb7-436" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(type <span class="sc">==</span> <span class="st">"df"</span>) {</span>
-<span id="cb7-437"><a href="#cb7-437" aria-hidden="true" tabindex="-1"></a>    nms <span class="ot">&lt;-</span> <span class="fu">paste0</span>(x2<span class="sc">$</span>stn_group, <span class="st">"_"</span>, x2<span class="sc">$</span>bout)</span>
-<span id="cb7-438"><a href="#cb7-438" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dimnames</span>(ovlps) <span class="ot">&lt;-</span> <span class="fu">list</span>(nms, nms)</span>
-<span id="cb7-439"><a href="#cb7-439" aria-hidden="true" tabindex="-1"></a>    r <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">id1 =</span> nms, <span class="at">id2 =</span> nms) <span class="sc">|&gt;</span></span>
-<span id="cb7-440"><a href="#cb7-440" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">overlap =</span> <span class="fu">as.vector</span>(ovlps)) <span class="sc">|&gt;</span></span>
-<span id="cb7-441"><a href="#cb7-441" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(overlap, id1 <span class="sc">!=</span> id2)</span>
-<span id="cb7-442"><a href="#cb7-442" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span>(type <span class="sc">==</span> <span class="st">"logical"</span>) {</span>
-<span id="cb7-443"><a href="#cb7-443" aria-hidden="true" tabindex="-1"></a>    r <span class="ot">&lt;-</span> <span class="fu">any</span>(<span class="fu">colSums</span>(ovlps) <span class="sc">&gt;</span> <span class="dv">1</span>)</span>
-<span id="cb7-444"><a href="#cb7-444" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb7-445"><a href="#cb7-445" aria-hidden="true" tabindex="-1"></a>  r</span>
-<span id="cb7-446"><a href="#cb7-446" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-447"><a href="#cb7-447" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-448"><a href="#cb7-448" aria-hidden="true" tabindex="-1"></a>calc_trans <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb7-449"><a href="#cb7-449" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span></span>
-<span id="cb7-450"><a href="#cb7-450" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">id1 =</span> id) <span class="sc">|&gt;</span></span>
-<span id="cb7-451"><a href="#cb7-451" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">next_stn =</span> <span class="fu">lead</span>(stn_group), </span>
-<span id="cb7-452"><a href="#cb7-452" aria-hidden="true" tabindex="-1"></a>           <span class="at">id2 =</span> <span class="fu">lead</span>(id1), <span class="at">.by =</span> <span class="st">"tagDeployID"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-453"><a href="#cb7-453" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(stn_group <span class="sc">!=</span> next_stn) <span class="sc">|&gt;</span></span>
-<span id="cb7-454"><a href="#cb7-454" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(tagDeployID, id1, id2)</span>
+<span id="cb7-436"><a href="#cb7-436" aria-hidden="true" tabindex="-1"></a>  m1 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeBegin, x2<span class="sc">$</span>timeBegin, <span class="st">'&gt;='</span>)</span>
+<span id="cb7-437"><a href="#cb7-437" aria-hidden="true" tabindex="-1"></a>  m2 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeEnd, x2<span class="sc">$</span>timeEnd, <span class="st">'&lt;='</span>)</span>
+<span id="cb7-438"><a href="#cb7-438" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-439"><a href="#cb7-439" aria-hidden="true" tabindex="-1"></a>  m3 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeBegin, x2<span class="sc">$</span>timeEnd, <span class="st">'&lt;='</span>)</span>
+<span id="cb7-440"><a href="#cb7-440" aria-hidden="true" tabindex="-1"></a>  m4 <span class="ot">&lt;-</span> <span class="fu">outer</span>(x2<span class="sc">$</span>timeEnd, x2<span class="sc">$</span>timeBegin, <span class="st">'&gt;='</span>)</span>
+<span id="cb7-441"><a href="#cb7-441" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-442"><a href="#cb7-442" aria-hidden="true" tabindex="-1"></a>  ovlps <span class="ot">&lt;-</span> (m1 <span class="sc">&amp;</span> m3) <span class="sc">|</span> (m2 <span class="sc">&amp;</span> m4)</span>
+<span id="cb7-443"><a href="#cb7-443" aria-hidden="true" tabindex="-1"></a>  ovlps <span class="ot">&lt;-</span> ovlps <span class="sc">|</span> <span class="fu">t</span>(ovlps) <span class="co"># either id1/id2 or id2/id1</span></span>
+<span id="cb7-444"><a href="#cb7-444" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-445"><a href="#cb7-445" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(type <span class="sc">==</span> <span class="st">"df"</span>) {</span>
+<span id="cb7-446"><a href="#cb7-446" aria-hidden="true" tabindex="-1"></a>    nms <span class="ot">&lt;-</span> <span class="fu">paste0</span>(x2<span class="sc">$</span>stn_group, <span class="st">"_"</span>, x2<span class="sc">$</span>bout_id)</span>
+<span id="cb7-447"><a href="#cb7-447" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dimnames</span>(ovlps) <span class="ot">&lt;-</span> <span class="fu">list</span>(nms, nms)</span>
+<span id="cb7-448"><a href="#cb7-448" aria-hidden="true" tabindex="-1"></a>    r <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">id1 =</span> nms, <span class="at">id2 =</span> nms) <span class="sc">|&gt;</span></span>
+<span id="cb7-449"><a href="#cb7-449" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">overlap =</span> <span class="fu">as.vector</span>(ovlps)) <span class="sc">|&gt;</span></span>
+<span id="cb7-450"><a href="#cb7-450" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(overlap, id1 <span class="sc">!=</span> id2)</span>
+<span id="cb7-451"><a href="#cb7-451" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span>(type <span class="sc">==</span> <span class="st">"logical"</span>) {</span>
+<span id="cb7-452"><a href="#cb7-452" aria-hidden="true" tabindex="-1"></a>    r <span class="ot">&lt;-</span> <span class="fu">any</span>(<span class="fu">colSums</span>(ovlps) <span class="sc">&gt;</span> <span class="dv">1</span>)</span>
+<span id="cb7-453"><a href="#cb7-453" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-454"><a href="#cb7-454" aria-hidden="true" tabindex="-1"></a>  r</span>
 <span id="cb7-455"><a href="#cb7-455" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb7-456"><a href="#cb7-456" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-457"><a href="#cb7-457" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- load_runs ----</span></span>
 <span id="cb7-458"><a href="#cb7-458" aria-hidden="true" tabindex="-1"></a>load_runs <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb7-459"><a href="#cb7-459" aria-hidden="true" tabindex="-1"></a>  noise_runs <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/noise_runs.feather"</span>, <span class="at">format =</span> <span class="st">"feather"</span>)</span>
-<span id="cb7-460"><a href="#cb7-460" aria-hidden="true" tabindex="-1"></a>  noise_hits <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/noise_hits.feather"</span>, <span class="at">format =</span> <span class="st">"feather"</span>)</span>
+<span id="cb7-459"><a href="#cb7-459" aria-hidden="true" tabindex="-1"></a>  noise_runs <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/02_Datasets/noise_runs.feather"</span>, <span class="at">format =</span> <span class="st">"feather"</span>)</span>
+<span id="cb7-460"><a href="#cb7-460" aria-hidden="true" tabindex="-1"></a>  noise_hits <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(<span class="st">"Data/02_Datasets/noise_hits.feather"</span>, <span class="at">format =</span> <span class="st">"feather"</span>)</span>
 <span id="cb7-461"><a href="#cb7-461" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-462"><a href="#cb7-462" aria-hidden="true" tabindex="-1"></a>  <span class="fu">open_dataset</span>(<span class="st">"Data/Datasets/runs"</span>, <span class="at">format =</span> <span class="st">"feather"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-462"><a href="#cb7-462" aria-hidden="true" tabindex="-1"></a>  <span class="fu">open_dataset</span>(<span class="st">"Data/02_Datasets/runs"</span>, <span class="at">format =</span> <span class="st">"feather"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb7-463"><a href="#cb7-463" aria-hidden="true" tabindex="-1"></a>    <span class="fu">anti_join</span>(noise_runs, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb7-464"><a href="#cb7-464" aria-hidden="true" tabindex="-1"></a>    <span class="fu">anti_join</span>(noise_hits, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"runID"</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb7-465"><a href="#cb7-465" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(len <span class="sc">&gt;</span> <span class="dv">2</span>) <span class="sc">|&gt;</span></span>
@@ -944,11 +944,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-507"><a href="#cb7-507" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> <span class="st">"id2"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb7-508"><a href="#cb7-508" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb7-509"><a href="#cb7-509" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Identify transition pairs</span></span>
-<span id="cb7-510"><a href="#cb7-510" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">stn_pair =</span> <span class="fu">paste0</span>(recv1, <span class="st">"_"</span>, recv2)) <span class="sc">|&gt;</span></span>
+<span id="cb7-510"><a href="#cb7-510" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">recv_pair =</span> <span class="fu">paste0</span>(recv1, <span class="st">"_"</span>, recv2)) <span class="sc">|&gt;</span></span>
 <span id="cb7-511"><a href="#cb7-511" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb7-512"><a href="#cb7-512" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add in distance between stations</span></span>
-<span id="cb7-513"><a href="#cb7-513" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">select</span>(dist, <span class="st">"stn_pair"</span> <span class="ot">=</span> <span class="st">"next_pair"</span>, <span class="st">"next_dist"</span>, <span class="st">"min_time"</span>),</span>
-<span id="cb7-514"><a href="#cb7-514" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> <span class="st">"stn_pair"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-513"><a href="#cb7-513" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(<span class="fu">select</span>(dist, <span class="st">"recv_pair"</span>, <span class="st">"next_dist"</span>, <span class="st">"min_time"</span>),</span>
+<span id="cb7-514"><a href="#cb7-514" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> <span class="st">"recv_pair"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb7-515"><a href="#cb7-515" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb7-516"><a href="#cb7-516" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate the time and speed taken to move between stations</span></span>
 <span id="cb7-517"><a href="#cb7-517" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">trans_id =</span> <span class="fu">row_number</span>(),</span>
@@ -1067,7 +1067,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-630"><a href="#cb7-630" aria-hidden="true" tabindex="-1"></a>                     omit), </span>
 <span id="cb7-631"><a href="#cb7-631" aria-hidden="true" tabindex="-1"></a>      <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"trans_id"</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb7-632"><a href="#cb7-632" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">resolved =</span> <span class="fu">any</span>(omit), <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"tagDeployID"</span>, <span class="st">"trans_id"</span>))</span>
-<span id="cb7-633"><a href="#cb7-633" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-633"><a href="#cb7-633" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-634"><a href="#cb7-634" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-635"><a href="#cb7-635" aria-hidden="true" tabindex="-1"></a><span class="co">#' Convert unit vectors to regular numeric vectors</span></span>
+<span id="cb7-636"><a href="#cb7-636" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb7-637"><a href="#cb7-637" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param x Vector (or column)</span></span>
+<span id="cb7-638"><a href="#cb7-638" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param units Units to ensure they match</span></span>
+<span id="cb7-639"><a href="#cb7-639" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb7-640"><a href="#cb7-640" aria-hidden="true" tabindex="-1"></a>flatten_units <span class="ot">&lt;-</span> <span class="cf">function</span>(x, units) {</span>
+<span id="cb7-641"><a href="#cb7-641" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">inherits</span>(x, <span class="st">"difftime"</span>)) x <span class="ot">&lt;-</span> <span class="fu">as_units</span>(x)</span>
+<span id="cb7-642"><a href="#cb7-642" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_units</span>(x, units, <span class="at">mode =</span> <span class="st">"standard"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-643"><a href="#cb7-643" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.numeric</span>()</span>
+<span id="cb7-644"><a href="#cb7-644" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
@@ -1468,8 +1479,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./XX_citations.html" class="pagination-link" aria-label="Citations">
-        <span class="nav-page-text">Citations</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./XX_data.html" class="pagination-link" aria-label="Datasets">
+        <span class="nav-page-text">Datasets</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

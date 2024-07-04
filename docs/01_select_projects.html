@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-05-14">
+<meta name="dcterms.date" content="2024-07-04">
 
 <title>Motus tracking of urban migration stopovers - Selecting Projects</title>
 <style>
@@ -67,7 +67,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./02_download.html" rel="next">
-<link href="./00_workflow.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -117,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./01_select_projects.html">Selecting Projects</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01_select_projects.html">Workflow</a></li><li class="breadcrumb-item"><a href="./01_select_projects.html">Selecting Projects</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -156,12 +155,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./00_workflow.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Plans</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="./01_select_projects.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Selecting Projects</span></a>
   </div>
@@ -169,7 +162,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./02_download.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Download/Update Data &amp; Transform</span></a>
+ <span class="menu-text">Download Data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -216,8 +209,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./99_checks.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Metadata checks</span></a>
+  <a href="./10_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Maps</span></a>
   </div>
 </li>
       </ul>
@@ -245,6 +238,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./XX_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Datasets</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./XX_citations.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Citations</span></a>
   </div>
@@ -265,13 +264,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#cleaning-and-filtering" id="toc-cleaning-and-filtering" class="nav-link" data-scroll-target="#cleaning-and-filtering">Cleaning and Filtering</a></li>
   <li><a href="#summarize" id="toc-summarize" class="nav-link" data-scroll-target="#summarize">Summarize</a></li>
   <li><a href="#data-sizes" id="toc-data-sizes" class="nav-link" data-scroll-target="#data-sizes">Data sizes</a></li>
+  <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/01_select_projects.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./00_workflow.html">Workflow</a></li><li class="breadcrumb-item"><a href="./01_select_projects.html">Selecting Projects</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01_select_projects.html">Workflow</a></li><li class="breadcrumb-item"><a href="./01_select_projects.html">Selecting Projects</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Selecting Projects</h1>
 </div>
@@ -290,7 +290,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 14, 2024</p>
+      <p class="date">July 4, 2024</p>
     </div>
   </div>
   
@@ -323,7 +323,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>omit projects with non-Canadian species</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>p_sp <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"Data/Raw/TagsSpeciesProject.xlsx"</span>) <span class="sc">|&gt;</span></span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>p_sp <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"Data/01_Raw/TagsSpeciesProject.xlsx"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="at">.cols =</span> <span class="fu">contains</span>(<span class="st">"No column"</span>), \(x) <span class="st">"access"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(access <span class="sc">==</span> <span class="dv">1</span>,             <span class="co"># Only completely open projects</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>         speciesID <span class="sc">!=</span> <span class="dv">129470</span>) <span class="sc">|&gt;</span>  <span class="co"># Don't worry about Human tags :D</span></span>
@@ -343,25 +343,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">gt</span>(p_sp) <span class="sc">|&gt;</span></span>
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="st">"prop_good_tags"</span>, <span class="at">decimals =</span> <span class="dv">2</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt_theme</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt_theme</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_options</span>(<span class="at">container.height =</span> <span class="fu">px</span>(<span class="dv">600</span>),</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>              <span class="at">container.overflow.y =</span> <span class="st">"auto"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="gvtiyudwif" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#gvtiyudwif table {
+<div id="kfcinoxdzm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:600px;">
+<style>#kfcinoxdzm table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#gvtiyudwif thead, #gvtiyudwif tbody, #gvtiyudwif tfoot, #gvtiyudwif tr, #gvtiyudwif td, #gvtiyudwif th {
+#kfcinoxdzm thead, #kfcinoxdzm tbody, #kfcinoxdzm tfoot, #kfcinoxdzm tr, #kfcinoxdzm td, #kfcinoxdzm th {
   border-style: none;
 }
 
-#gvtiyudwif p {
+#kfcinoxdzm p {
   margin: 0;
   padding: 0;
 }
 
-#gvtiyudwif .gt_table {
+#kfcinoxdzm .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -387,12 +389,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_caption {
+#kfcinoxdzm .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#gvtiyudwif .gt_title {
+#kfcinoxdzm .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -404,7 +406,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#gvtiyudwif .gt_subtitle {
+#kfcinoxdzm .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -416,7 +418,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#gvtiyudwif .gt_heading {
+#kfcinoxdzm .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -428,13 +430,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_bottom_border {
+#kfcinoxdzm .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_col_headings {
+#kfcinoxdzm .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -449,7 +451,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_col_heading {
+#kfcinoxdzm .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -469,7 +471,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#gvtiyudwif .gt_column_spanner_outer {
+#kfcinoxdzm .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -481,15 +483,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#gvtiyudwif .gt_column_spanner_outer:first-child {
+#kfcinoxdzm .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#gvtiyudwif .gt_column_spanner_outer:last-child {
+#kfcinoxdzm .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#gvtiyudwif .gt_column_spanner {
+#kfcinoxdzm .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 3px;
   border-bottom-color: #D3D3D3;
@@ -501,11 +503,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#gvtiyudwif .gt_spanner_row {
+#kfcinoxdzm .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#gvtiyudwif .gt_group_heading {
+#kfcinoxdzm .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -531,7 +533,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#gvtiyudwif .gt_empty_group_heading {
+#kfcinoxdzm .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -546,15 +548,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#gvtiyudwif .gt_from_md > :first-child {
+#kfcinoxdzm .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#gvtiyudwif .gt_from_md > :last-child {
+#kfcinoxdzm .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#gvtiyudwif .gt_row {
+#kfcinoxdzm .gt_row {
   padding-top: 7px;
   padding-bottom: 7px;
   padding-left: 5px;
@@ -573,7 +575,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#gvtiyudwif .gt_stub {
+#kfcinoxdzm .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -586,7 +588,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#gvtiyudwif .gt_stub_row_group {
+#kfcinoxdzm .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -600,15 +602,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#gvtiyudwif .gt_row_group_first td {
+#kfcinoxdzm .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#gvtiyudwif .gt_row_group_first th {
+#kfcinoxdzm .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#gvtiyudwif .gt_summary_row {
+#kfcinoxdzm .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -618,16 +620,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#gvtiyudwif .gt_first_summary_row {
+#kfcinoxdzm .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_first_summary_row.thick {
+#kfcinoxdzm .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#gvtiyudwif .gt_last_summary_row {
+#kfcinoxdzm .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -637,7 +639,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_grand_summary_row {
+#kfcinoxdzm .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -647,7 +649,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#gvtiyudwif .gt_first_grand_summary_row {
+#kfcinoxdzm .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -657,7 +659,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_last_grand_summary_row_top {
+#kfcinoxdzm .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -667,11 +669,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_striped {
+#kfcinoxdzm .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#gvtiyudwif .gt_table_body {
+#kfcinoxdzm .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -680,7 +682,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_footnotes {
+#kfcinoxdzm .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -694,7 +696,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_footnote {
+#kfcinoxdzm .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -703,7 +705,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#gvtiyudwif .gt_sourcenotes {
+#kfcinoxdzm .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -717,7 +719,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#gvtiyudwif .gt_sourcenote {
+#kfcinoxdzm .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -725,63 +727,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#gvtiyudwif .gt_left {
+#kfcinoxdzm .gt_left {
   text-align: left;
 }
 
-#gvtiyudwif .gt_center {
+#kfcinoxdzm .gt_center {
   text-align: center;
 }
 
-#gvtiyudwif .gt_right {
+#kfcinoxdzm .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#gvtiyudwif .gt_font_normal {
+#kfcinoxdzm .gt_font_normal {
   font-weight: normal;
 }
 
-#gvtiyudwif .gt_font_bold {
+#kfcinoxdzm .gt_font_bold {
   font-weight: bold;
 }
 
-#gvtiyudwif .gt_font_italic {
+#kfcinoxdzm .gt_font_italic {
   font-style: italic;
 }
 
-#gvtiyudwif .gt_super {
+#kfcinoxdzm .gt_super {
   font-size: 65%;
 }
 
-#gvtiyudwif .gt_footnote_marks {
+#kfcinoxdzm .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#gvtiyudwif .gt_asterisk {
+#kfcinoxdzm .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#gvtiyudwif .gt_indent_1 {
+#kfcinoxdzm .gt_indent_1 {
   text-indent: 5px;
 }
 
-#gvtiyudwif .gt_indent_2 {
+#kfcinoxdzm .gt_indent_2 {
   text-indent: 10px;
 }
 
-#gvtiyudwif .gt_indent_3 {
+#kfcinoxdzm .gt_indent_3 {
   text-indent: 15px;
 }
 
-#gvtiyudwif .gt_indent_4 {
+#kfcinoxdzm .gt_indent_4 {
   text-indent: 20px;
 }
 
-#gvtiyudwif .gt_indent_5 {
+#kfcinoxdzm .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -4186,23 +4188,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(<span class="at">columns =</span> <span class="st">"mean_tags_per_species"</span>, <span class="at">decimals =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt_theme</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="ofjzzqhbkc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ofjzzqhbkc table {
+<div id="pmjnyvmvwz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pmjnyvmvwz table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ofjzzqhbkc thead, #ofjzzqhbkc tbody, #ofjzzqhbkc tfoot, #ofjzzqhbkc tr, #ofjzzqhbkc td, #ofjzzqhbkc th {
+#pmjnyvmvwz thead, #pmjnyvmvwz tbody, #pmjnyvmvwz tfoot, #pmjnyvmvwz tr, #pmjnyvmvwz td, #pmjnyvmvwz th {
   border-style: none;
 }
 
-#ofjzzqhbkc p {
+#pmjnyvmvwz p {
   margin: 0;
   padding: 0;
 }
 
-#ofjzzqhbkc .gt_table {
+#pmjnyvmvwz .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4228,12 +4230,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_caption {
+#pmjnyvmvwz .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ofjzzqhbkc .gt_title {
+#pmjnyvmvwz .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4245,7 +4247,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#ofjzzqhbkc .gt_subtitle {
+#pmjnyvmvwz .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4257,7 +4259,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#ofjzzqhbkc .gt_heading {
+#pmjnyvmvwz .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4269,13 +4271,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_bottom_border {
+#pmjnyvmvwz .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_col_headings {
+#pmjnyvmvwz .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4290,7 +4292,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_col_heading {
+#pmjnyvmvwz .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4310,7 +4312,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#ofjzzqhbkc .gt_column_spanner_outer {
+#pmjnyvmvwz .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4322,15 +4324,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#ofjzzqhbkc .gt_column_spanner_outer:first-child {
+#pmjnyvmvwz .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ofjzzqhbkc .gt_column_spanner_outer:last-child {
+#pmjnyvmvwz .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ofjzzqhbkc .gt_column_spanner {
+#pmjnyvmvwz .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 3px;
   border-bottom-color: #D3D3D3;
@@ -4342,11 +4344,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#ofjzzqhbkc .gt_spanner_row {
+#pmjnyvmvwz .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ofjzzqhbkc .gt_group_heading {
+#pmjnyvmvwz .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4372,7 +4374,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#ofjzzqhbkc .gt_empty_group_heading {
+#pmjnyvmvwz .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4387,15 +4389,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#ofjzzqhbkc .gt_from_md > :first-child {
+#pmjnyvmvwz .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ofjzzqhbkc .gt_from_md > :last-child {
+#pmjnyvmvwz .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ofjzzqhbkc .gt_row {
+#pmjnyvmvwz .gt_row {
   padding-top: 7px;
   padding-bottom: 7px;
   padding-left: 5px;
@@ -4414,7 +4416,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#ofjzzqhbkc .gt_stub {
+#pmjnyvmvwz .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4427,7 +4429,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ofjzzqhbkc .gt_stub_row_group {
+#pmjnyvmvwz .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4441,15 +4443,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#ofjzzqhbkc .gt_row_group_first td {
+#pmjnyvmvwz .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ofjzzqhbkc .gt_row_group_first th {
+#pmjnyvmvwz .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ofjzzqhbkc .gt_summary_row {
+#pmjnyvmvwz .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4459,16 +4461,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ofjzzqhbkc .gt_first_summary_row {
+#pmjnyvmvwz .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_first_summary_row.thick {
+#pmjnyvmvwz .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ofjzzqhbkc .gt_last_summary_row {
+#pmjnyvmvwz .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4478,7 +4480,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_grand_summary_row {
+#pmjnyvmvwz .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4488,7 +4490,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ofjzzqhbkc .gt_first_grand_summary_row {
+#pmjnyvmvwz .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4498,7 +4500,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_last_grand_summary_row_top {
+#pmjnyvmvwz .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4508,11 +4510,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_striped {
+#pmjnyvmvwz .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ofjzzqhbkc .gt_table_body {
+#pmjnyvmvwz .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4521,7 +4523,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_footnotes {
+#pmjnyvmvwz .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4535,7 +4537,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_footnote {
+#pmjnyvmvwz .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4544,7 +4546,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ofjzzqhbkc .gt_sourcenotes {
+#pmjnyvmvwz .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4558,7 +4560,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#ofjzzqhbkc .gt_sourcenote {
+#pmjnyvmvwz .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4566,63 +4568,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#ofjzzqhbkc .gt_left {
+#pmjnyvmvwz .gt_left {
   text-align: left;
 }
 
-#ofjzzqhbkc .gt_center {
+#pmjnyvmvwz .gt_center {
   text-align: center;
 }
 
-#ofjzzqhbkc .gt_right {
+#pmjnyvmvwz .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ofjzzqhbkc .gt_font_normal {
+#pmjnyvmvwz .gt_font_normal {
   font-weight: normal;
 }
 
-#ofjzzqhbkc .gt_font_bold {
+#pmjnyvmvwz .gt_font_bold {
   font-weight: bold;
 }
 
-#ofjzzqhbkc .gt_font_italic {
+#pmjnyvmvwz .gt_font_italic {
   font-style: italic;
 }
 
-#ofjzzqhbkc .gt_super {
+#pmjnyvmvwz .gt_super {
   font-size: 65%;
 }
 
-#ofjzzqhbkc .gt_footnote_marks {
+#pmjnyvmvwz .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ofjzzqhbkc .gt_asterisk {
+#pmjnyvmvwz .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ofjzzqhbkc .gt_indent_1 {
+#pmjnyvmvwz .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ofjzzqhbkc .gt_indent_2 {
+#pmjnyvmvwz .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ofjzzqhbkc .gt_indent_3 {
+#pmjnyvmvwz .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ofjzzqhbkc .gt_indent_4 {
+#pmjnyvmvwz .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ofjzzqhbkc .gt_indent_5 {
+#pmjnyvmvwz .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -5270,6 +5272,150 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+</section>
+<section id="reproducibility" class="level2">
+<h2 class="anchored" data-anchor-id="reproducibility">Reproducibility</h2>
+<div class="callout callout-style-simple callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Session Info
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>─ Session info ───────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.4.0 (2024-04-24)
+ os       Ubuntu 22.04.4 LTS
+ system   x86_64, linux-gnu
+ ui       X11
+ language en_CA:en
+ collate  en_CA.UTF-8
+ ctype    en_CA.UTF-8
+ tz       America/Winnipeg
+ date     2024-07-04
+ pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ ! package       * version  date (UTC) lib source
+ P arrow         * 16.1.0   2024-05-25 [?] CRAN (R 4.4.0)
+ P assertr       * 3.0.1    2023-11-23 [?] CRAN (R 4.4.0)
+ P assertthat      0.2.1    2019-03-21 [?] CRAN (R 4.4.0)
+ P bit             4.0.5    2022-11-15 [?] CRAN (R 4.4.0)
+ P bit64           4.0.5    2020-08-30 [?] CRAN (R 4.4.0)
+ P blob            1.2.4    2023-03-17 [?] CRAN (R 4.4.0)
+ P cachem          1.1.0    2024-05-16 [?] CRAN (R 4.4.0)
+ P cellranger      1.1.0    2016-07-27 [?] CRAN (R 4.4.0)
+ P class           7.3-22   2023-05-03 [?] CRAN (R 4.3.1)
+ P classInt        0.4-10   2023-09-05 [?] CRAN (R 4.4.0)
+ P cli             3.6.2    2023-12-11 [?] CRAN (R 4.4.0)
+ P codetools       0.2-19   2023-02-01 [?] CRAN (R 4.2.2)
+ P colorspace      2.1-0    2023-01-23 [?] CRAN (R 4.4.0)
+ P DBI           * 1.2.3    2024-06-02 [?] CRAN (R 4.4.0)
+ P dbplyr          2.5.0    2024-03-19 [?] CRAN (R 4.4.0)
+ P devtools        2.4.5    2022-10-11 [?] CRAN (R 4.4.0)
+ P digest          0.6.35   2024-03-11 [?] CRAN (R 4.4.0)
+ P dplyr         * 1.1.4    2023-11-17 [?] CRAN (R 4.4.0)
+ P e1071           1.7-14   2023-12-06 [?] CRAN (R 4.4.0)
+ P ebirdst       * 3.2022.3 2024-03-05 [?] CRAN (R 4.4.0)
+ P ellipsis        0.3.2    2021-04-29 [?] CRAN (R 4.4.0)
+ P evaluate        0.23     2023-11-01 [?] CRAN (R 4.4.0)
+ P fansi           1.0.6    2023-12-08 [?] CRAN (R 4.4.0)
+ P fastmap         1.2.0    2024-05-15 [?] CRAN (R 4.4.0)
+ P fs              1.6.4    2024-04-25 [?] CRAN (R 4.4.0)
+ P furrr         * 0.3.1    2022-08-15 [?] CRAN (R 4.4.0)
+ P future        * 1.33.2   2024-03-26 [?] CRAN (R 4.4.0)
+ P generics        0.1.3    2022-07-05 [?] CRAN (R 4.4.0)
+ P ggplot2       * 3.5.1    2024-04-23 [?] CRAN (R 4.4.0)
+ P ggrepel       * 0.9.5    2024-01-10 [?] CRAN (R 4.4.0)
+ P ggspatial     * 1.1.9    2023-08-17 [?] CRAN (R 4.4.0)
+ P globals         0.16.3   2024-03-08 [?] CRAN (R 4.4.0)
+ P glue            1.7.0    2024-01-09 [?] CRAN (R 4.4.0)
+ P gt            * 0.10.1   2024-01-17 [?] CRAN (R 4.4.0)
+ P gtable          0.3.5    2024-04-22 [?] CRAN (R 4.4.0)
+ P hms             1.1.3    2023-03-21 [?] CRAN (R 4.4.0)
+ P htmltools       0.5.8.1  2024-04-04 [?] CRAN (R 4.4.0)
+ P htmlwidgets     1.6.4    2023-12-06 [?] CRAN (R 4.4.0)
+ P httpuv          1.6.15   2024-03-26 [?] CRAN (R 4.4.0)
+ P httr            1.4.7    2023-08-15 [?] CRAN (R 4.4.0)
+ P jsonlite        1.8.8    2023-12-04 [?] CRAN (R 4.4.0)
+ P KernSmooth      2.23-22  2023-07-10 [?] CRAN (R 4.3.1)
+ P knitr           1.47     2024-05-29 [?] CRAN (R 4.4.0)
+ P later           1.3.2    2023-12-06 [?] CRAN (R 4.4.0)
+ P lifecycle       1.0.4    2023-11-07 [?] CRAN (R 4.4.0)
+ P listenv         0.9.1    2024-01-29 [?] CRAN (R 4.4.0)
+ P lubridate     * 1.9.3    2023-09-27 [?] CRAN (R 4.4.0)
+ P lutz          * 0.3.2    2023-10-17 [?] CRAN (R 4.4.0)
+ P magrittr        2.0.3    2022-03-30 [?] CRAN (R 4.4.0)
+ P memoise         2.0.1    2021-11-26 [?] CRAN (R 4.4.0)
+ P mime            0.12     2021-09-28 [?] CRAN (R 4.4.0)
+ P miniUI          0.1.1.1  2018-05-18 [?] CRAN (R 4.4.0)
+ P motus         * 6.1.0    2024-05-02 [?] Github (motuswts/motus@a53a8b8)
+ P munsell         0.5.1    2024-04-01 [?] CRAN (R 4.4.0)
+ P naturecounts    0.4.0    2024-05-02 [?] Github (birdscanada/naturecounts@a6e52da)
+ P parallelly      1.37.1   2024-02-29 [?] CRAN (R 4.4.0)
+ P patchwork     * 1.2.0    2024-01-08 [?] CRAN (R 4.4.0)
+ P pillar          1.9.0    2023-03-22 [?] CRAN (R 4.4.0)
+ P pkgbuild        1.4.4    2024-03-17 [?] CRAN (R 4.4.0)
+ P pkgconfig       2.0.3    2019-09-22 [?] CRAN (R 4.4.0)
+ P pkgload         1.3.4    2024-01-16 [?] CRAN (R 4.4.0)
+ P profvis         0.3.8    2023-05-02 [?] CRAN (R 4.4.0)
+ P promises        1.3.0    2024-04-05 [?] CRAN (R 4.4.0)
+ P proxy           0.4-27   2022-06-09 [?] CRAN (R 4.4.0)
+ P purrr         * 1.0.2    2023-08-10 [?] CRAN (R 4.4.0)
+ P R6              2.5.1    2021-08-19 [?] CRAN (R 4.4.0)
+ P Rcpp            1.0.12   2024-01-09 [?] CRAN (R 4.4.0)
+ P readr         * 2.1.5    2024-01-10 [?] CRAN (R 4.4.0)
+ P readxl        * 1.4.3    2023-07-06 [?] CRAN (R 4.4.0)
+ P remotes         2.5.0    2024-03-17 [?] CRAN (R 4.4.0)
+   renv            1.0.7    2024-04-11 [1] CRAN (R 4.4.0)
+ P rlang           1.1.3    2024-01-10 [?] CRAN (R 4.4.0)
+ P rmarkdown       2.27     2024-05-17 [?] CRAN (R 4.4.0)
+ P rnaturalearth * 1.0.1    2023-12-15 [?] CRAN (R 4.4.0)
+ P RSQLite         2.3.6    2024-03-31 [?] CRAN (R 4.4.0)
+ P rstudioapi      0.16.0   2024-03-24 [?] CRAN (R 4.4.0)
+ P sass            0.4.9    2024-03-15 [?] CRAN (R 4.4.0)
+ P scales          1.3.0    2023-11-28 [?] CRAN (R 4.4.0)
+ P sessioninfo     1.2.2    2021-12-06 [?] CRAN (R 4.4.0)
+ P sf            * 1.0-16   2024-03-24 [?] CRAN (R 4.4.0)
+ P shiny           1.8.1.1  2024-04-02 [?] CRAN (R 4.4.0)
+ P stringi         1.8.4    2024-05-06 [?] CRAN (R 4.4.0)
+ P stringr       * 1.5.1    2023-11-14 [?] CRAN (R 4.4.0)
+ P terra           1.7-71   2024-01-31 [?] CRAN (R 4.4.0)
+ P tibble        * 3.2.1    2023-03-20 [?] CRAN (R 4.4.0)
+ P tidyr         * 1.3.1    2024-01-24 [?] CRAN (R 4.4.0)
+ P tidyselect      1.2.1    2024-03-11 [?] CRAN (R 4.4.0)
+ P timechange      0.3.0    2024-01-18 [?] CRAN (R 4.4.0)
+ P tzdb            0.4.0    2023-05-12 [?] CRAN (R 4.4.0)
+ P units         * 0.8-5    2023-11-28 [?] CRAN (R 4.4.0)
+ P urlchecker      1.0.1    2021-11-30 [?] CRAN (R 4.4.0)
+ P usethis         2.2.3    2024-02-19 [?] CRAN (R 4.4.0)
+ P utf8            1.2.4    2023-10-22 [?] CRAN (R 4.4.0)
+ P vctrs           0.6.5    2023-12-01 [?] CRAN (R 4.4.0)
+ P withr           3.0.0    2024-01-16 [?] CRAN (R 4.4.0)
+ P xfun            0.44     2024-05-15 [?] CRAN (R 4.4.0)
+ P xml2            1.3.6    2023-12-04 [?] CRAN (R 4.4.0)
+ P xtable          1.8-4    2019-04-21 [?] CRAN (R 4.4.0)
+ P yaml            2.3.8    2023-12-11 [?] CRAN (R 4.4.0)
+
+ [1] /home/steffi/Projects/Business/Barbara Frei/urban_motus/renv/library/linux-ubuntu-jammy/R-4.4/x86_64-pc-linux-gnu
+ [2] /home/steffi/.cache/R/renv/sandbox/linux-ubuntu-jammy/R-4.4/x86_64-pc-linux-gnu/9a444a72
+
+ P ── Loaded and on-disk path mismatch.
+
+──────────────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 
 </section>
@@ -5664,13 +5810,10 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./00_workflow.html" class="pagination-link  aria-label=" plans"="">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Plans</span>
-      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./02_download.html" class="pagination-link" aria-label="Download/Update Data &amp; Transform">
-        <span class="nav-page-text">Download/Update Data &amp; Transform</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./02_download.html" class="pagination-link" aria-label="Download Data">
+        <span class="nav-page-text">Download Data</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

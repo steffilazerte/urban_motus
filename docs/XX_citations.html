@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-05-14">
+<meta name="dcterms.date" content="2024-07-04">
 
 <title>Motus tracking of urban migration stopovers - Citations</title>
 <style>
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./XX_setup.html" rel="prev">
+<link href="./XX_data.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -155,12 +155,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./00_workflow.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Plans</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="./01_select_projects.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Selecting Projects</span></a>
   </div>
@@ -168,7 +162,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./02_download.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Download/Update Data &amp; Transform</span></a>
+ <span class="menu-text">Download Data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -215,8 +209,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./99_checks.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Metadata checks</span></a>
+  <a href="./10_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Maps</span></a>
   </div>
 </li>
       </ul>
@@ -244,6 +238,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./XX_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Datasets</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./XX_citations.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Citations</span></a>
   </div>
@@ -262,6 +262,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#ebird-status-and-trends" id="toc-ebird-status-and-trends" class="nav-link active" data-scroll-target="#ebird-status-and-trends">eBird Status and Trends</a></li>
   <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages">Packages</a></li>
+  <li><a href="#maps" id="toc-maps" class="nav-link" data-scroll-target="#maps">Maps</a></li>
   <li><a href="#general-info" id="toc-general-info" class="nav-link" data-scroll-target="#general-info">General Info</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/steffilazerte/urban_motus/edit/main/XX_citations.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/steffilazerte/urban_motus/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -288,7 +289,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 14, 2024</p>
+      <p class="date">July 4, 2024</p>
     </div>
   </div>
   
@@ -310,6 +311,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="packages" class="level3">
 <h3 class="anchored" data-anchor-id="packages">Packages</h3>
 <p>You probably only need to cite <strong>motus</strong>, <strong>ebirdst</strong>, and possibly the <strong>tidyverse</strong>, but you should keep track of the packages used and their versions (see General Info, note that if an workflow step was updated separately, see the most up-to-date package versions under that pages “General Info”).</p>
+<p>Unfortuntaly journals do not often want you to cite general data manipulation and visualization packages (which is most of what we use).</p>
 <section id="motus" class="level4">
 <h4 class="anchored" data-anchor-id="motus">motus</h4>
 <p>Birds Canada (2024). <em>motus: Fetch and use data from the Motus Wildlife Tracking System</em>. <a href="https://motusWTS.github.io/motus/" class="uri">https://motusWTS.github.io/motus/</a>.</p>
@@ -334,6 +336,11 @@ the new data.</code></pre>
 <p>Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” <em>Journal of Open Source Software</em>, <em>4</em>(43), 1686. doi:10.21105/joss.01686 <a href="https://doi.org/10.21105/joss.01686" class="uri">https://doi.org/10.21105/joss.01686</a>.</p>
 </section>
 </section>
+<section id="maps" class="level3">
+<h3 class="anchored" data-anchor-id="maps">Maps</h3>
+<p>Note that map tiles should be attributed. Best is to include that attribution in the figure itself, but you can also include it in the caption.</p>
+<p>We use <a href="https://carto.com/basemaps">CARTO light tiles</a>.</p>
+</section>
 <section id="general-info" class="level3">
 <h3 class="anchored" data-anchor-id="general-info">General Info</h3>
 <div class="cell">
@@ -349,58 +356,59 @@ the new data.</code></pre>
  collate  en_CA.UTF-8
  ctype    en_CA.UTF-8
  tz       America/Winnipeg
- date     2024-05-14
+ date     2024-07-04
  pandoc   3.1.1 @ /usr/lib/rstudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────
- package     * version  date (UTC) lib source
- cachem        1.0.8    2023-05-01 [1] CRAN (R 4.3.0)
- cli           3.6.2    2023-12-11 [1] CRAN (R 4.3.2)
- devtools      2.4.5    2022-10-11 [1] CRAN (R 4.3.0)
- digest        0.6.34   2024-01-11 [1] CRAN (R 4.3.2)
- ebirdst     * 3.2022.2 2024-01-15 [1] Github (ebird/ebirdst@bd409c7)
- ellipsis      0.3.2    2021-04-29 [1] CRAN (R 4.3.0)
- evaluate      0.23     2023-11-01 [1] CRAN (R 4.3.1)
- fastmap       1.1.1    2023-02-24 [1] CRAN (R 4.3.0)
- fs            1.6.3    2023-07-20 [1] CRAN (R 4.3.1)
- glue          1.7.0    2024-01-09 [1] CRAN (R 4.3.2)
- htmltools     0.5.7    2023-11-03 [1] CRAN (R 4.3.1)
- htmlwidgets   1.6.4    2023-12-06 [1] CRAN (R 4.3.2)
- httpuv        1.6.14   2024-01-26 [1] CRAN (R 4.3.2)
- jsonlite      1.8.8    2023-12-04 [1] CRAN (R 4.3.2)
- knitr         1.45     2023-10-30 [1] CRAN (R 4.3.1)
- later         1.3.2    2023-12-06 [1] CRAN (R 4.3.2)
- lifecycle     1.0.4    2023-11-07 [1] CRAN (R 4.3.2)
- magrittr      2.0.3    2022-03-30 [1] CRAN (R 4.3.0)
- memoise       2.0.1    2021-11-26 [1] CRAN (R 4.3.0)
- mime          0.12     2021-09-28 [1] CRAN (R 4.3.0)
- miniUI        0.1.1.1  2018-05-18 [1] CRAN (R 4.3.0)
- pkgbuild      1.4.3    2023-12-10 [1] CRAN (R 4.3.2)
- pkgload       1.3.3    2023-09-22 [1] CRAN (R 4.3.1)
- profvis       0.3.8    2023-05-02 [1] CRAN (R 4.3.1)
- promises      1.2.1    2023-08-10 [1] CRAN (R 4.3.1)
- purrr         1.0.2    2023-08-10 [1] CRAN (R 4.3.1)
- R6            2.5.1    2021-08-19 [1] CRAN (R 4.3.0)
- Rcpp          1.0.12   2024-01-09 [1] CRAN (R 4.3.2)
- remotes       2.4.2.1  2023-07-18 [1] CRAN (R 4.3.2)
- rlang         1.1.3    2024-01-10 [1] CRAN (R 4.3.2)
- rmarkdown     2.25     2023-09-18 [1] CRAN (R 4.3.1)
- rstudioapi    0.15.0   2023-07-07 [1] CRAN (R 4.3.1)
- sessioninfo   1.2.2    2021-12-06 [1] CRAN (R 4.3.0)
- shiny         1.8.0    2023-11-17 [1] CRAN (R 4.3.2)
- stringi       1.8.3    2023-12-11 [1] CRAN (R 4.3.2)
- stringr       1.5.1    2023-11-14 [1] CRAN (R 4.3.2)
- urlchecker    1.0.1    2021-11-30 [1] CRAN (R 4.3.0)
- usethis       2.2.2    2023-07-06 [1] CRAN (R 4.3.1)
- vctrs         0.6.5    2023-12-01 [1] CRAN (R 4.3.2)
- xfun          0.42     2024-02-08 [1] CRAN (R 4.3.2)
- xtable        1.8-4    2019-04-21 [1] CRAN (R 4.3.0)
- yaml          2.3.8    2023-12-11 [1] CRAN (R 4.3.2)
+ ! package     * version  date (UTC) lib source
+ P cachem        1.1.0    2024-05-16 [?] CRAN (R 4.4.0)
+ P cli           3.6.2    2023-12-11 [?] CRAN (R 4.4.0)
+ P devtools      2.4.5    2022-10-11 [?] CRAN (R 4.4.0)
+ P digest        0.6.35   2024-03-11 [?] CRAN (R 4.4.0)
+ P ebirdst     * 3.2022.3 2024-03-05 [?] CRAN (R 4.4.0)
+ P ellipsis      0.3.2    2021-04-29 [?] CRAN (R 4.4.0)
+ P evaluate      0.23     2023-11-01 [?] CRAN (R 4.4.0)
+ P fastmap       1.2.0    2024-05-15 [?] CRAN (R 4.4.0)
+ P fs            1.6.4    2024-04-25 [?] CRAN (R 4.4.0)
+ P glue          1.7.0    2024-01-09 [?] CRAN (R 4.4.0)
+ P htmltools     0.5.8.1  2024-04-04 [?] CRAN (R 4.4.0)
+ P htmlwidgets   1.6.4    2023-12-06 [?] CRAN (R 4.4.0)
+ P httpuv        1.6.15   2024-03-26 [?] CRAN (R 4.4.0)
+ P jsonlite      1.8.8    2023-12-04 [?] CRAN (R 4.4.0)
+ P knitr         1.47     2024-05-29 [?] CRAN (R 4.4.0)
+ P later         1.3.2    2023-12-06 [?] CRAN (R 4.4.0)
+ P lifecycle     1.0.4    2023-11-07 [?] CRAN (R 4.4.0)
+ P magrittr      2.0.3    2022-03-30 [?] CRAN (R 4.4.0)
+ P memoise       2.0.1    2021-11-26 [?] CRAN (R 4.4.0)
+ P mime          0.12     2021-09-28 [?] CRAN (R 4.4.0)
+ P miniUI        0.1.1.1  2018-05-18 [?] CRAN (R 4.4.0)
+ P pkgbuild      1.4.4    2024-03-17 [?] CRAN (R 4.4.0)
+ P pkgload       1.3.4    2024-01-16 [?] CRAN (R 4.4.0)
+ P profvis       0.3.8    2023-05-02 [?] CRAN (R 4.4.0)
+ P promises      1.3.0    2024-04-05 [?] CRAN (R 4.4.0)
+ P purrr         1.0.2    2023-08-10 [?] CRAN (R 4.4.0)
+ P R6            2.5.1    2021-08-19 [?] CRAN (R 4.4.0)
+ P Rcpp          1.0.12   2024-01-09 [?] CRAN (R 4.4.0)
+ P remotes       2.5.0    2024-03-17 [?] CRAN (R 4.4.0)
+   renv          1.0.7    2024-04-11 [1] CRAN (R 4.4.0)
+ P rlang         1.1.3    2024-01-10 [?] CRAN (R 4.4.0)
+ P rmarkdown     2.27     2024-05-17 [?] CRAN (R 4.4.0)
+ P rstudioapi    0.16.0   2024-03-24 [?] CRAN (R 4.4.0)
+ P sessioninfo   1.2.2    2021-12-06 [?] CRAN (R 4.4.0)
+ P shiny         1.8.1.1  2024-04-02 [?] CRAN (R 4.4.0)
+ P stringi       1.8.4    2024-05-06 [?] CRAN (R 4.4.0)
+ P stringr       1.5.1    2023-11-14 [?] CRAN (R 4.4.0)
+ P urlchecker    1.0.1    2021-11-30 [?] CRAN (R 4.4.0)
+ P usethis       2.2.3    2024-02-19 [?] CRAN (R 4.4.0)
+ P vctrs         0.6.5    2023-12-01 [?] CRAN (R 4.4.0)
+ P xfun          0.44     2024-05-15 [?] CRAN (R 4.4.0)
+ P xtable        1.8-4    2019-04-21 [?] CRAN (R 4.4.0)
+ P yaml          2.3.8    2023-12-11 [?] CRAN (R 4.4.0)
 
- [1] /home/steffi/R/x86_64-pc-linux-gnu-library/4.3
- [2] /usr/local/lib/R/site-library
- [3] /usr/lib/R/site-library
- [4] /usr/lib/R/library
+ [1] /home/steffi/Projects/Business/Barbara Frei/urban_motus/renv/library/linux-ubuntu-jammy/R-4.4/x86_64-pc-linux-gnu
+ [2] /home/steffi/.cache/R/renv/sandbox/linux-ubuntu-jammy/R-4.4/x86_64-pc-linux-gnu/9a444a72
+
+ P ── Loaded and on-disk path mismatch.
 
 ──────────────────────────────────────────────────────────────────────────────</code></pre>
 </div>
@@ -799,8 +807,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./XX_setup.html" class="pagination-link  aria-label=" setup"="">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Setup</span>
+      <a href="./XX_data.html" class="pagination-link  aria-label=" datasets"="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Datasets</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

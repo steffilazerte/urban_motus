@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Steffi LaZerte">
-<meta name="dcterms.date" content="2024-05-14">
+<meta name="dcterms.date" content="2024-07-04">
 
 <title>Motus tracking of urban migration stopovers - Notes &amp; Details</title>
 <style>
@@ -67,7 +67,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./XX_setup.html" rel="next">
-<link href="./99_checks.html" rel="prev">
+<link href="./10_maps.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -156,12 +156,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./00_workflow.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Plans</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="./01_select_projects.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Selecting Projects</span></a>
   </div>
@@ -169,7 +163,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./02_download.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Download/Update Data &amp; Transform</span></a>
+ <span class="menu-text">Download Data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -216,8 +210,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./99_checks.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Metadata checks</span></a>
+  <a href="./10_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Maps</span></a>
   </div>
 </li>
       </ul>
@@ -241,6 +235,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./XX_setup.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Setup</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./XX_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Datasets</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -294,7 +294,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 14, 2024</p>
+      <p class="date">July 4, 2024</p>
     </div>
   </div>
   
@@ -306,9 +306,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<blockquote class="blockquote">
-<p>WIP</p>
-</blockquote>
 <p>This section contains notes and details about the analysis, from design choices to coding explanations. This is most relevant for those who may be working with the code, as opposed to those interpreting the outputs.</p>
 <section id="quarto" class="level2">
 <h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
@@ -320,7 +317,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="pipes" class="level2">
 <h2 class="anchored" data-anchor-id="pipes">Pipes <code>|&gt;</code></h2>
-<p>Here I use pipes, namely the R base pipe <code>|&gt;</code> which allows you to ‘pipe’ the output from the first line as the input to the second line ((details)[https://r4ds.hadley.nz/workflow-style.html#sec-pipes]).</p>
+<p>Here I use pipes, namely the R base pipe <code>|&gt;</code> which allows you to ‘pipe’ the output from the first line as the input to the second line (<a href="https://r4ds.hadley.nz/workflow-style.html#sec-pipes">details</a>).</p>
 <p>One handy way of reading code with pipes is to think “and then…” every time you see it.</p>
 <p>For example, the following code could be read as:</p>
 <p>To make the <code>sp_ebird</code> object (here a data frame) first…</p>
@@ -339,10 +336,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="map-and-family" class="level2">
 <h2 class="anchored" data-anchor-id="map-and-family"><code>map()</code> and family</h2>
-<p>The functions <code>map()</code>, <code>imap()</code>, <code>walk()</code>, etc. are from the <a href="https://purrr.tidyverse.org/">purrr package</a> and are ways in which to loop over a list. Using <code>map()</code> is very similar to using <code>lapply()</code> or <code>for()</code> loops ((details)[https://r4ds.hadley.nz/iteration.html]).</p>
-<p>In this workflow, <code>map()</code> is often use to perform a task on each motus database. This is why it often iterates over <code>projects</code> (the list of project ids) or <code>dbs</code> (the list of database connections).</p>
-<p>For example, we use <code>dbs &lt;- map(projects, \(x) tagme(x, dir = "Data/Raw", update = FALSE))</code> in the <a href="&quot;XX_setup.html&quot;">Setup</a> to read each data base connection and put it in the <code>dbs</code> list.</p>
-<p>Similarly, in <a href="./02_download.html">Download/Update Data</a>, we use <code>walk(dbs, metadata)</code> to ‘walk’ through the list of databases and add the full metadata to each one.</p>
+<p>The functions <code>map()</code>, <code>imap()</code>, <code>walk()</code>, etc. are from the <a href="https://purrr.tidyverse.org/">purrr package</a> and are ways in which to loop over a list. Using <code>map()</code> is very similar to using <code>lapply()</code> or <code>for()</code> loops (<a href="https://r4ds.hadley.nz/iteration.html">details</a>).</p>
+<p>In this workflow, <code>map()</code> is often use to perform a task on each Motus database or project. This is why it often iterates over <code>projects</code> (the list of project ids) or <code>dbs</code> (the list of database connections).</p>
+<p>For example, we use <code>dbs &lt;- map(projects, \(x) tagme(x, dir = "Data/01_Raw", update = FALSE))</code> in the <a href="XX_setup.html">Setup</a> to read each data base connection and put it in the <code>dbs</code> list.</p>
+<p>Similarly, in <a href="./02_download.html">Download Data</a>, we use <code>walk(dbs, metadata)</code> to ‘walk’ through the list of databases and add the full metadata to each one.</p>
+<p>Occasionally we also use the <a href="https://furrr.futureverse.org/">furrr package</a> and its <code>future_map()</code> function(s) to run <code>map()</code> and family in parallel to maximize the speed of a computation.</p>
 </section>
 <section id="spatial" class="level2">
 <h2 class="anchored" data-anchor-id="spatial">Spatial</h2>
@@ -351,7 +349,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="databases" class="level2">
 <h2 class="anchored" data-anchor-id="databases">Databases</h2>
-<p><strong>Avoiding <code>anti_join()</code></strong> - This is pretty <a href="https://github.com/tidyverse/dbplyr/issues/1355">slow for SQLite databases</a> - So we’ll use a left join plus filter instead (but remember that may have to filter to <em>keep</em> missing values if appropriate)</p>
+<p><strong>Avoiding <code>anti_join()</code></strong></p>
+<ul>
+<li>This is pretty <a href="https://github.com/tidyverse/dbplyr/issues/1355">slow for SQLite databases</a></li>
+<li>So we’ll use a left join plus <code>filter()</code> instead (if joining on Databases) (but remember that may have to filter to <em>keep</em> missing values if appropriate)</li>
+</ul>
 
 
 </section>
@@ -746,8 +748,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./99_checks.html" class="pagination-link  aria-label=" metadata="" checks"="">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Metadata checks</span>
+      <a href="./10_maps.html" class="pagination-link  aria-label=" maps"="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Maps</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
