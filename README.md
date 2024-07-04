@@ -5,6 +5,7 @@ __*Pilot Phase*__
 Principal Investigators: **[Barbara Frei](https://www.thebirdsthetrees.com/), [Elizabeth Gow](https://www.elizabethgow.com/) and Krista De Groot**  
 Workflow design: [Steffi LaZerte](https://steffilazerte.ca)
 
+**The code in this workflow is released under GPL3.**
 
 ## Getting Started
 
@@ -29,5 +30,7 @@ this workflow [Some users]
   new data is being downloaded!
     - Use `renv::restore()` to ensure you have the same packages and versions
     installed in this project to reproduce this workflow.
+
+
 
 > [More details...](https://steffilazerte.ca/urban_motus)
