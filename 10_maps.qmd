@@ -1,0 +1,76 @@
+---
+title: "Maps"
+toc-depth: 4
+cache: true
+---
+
+This script produces maps by species and by individuals for birds who moved at 
+least 100km (`travelled`, see [Summaries](09_summaries.html#individual-summaries)).
+
+## Setup
+```{r}
+#| message: false
+#| cache: false
+source("XX_setup.R")
+trans <- read_csv("Data/03_Final/transitions_final.csv") |>
+  left_join(read_csv("Data/03_Final/summary_birds.csv"), 
+            by = c("tagDeployID", "english")) |>
+  filter(travelled) |> 
+  mutate(month = month(mid_date)) |>
+  mutate(n = n_distinct(tagDeployID), .by = "english") |>
+  arrange(desc(n))
+```
+
+
+## Maps by species
+
+```{r}
+#| fig-height: 16
+#| fig-asp: 1
+#| message: false
+#| code-fold: true
+#| results: asis
+
+walk(unique(trans$speciesID), \(x) {
+  t1 <- filter(trans, speciesID == x)
+  g <- ggplot(t1, aes(x = lon1, y = lat1)) +
+    annotation_map_tile(type = "cartolight", zoomin = 0) +
+    geom_spatial_segment(
+      aes(xend = lon2, yend = lat2, colour = month),
+      arrow = arrow(length = unit(10, "pt"), type = "closed"), crs = 4326, na.rm = TRUE) +
+    scale_colour_viridis_c(option = "inferno", 
+                           begin = 0.20, end = 0.85) +
+    guides(colour = guide_colourbar(reverse = TRUE)) +
+    labs(title = t1$english[1], 
+         subtitle = paste0("n = ", n_distinct(t1$tagDeployID), "; ", as_date(min(t1$b1)), " to ", as_date(max(t1$e2))))
+  
+  cat(paste0("\n\n### ", t1$english[1], "\n\n"))
+  print(g)
+})
+```
+
+
+## Maps by individual
+
+```{r}
+#| fig-asp: 1.4
+#| fig-height: 6
+#| fig-dpi: 75
+#| message: false
+#| code-fold: true
+#| results: asis
+walk(unique(trans$speciesID), \(x) {
+  
+  cat(paste0("\n\n### ", trans$english[trans$speciesID == x][1], "\n\n"))
+  
+  walk(unique(trans$tagDeployID[trans$speciesID == x]), \(y) {
+    t1 <- filter(trans, tagDeployID == y)
+    g <- plot_map(trans, y, pad = FALSE, lowres = TRUE) + 
+      labs(title = paste0(t1$english[1], " - ", t1$tagDeployID[1]),
+           subtitle = paste0(min(t1$b1), " to ", max(t1$e2)))
+    
+    cat(paste0("\n\n#### ", t1$tagDeployID[1], "\n\n"))
+    print(g)
+  })
+})
+```
