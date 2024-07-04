@@ -1,33 +1,4 @@
-remove_by_ID <- function(src, t, id_type = "batchID", ids) {
-  if(length(ids) > 0) {
-    if(t %in% DBI::dbListTables(src)) {
-      n <- DBI::dbExecute(
-        src, 
-        glue::glue("DELETE FROM {`t`} WHERE {`id_type`} IN (",
-                   glue::glue_collapse(ids, sep = ', '), 
-                   ")"))
-      if(n > 0) message(msg_fmt("  {n} rows deleted from {t}"))
-    }
-  }
-}
-
-
-filter_count <- function(dbs, filter) {
-  before <- map(dbs, \(x) tbl(x, "runs") |> count(name = "n_before") |> collect()) |>
-    list_rbind(names_to = "proj_id")
-  after <- imap(dbs, \(x, y) {
-    remove <- getRunsFilters(x, filter, y)
-    tbl(x, "runs") |>
-      anti_join(remove, by = c("runID", "motusTagID")) |>
-      count(name = "n_after") |>
-      collect()
-  }) |>
-    list_rbind()
-
-  bind_cols(before, after) |>
-    mutate(p_reduced = (n_before - n_after) / n_before * 100)
-}
-
+# A theme for the html tables displayed in the reports
 gt_theme <- function(data, ...) {
   data |>
     tab_options(
@@ -44,26 +15,6 @@ collect_ts <- function(db) {
   db |>
     collect() |>
     mutate(across(contains("ts", ignore.case = FALSE), as_datetime))
-}
-
-# Collect run/tag information for filters
-collect_filter <- function(db) {
-  db |>
-    rename_with(~"motusTagID", .cols = any_of("tagID")) |>
-    select(runID, motusTagID) |>
-    mutate(probability = 0) |>
-    collect()
-}
-
-anti_join_quick <- function(x, y, by = NULL, copy = FALSE, motus_filter = TRUE) {
-  if(motus_filter) {
-    y <- select(y, "runID", "tagID")
-    if(is.null(by)) by <- c("runID", "tagID")
-  }
-  y <- mutate(y, ANTI = 1) 
-  left_join(x, y, by = by, copy = copy) |>
-    filter(is.na(ANTI)) |>
-    select(-"ANTI")
 }
 
 # ---- custom_runs ----
@@ -105,42 +56,8 @@ custom_runs <- function(db) {
     distinct()
 }
 
-# ---- custom_hits ----
-custom_hits <- function(db) {
-  # Replacement for NULL tsEnd values (i.e. today plus change)
-  max_ts <- round(as.numeric(Sys.time()) + 1000)
-  
-  # Get Receivers
-  r <- tbl(db, "recvDeps") |> 
-    select("deviceID", "recvDeployID" = "deployID", "tsStartRecv" = "tsStart", "tsEndRecv" = "tsEnd",
-           "recvType" = "receiverType") |>
-    mutate(tsEndRecv = if_else(is.na(tsEndRecv), max_ts, tsEndRecv))
-  
-  # Get tags
-  t <- tbl(db, "tagDeps") |> 
-    select("tagID", "tagDeployID" = "deployID", "speciesID", "tsStartTag" = "tsStart", "tsEndTag" = "tsEnd") |>
-    mutate(tsEndTag = if_else(is.na(tsEndTag), max_ts, tsEndTag))  
-  
-  # Combine with the rest - And OMIT BAD filtered observations from previous step
-  tbl(db, "hits") |>
-    select(-"validated") |>
-    # Add in runs and motusFilters
-    left_join(tbl(db, "runs") |> select("runID", "motusFilter", "tagID" = "motusTagID"), by = "runID") |>
-    # Add in tags by tagID *and* overlap of start/end of tag deployment with the beginning of a run
-    left_join(t, by = join_by(tagID, between(ts, tsStartTag, tsEndTag))) |>
-    # # Filter out "Bad runs" from previous step
-    # left_join(tbl(db, "bad_data"), by = c("runID", "tagID")) |>
-    # filter(is.na(BAD)) |>
-    # select(-"BAD") |>
-    # Add in batches by batchID (to get the deviceID)
-    left_join(tbl(db, "batches") |> select("batchID", "motusDeviceID"), by = "batchID") |>
-    # Add in receivers by deviceID *and* overlap of receiver deployment time with the beginning of a run
-    left_join(r, by = join_by(motusDeviceID == deviceID, between(ts, tsStartRecv, tsEndRecv))) |>
-    # Keep only relevant data
-    select(-"batchID", -"tsStartRecv", -"tsEndRecv", -"tsStartTag", -"tsEndTag") |>
-    rename("recvDeciveID" = "motusDeviceID")
-}
 
+# Open the hit feather files as a list of projects (too big to deal with them all at once)
 load_hits <- function() {
   map(projects, \(x) {
     f <- filter(arws, proj_id == x) |>
@@ -149,6 +66,8 @@ load_hits <- function() {
   })
 }
 
+# Master plotting function to plot a map of transitions as well as looking 
+# at bouts by lat/lon 
 plot_bouts <- function(trans, trans_clean = NULL, bouts, tagDeployID, save = FALSE) {
   
   trans <- filter(trans, tagDeployID == .env$tagDeployID)
@@ -182,7 +101,8 @@ plot_bouts <- function(trans, trans_clean = NULL, bouts, tagDeployID, save = FAL
   g
 }
 
-plot_map <- function(trans, tagDeployID = NULL) {
+# Create a map of transitions for an individual bird
+plot_map <- function(trans, tagDeployID = NULL, pad = TRUE, lowres = FALSE) {
   
   if(!is.null(tagDeployID)) trans <- filter(trans, tagDeployID == .env[["tagDeployID"]])
   if(!"problem" %in% names(trans)) {
@@ -214,11 +134,11 @@ plot_map <- function(trans, tagDeployID = NULL) {
   }
   
   if(rx < 0.5) {
-    add <- (0.5 - rx)/2
+    if(pad) add <- (0.5 - rx)/2 else add <- 0
     bb[1:2] <- bb[1:2] + (c(-1, 1) * add)
   }
   if(ry < 2) {
-    add <- (2 - ry)/2
+    if(pad) add <- (2 - ry)/2 else add <- 0
     bb[3:4] <- bb[3:4] + (c(-1, 1) * add)
   }
   
@@ -226,14 +146,16 @@ plot_map <- function(trans, tagDeployID = NULL) {
   rx <- diff(range(bb[1:2]))
   ratio <- ry/rx
   
-  if(ratio > 2) {
-    rx1 <- ry/2
-    add <- (rx1 - rx)/2
-    bb[1:2] <- bb[1:2] + (c(-1, 1) * add)
-  } else if (ratio < 2) {
-    ry1 <- rx * 2
-    add <- (ry1 - ry)/2
-    bb[3:4] <- bb[3:4] + (c(-1, 1) * add)
+  if(pad) {
+    if(ratio > 2) {
+      rx1 <- ry/2
+      add <- (rx1 - rx)/2
+      bb[1:2] <- bb[1:2] + (c(-1, 1) * add)
+    } else if (ratio < 2) {
+      ry1 <- rx * 2
+      add <- (ry1 - ry)/2
+      bb[3:4] <- bb[3:4] + (c(-1, 1) * add)
+    }
   }
   
   if(any(trans$problem_fast | trans$problem_manual)) {
@@ -252,8 +174,10 @@ plot_map <- function(trans, tagDeployID = NULL) {
       distinct()
   } else labs <- data.frame()
   
+  if(lowres) zoomin <- -2 else zoomin <- 0
+  
   g <- ggplot(trans, aes(x = lon1, y = lat1)) +
-    annotation_map_tile(type = "cartolight", zoomin = 0) +
+    annotation_map_tile(type = "cartolight", zoomin = zoomin) +
     geom_spatial_segment(
       data = filter(trans, resolved, problem),
       aes(xend = lon2, yend = lat2), colour = "grey", linewidth = 2,
@@ -284,6 +208,7 @@ plot_map <- function(trans, tagDeployID = NULL) {
     guides(colour = guide_colourbar(reverse = TRUE))
 }
 
+# Create a plot of bouts by lat and lon
 plot_coord <- function(trans, trans_clean, bouts, coord) {
   lim <- range(bouts$dateBegin)
   lim[2] <- lim[2] + difftime(lim[2], lim[1], units = "days") * 0.1
@@ -344,6 +269,7 @@ plot_coord <- function(trans, trans_clean, bouts, coord) {
     scale_x_datetime(limits = lim)
 }
 
+# Create a plot of hits for a specific event to check for problems
 plot_check <- function(hits, tagDeployID) {
   h <- filter(h, tagDeployID == .env[["tagDeployID"]]) |>
     arrange(time)
@@ -419,6 +345,7 @@ create_bouts <- function(x, cutoff) {
               .groups = "drop")
 }
 
+# Create a data frame of transitions
 calc_trans <- function(x) {
   x |>
     rename(id1 = id) |>
@@ -429,6 +356,7 @@ calc_trans <- function(x) {
 }
 
 # ---- find_overlaps ----
+# Identify overlapping bouts
 find_overlaps <- function(x2, type = "logical") {
   #if(3551 %in% x2$stn_group) browser()
   #           comp B/E2  vs. B/E1
@@ -455,6 +383,7 @@ find_overlaps <- function(x2, type = "logical") {
 }
 
 # ---- load_runs ----
+# Load the run feather files and filter out both 'noisy' runs and hits
 load_runs <- function() {
   noise_runs <- open_dataset("Data/02_Datasets/noise_runs.feather", format = "feather")
   noise_hits <- open_dataset("Data/02_Datasets/noise_hits.feather", format = "feather")
@@ -470,6 +399,7 @@ load_runs <- function() {
 }
 
 # ---- create_overlapping ----
+# Create a data frame over overlapping bouts
 create_overlapping <- function(bouts) {
   nest(bouts, data = -tagDeployID) |>
     mutate(overlaps = map(data, \(x) find_overlaps(x, "df"), .progress = interactive())) |>
@@ -480,6 +410,7 @@ create_overlapping <- function(bouts) {
 }
 
 # ---- create_trans ----
+# Create a data frame of transitions
 create_trans <- function(bouts, overlapping_bouts, dist) {
   
   # Get transitions between stations
@@ -545,6 +476,7 @@ create_trans <- function(bouts, overlapping_bouts, dist) {
 }
 
 # ---- id_problems ----
+# Identify different types of problems in the transitions data
 id_problems <- function(trans, problems_manual = NULL) {
   
   # Identify suspiciously short bouts related to transitions
@@ -588,6 +520,7 @@ id_problems <- function(trans, problems_manual = NULL) {
 }
 
 # ---- resolve_stns ----
+# Resolve which station is the problem where there is a problematic transition
 resolve_stns <- function(bouts, trans, problems_manual = NULL) {
 
   b <- summarize(

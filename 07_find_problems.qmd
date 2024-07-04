@@ -323,3 +323,8 @@ walk(check_ids, \(x) {
   cat("\n\n", sep = "")
 })
 ```
+
+
+## Reproducibility
+{{< include _reproducibility.qmd >}}
+

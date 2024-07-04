@@ -114,3 +114,7 @@ status |>
 
 
 
+## Reproducibility
+{{< include _reproducibility.qmd >}}
+
+
