@@ -7,6 +7,7 @@ __*Pilot Phase*__
 Principal Investigators: **[Barbara Frei](https://www.thebirdsthetrees.com/), [Elizabeth Gow](https://www.elizabethgow.com/) and Krista De Groot**  
 Workflow design: [Steffi LaZerte](https://steffilazerte.ca)
 
+**The code in this workflow is released under GPL3.**
 
 ## Getting Started
 
@@ -71,7 +72,7 @@ mouse roller button).
 #| echo: false
 #| message: false
 source("XX_setup.R")
-read_csv("Data/03_Final/trans_final.csv") |>
+read_csv("Data/03_Final/transitions_final.csv") |>
   gt() |>
   gt_theme() |>
   tab_options(container.height = px(200),
