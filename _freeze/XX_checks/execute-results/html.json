@@ -1,0 +1,15 @@
+{
+  "hash": "bedaf118618894273328d2599dc153db",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: Metadata checks\neval: false\n---\n\n\n>\n>  **WIP** Not ready for use\n>\n\n\n\nCheck metadata for projects we have control over. \nIf we find any problems we have the **power** (💪) to fix them (😁).\n\n## Setup\n\n::: {.cell}\n\n```{.r .cell-code}\nsource(\"XX_setup.R\")\n\nruns <- open_dataset(\"Data/02_Datasets/runs\", format = \"feather\")\n```\n:::\n\n\n## Duplications\n\nWhy do we have duplicated batchIDs, tag deploments, receiver deployments?\n\n\n::: {.cell}\n\n```{.r .cell-code}\ndups <- map(dbs, \\(x) {\n  tbl(x, \"batchRuns\") |> \n    distinct() |>\n    count(runID) |> \n    filter(n > 1) |> \n    pull(runID)\n}) |>\n  unlist() |>\n  unique()\n\nimap(dbs, \\(x, i) {\n  tbl(x, \"batchRuns\") |> \n    distinct() |>\n    filter(runID %in% dups) |> \n    mutate(proj_id = i)\n})\n```\n:::\n\n\n\n## Check tag details\n\n\n::: {.cell}\n\n```{.r .cell-code}\ntag_deps <- map(dbs, \\(x) tbl(x, \"tagDeps\") |> collect()) |>\n  list_rbind() |>\n  mutate(tsStart = as_datetime(tsStart), tsEnd = as_datetime(tsEnd))\n\ntag_deps |>\n  select(projectID, tagID, deployID, tsStart, tsEnd, speciesID) |>\n  summary()\n```\n:::\n\n\n\nTODO: Questions\n\n- Can the end be after the current date? e.g., 2026-12-16...\n- Should there be missing start/end dates?\n\n\n::: {.cell}\n\n```{.r .cell-code}\nselect(tag_deps, projectID, tagID, deployID, tsStart, tsEnd, speciesID) |>\n  filter(is.na(tsStart))\n```\n:::\n\n\n\n### Check for multiple tag deployments\n\n::: {.cell}\n\n```{.r .cell-code}\nmulti_tags <- map(dbs, \\(x) tbl(x, \"tagDeps\") |> \n                    select(tagID, deployID, projectID, tsStart, tsEnd) |>\n                    mutate(n = n(), .by = \"tagID\") |>\n                    filter(n > 1) |>\n                    collect()) |>\n  list_rbind() |>\n  mutate(tsStart = as_datetime(tsStart), tsEnd = as_datetime(tsEnd))\n```\n:::\n\n\nMultiple deployments shouldn't be able to overlap... right?\n\n\n::: {.cell}\n\n```{.r .cell-code}\nmulti_tags |>\n  group_by(tagID) |>\n  filter(tsEnd >= lead(tsStart) | tsStart <= lag(tsEnd))\n```\n:::\n\n\nTriple deploy ids all at the same time???\n\n::: {.cell}\n\n```{.r .cell-code}\ntbl(dbs[[\"551\"]], \"allruns\") |>\n  select(motusTagID, tagDeployID, tsBegin) |>\n  filter(motusTagID == 68470) |>\n  collect() |>\n  mutate(tsBegin = as_datetime(tsBegin))\n```\n:::\n\n\n\n### Triple deploy ids all at the same time???\n\n::: {.cell}\n\n```{.r .cell-code}\ntbl(dbs[[\"168\"]], \"allruns\") |>\n  select(motusTagID, tagDeployID, tsBegin) |>\n  filter(motusTagID == 26448) |>\n  collect() |>\n  mutate(tsBegin = as_datetime(tsBegin)) |>\n  filter(tsBegin > \"2017-08-01 20:00:00\")\n```\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
